@@ -109,6 +109,59 @@ On app start, `AuthProvider.checkAuthStatus()` checks secure storage. If a token
 
 Logout calls `POST /api/logout`, clears secure storage, signs out from Google, and logs out from Facebook.
 
+## Feed Integration
+
+The feed is connected to the Laravel posts API through:
+
+- `FeedRepository` for API calls and JSON parsing
+- `FeedProvider` for feed state, pagination, creation, and deletion
+- `PostModel` for post data
+- `PostCard` for reusable social-style post UI
+
+The feed screen calls:
+
+```http
+GET http://10.0.2.2:8000/api/posts
+```
+
+Requests use the Laravel Sanctum token stored during authentication:
+
+```http
+Authorization: Bearer laravel_sanctum_token_here
+```
+
+The feed supports initial loading, pull to refresh, empty state, readable error state, a "Load more" button, and owner-only post deletion.
+
+## Create Post Flow
+
+Users can create a post from the bottom navigation Create item, the feed floating action button, or the `/create-post` route.
+
+Create post sends text and an optional image to Laravel:
+
+```http
+POST http://10.0.2.2:8000/api/posts
+Content-Type: multipart/form-data
+```
+
+Multipart fields:
+
+- `content`: optional text content
+- `image`: optional uploaded image file
+
+The screen validates that at least content or an image is present before submitting. On success, the created post is inserted at the top of the feed and the app returns to `/home`.
+
+## Image Uploads
+
+Images are selected from the gallery with `image_picker` and sent as multipart form data with Dio. Feed images are rendered with `cached_network_image`, including loading and error placeholders.
+
+For Laravel public storage URLs to work, run this in the backend project:
+
+```bash
+php artisan storage:link
+```
+
+If the API returns local URLs like `http://127.0.0.1:8000/storage/...`, Android emulator devices may not be able to load them directly. Prefer returning URLs reachable from the emulator, such as `http://10.0.2.2:8000/storage/...`, during local Android testing.
+
 ## Android Social Login Setup
 
 Google login requires Android OAuth configuration in Google Cloud/Firebase:
@@ -143,6 +196,7 @@ iOS setup is project-specific and should be completed before testing on iPhone o
 - GoRouter routing added
 - Material 3 theme added
 - Authentication models, repository, provider, splash flow, and login screen connected to Laravel auth endpoints
+- Feed models, repository, provider, post cards, create post, image upload, and owner delete connected to Laravel posts endpoints
 
 ## Analyze
 

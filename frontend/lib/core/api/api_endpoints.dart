@@ -7,7 +7,9 @@ class ApiEndpoints {
   static const String profile = '/profile';
   static const String users = '/users';
   static const String posts = '/posts';
+  static const String createPost = '/posts';
 
+  static String postById(int id) => '/posts/$id';
   static String comments(int postId) => '/posts/$postId/comments';
   static String comment(int commentId) => '/comments/$commentId';
   static String like(int postId) => '/posts/$postId/like';

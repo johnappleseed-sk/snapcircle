@@ -12,6 +12,7 @@ class AppRouter {
   static const String splash = '/';
   static const String login = '/login';
   static const String home = '/home';
+  static const String createPost = '/create-post';
 
   static GoRouter createRouter(AuthProvider authProvider) {
     return GoRouter(
@@ -44,7 +45,7 @@ class AppRouter {
         GoRoute(path: login, builder: (context, state) => const LoginScreen()),
         GoRoute(path: home, builder: (context, state) => const HomeScreen()),
         GoRoute(
-          path: '/create-post',
+          path: createPost,
           builder: (context, state) => const CreatePostScreen(),
         ),
         GoRoute(
