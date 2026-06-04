@@ -73,7 +73,15 @@ DB_PASSWORD=
 php artisan migrate
 ```
 
-### 6. Start Development Server
+### 6. Link Public Storage
+
+Post images are stored on the public disk. Create the public storage symlink before testing uploads:
+
+```bash
+php artisan storage:link
+```
+
+### 7. Start Development Server
 
 ```bash
 php artisan serve
