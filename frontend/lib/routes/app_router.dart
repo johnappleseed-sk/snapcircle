@@ -7,7 +7,10 @@ import '../features/comments/screens/comments_screen.dart';
 import '../features/feed/models/post_model.dart';
 import '../features/feed/screens/home_screen.dart';
 import '../features/post/screens/create_post_screen.dart';
+import '../features/profile/screens/edit_profile_screen.dart';
+import '../features/profile/screens/follow_list_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
+import '../features/profile/screens/user_profile_screen.dart';
 import '../features/search/screens/search_screen.dart';
 
 class AppRouter {
@@ -64,6 +67,39 @@ class AppRouter {
         GoRoute(
           path: '/profile',
           builder: (context, state) => const ProfileScreen(),
+        ),
+        GoRoute(
+          path: '/profile/edit',
+          builder: (context, state) => const EditProfileScreen(),
+        ),
+        GoRoute(
+          path: '/users/:userId',
+          builder: (context, state) {
+            final userId = int.tryParse(state.pathParameters['userId'] ?? '');
+            return UserProfileScreen(userId: userId ?? 0);
+          },
+        ),
+        GoRoute(
+          path: '/users/:userId/followers',
+          builder: (context, state) {
+            final userId = int.tryParse(state.pathParameters['userId'] ?? '');
+            return FollowListScreen(
+              userId: userId ?? 0,
+              type: FollowListType.followers,
+              title: 'Followers',
+            );
+          },
+        ),
+        GoRoute(
+          path: '/users/:userId/following',
+          builder: (context, state) {
+            final userId = int.tryParse(state.pathParameters['userId'] ?? '');
+            return FollowListScreen(
+              userId: userId ?? 0,
+              type: FollowListType.following,
+              title: 'Following',
+            );
+          },
         ),
         GoRoute(
           path: '/search',

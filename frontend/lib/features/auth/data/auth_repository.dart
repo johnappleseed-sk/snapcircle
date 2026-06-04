@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -35,9 +36,15 @@ class AuthRepository {
        _facebookAuth = facebookAuth ?? FacebookAuth.instance;
 
   Future<AuthResponse> signInWithGoogle() async {
-    await _initializeGoogleSignIn();
-
     try {
+      if (kIsWeb) {
+        throw const AuthException(
+          'Google login in Chrome needs web OAuth setup. Use the local demo account for development.',
+        );
+      }
+
+      await _initializeGoogleSignIn();
+
       if (!_googleSignIn.supportsAuthenticate()) {
         throw const AuthException(
           'Google login is not available on this platform.',
@@ -83,6 +90,12 @@ class AuthRepository {
   }
 
   Future<AuthResponse> signInWithFacebook() async {
+    if (kIsWeb) {
+      throw const AuthException(
+        'Facebook login in Chrome needs Facebook web SDK setup. Use the local demo account for development.',
+      );
+    }
+
     final result = await _facebookAuth.login(
       permissions: const ['email', 'public_profile'],
       loginTracking: LoginTracking.enabled,
@@ -108,6 +121,13 @@ class AuthRepository {
           result.message ?? 'Facebook login failed. Please try again.',
         );
     }
+  }
+
+  Future<AuthResponse> signInWithDemo() {
+    return _loginWithSocialToken(
+      endpoint: ApiEndpoints.authDemo,
+      accessToken: 'local-demo-login',
+    );
   }
 
   Future<UserModel> getCurrentUser() async {

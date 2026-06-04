@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -22,6 +23,15 @@ class LoginScreen extends StatelessWidget {
   Future<void> _loginWithFacebook(BuildContext context) async {
     final authProvider = context.read<AuthProvider>();
     final success = await authProvider.loginWithFacebook();
+
+    if (success && context.mounted) {
+      context.go('/home');
+    }
+  }
+
+  Future<void> _loginWithDemo(BuildContext context) async {
+    final authProvider = context.read<AuthProvider>();
+    final success = await authProvider.loginWithDemo();
 
     if (success && context.mounted) {
       context.go('/home');
@@ -87,6 +97,16 @@ class LoginScreen extends StatelessWidget {
                 isLoading: authProvider.isLoading,
                 onPressed: () => _loginWithFacebook(context),
               ),
+              if (kDebugMode) ...[
+                const SizedBox(height: 12),
+                OutlinedButton.icon(
+                  onPressed: authProvider.isLoading
+                      ? null
+                      : () => _loginWithDemo(context),
+                  icon: const Icon(Icons.bolt_outlined),
+                  label: const Text('Use local demo account'),
+                ),
+              ],
               const SizedBox(height: 18),
               Text(
                 'Login securely with your social account to continue.',

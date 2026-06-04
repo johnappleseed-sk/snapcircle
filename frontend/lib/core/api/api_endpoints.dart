@@ -2,6 +2,7 @@ class ApiEndpoints {
   static const String health = '/health';
   static const String authGoogle = '/auth/google';
   static const String authFacebook = '/auth/facebook';
+  static const String authDemo = '/auth/demo';
   static const String logout = '/logout';
   static const String user = '/user';
   static const String profile = '/profile';
@@ -10,6 +11,9 @@ class ApiEndpoints {
   static const String createPost = '/posts';
 
   static String postById(int id) => '/posts/$id';
+  static String userById(int id) => '/users/$id';
+  static String followUser(int id) => '/users/$id/follow';
+  static String unfollowUser(int id) => '/users/$id/follow';
   static String likePost(int postId) => '/posts/$postId/like';
   static String unlikePost(int postId) => '/posts/$postId/like';
   static String postComments(int postId) => '/posts/$postId/comments';

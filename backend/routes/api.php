@@ -20,6 +20,7 @@ Route::get('/health', fn () => response()->json([
 
 Route::post('/auth/google', [AuthController::class, 'google']);
 Route::post('/auth/facebook', [AuthController::class, 'facebook']);
+Route::post('/auth/demo', [AuthController::class, 'demo']);
 
 /*
 |--------------------------------------------------------------------------

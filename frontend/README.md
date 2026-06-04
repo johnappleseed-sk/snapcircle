@@ -181,6 +181,53 @@ To test comments:
 5. Edit or delete comments that belong to the logged-in user.
 6. Return to the feed and confirm the comment count updated.
 
+## Profile Integration
+
+The profile area is connected through:
+
+```http
+GET http://127.0.0.1:8000/api/profile
+PUT http://127.0.0.1:8000/api/profile
+GET http://127.0.0.1:8000/api/users/{user}
+```
+
+`ProfileRepository` handles current profile, profile updates, user detail loading, and follow API calls. `ProfileProvider` owns current profile state, selected user state, edit loading, follow loading, and readable API errors.
+
+The current profile screen shows avatar, name, email, bio, post count, follower count, following count, edit profile, logout, and a placeholder for user posts.
+
+## Edit Profile Flow
+
+The edit profile screen lets the authenticated user update:
+
+- `name`
+- `bio`
+- `avatar`
+
+Avatar updates use `image_picker` and multipart form data. After a successful update, `ProfileProvider.profile` and `AuthProvider.user` are both refreshed locally so the rest of the app sees the updated user.
+
+## Search Users Flow
+
+Search is connected to:
+
+```http
+GET http://127.0.0.1:8000/api/users?search=query
+```
+
+The search screen includes a debounced search field, pull to refresh, load more, empty state, error state, and `UserTile` results. Tapping a user opens `/users/{userId}`.
+
+## Follow System
+
+Follow endpoints:
+
+```http
+POST http://127.0.0.1:8000/api/users/{user}/follow
+DELETE http://127.0.0.1:8000/api/users/{user}/follow
+GET http://127.0.0.1:8000/api/users/{user}/followers
+GET http://127.0.0.1:8000/api/users/{user}/following
+```
+
+`UserProfileScreen` shows a Follow or Unfollow button for other users only. Followers and following counts update locally after follow actions. Followers and Following stats open paginated list screens.
+
 ## Create Post Flow
 
 Users can create a post from the bottom navigation Create item, the feed floating action button, or the `/create-post` route.
@@ -247,6 +294,7 @@ iOS setup is project-specific and should be completed before testing on iPhone o
 - Authentication models, repository, provider, splash flow, and login screen connected to Laravel auth endpoints
 - Feed models, repository, provider, post cards, create post, image upload, and owner delete connected to Laravel posts endpoints
 - Likes and comments connected to Laravel API with local feed count updates
+- Profile, edit profile, user search, user profiles, follow/unfollow, followers, and following screens connected to Laravel API
 
 ## Analyze
 

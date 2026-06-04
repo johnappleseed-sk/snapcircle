@@ -5,6 +5,7 @@ class AppTextField extends StatelessWidget {
   final String? hint;
   final TextEditingController? controller;
   final String? Function(String?)? validator;
+  final ValueChanged<String>? onChanged;
   final int maxLines;
   final TextInputType? keyboardType;
 
@@ -14,6 +15,7 @@ class AppTextField extends StatelessWidget {
     this.hint,
     this.controller,
     this.validator,
+    this.onChanged,
     this.maxLines = 1,
     this.keyboardType,
   });
@@ -23,12 +25,10 @@ class AppTextField extends StatelessWidget {
     return TextFormField(
       controller: controller,
       validator: validator,
+      onChanged: onChanged,
       maxLines: maxLines,
       keyboardType: keyboardType,
-      decoration: InputDecoration(
-        labelText: label,
-        hintText: hint,
-      ),
+      decoration: InputDecoration(labelText: label, hintText: hint),
     );
   }
 }

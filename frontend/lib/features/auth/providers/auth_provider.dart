@@ -55,6 +55,10 @@ class AuthProvider extends ChangeNotifier {
     return _login(() => _authRepository.signInWithFacebook());
   }
 
+  Future<bool> loginWithDemo() async {
+    return _login(() => _authRepository.signInWithDemo());
+  }
+
   Future<void> logout() async {
     _setLoading(true);
     _errorMessage = null;
@@ -74,6 +78,11 @@ class AuthProvider extends ChangeNotifier {
 
   void clearError() {
     _errorMessage = null;
+    notifyListeners();
+  }
+
+  void updateUser(UserModel user) {
+    _user = user;
     notifyListeners();
   }
 

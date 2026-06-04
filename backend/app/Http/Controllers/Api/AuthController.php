@@ -23,6 +23,28 @@ class AuthController extends Controller
         return $this->loginWithProvider($request, 'facebook');
     }
 
+    public function demo(): JsonResponse
+    {
+        if (! app()->isLocal()) {
+            return ApiResponse::error('Demo login is only available locally', [], 403);
+        }
+
+        $user = User::query()->where('email', 'maya@snapcircle.local')->first()
+            ?? User::query()->first();
+
+        if (! $user) {
+            return ApiResponse::error('No demo user is available. Run database seeders first.', [], 404);
+        }
+
+        $token = $user->createToken('snapcircle-demo-token')->plainTextToken;
+
+        return ApiResponse::success('Demo login successful', [
+            'user' => $user,
+            'token' => $token,
+            'token_type' => 'Bearer',
+        ]);
+    }
+
     public function user(Request $request): JsonResponse
     {
         return ApiResponse::success('Authenticated user retrieved', [
