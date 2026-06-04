@@ -1,27 +1,27 @@
 <?php
 
-namespace App\Support;
+namespace App\Helpers;
 
 use Illuminate\Http\JsonResponse;
 
 class ApiResponse
 {
     /**
-     * Return a standard JSON response for API endpoints.
+     * Return a standard JSON success response.
      *
-     * @param  array<string, mixed>  $data
+     * @param  array<string, mixed>|null  $data
      */
-    public static function success(string $message, array $data = [], int $status = 200): JsonResponse
+    public static function success(string $message, ?array $data = null, int $status = 200): JsonResponse
     {
         return response()->json([
             'success' => true,
             'message' => $message,
-            'data' => $data,
+            'data' => $data ?? new \stdClass(),
         ], $status);
     }
 
     /**
-     * Return a standard JSON error response for API endpoints.
+     * Return a standard JSON error response.
      *
      * @param  array<string, mixed>  $errors
      */

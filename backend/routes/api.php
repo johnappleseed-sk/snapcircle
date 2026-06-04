@@ -8,6 +8,11 @@ use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\ProfileController;
 use Illuminate\Support\Facades\Route;
 
+/*
+|--------------------------------------------------------------------------
+| Public API Routes
+|--------------------------------------------------------------------------
+*/
 Route::get('/health', fn () => response()->json([
     'status' => 'ok',
     'app' => 'SnapCircle API',
@@ -16,6 +21,11 @@ Route::get('/health', fn () => response()->json([
 Route::post('/auth/google', [AuthController::class, 'google']);
 Route::post('/auth/facebook', [AuthController::class, 'facebook']);
 
+/*
+|--------------------------------------------------------------------------
+| Protected API Routes
+|--------------------------------------------------------------------------
+*/
 Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/user', [AuthController::class, 'user']);
     Route::post('/logout', [AuthController::class, 'logout']);

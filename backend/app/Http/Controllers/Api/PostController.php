@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StorePostRequest;
+use App\Http\Requests\UpdatePostRequest;
 use App\Http\Resources\PostResource;
 use App\Models\Post;
-use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Validator;
 
 class PostController extends Controller
 {
@@ -45,17 +46,8 @@ class PostController extends Controller
         ]);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StorePostRequest $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'content' => ['nullable', 'string', 'max:5000', 'required_without:image'],
-            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048', 'required_without:content'],
-        ]);
-
-        if ($validator->fails()) {
-            return ApiResponse::error('Validation failed', $validator->errors()->toArray(), 422);
-        }
-
         $post = Post::query()->create([
             'user_id' => $request->user()->id,
             'content' => $request->input('content'),
@@ -82,19 +74,10 @@ class PostController extends Controller
         ]);
     }
 
-    public function update(Request $request, Post $post): JsonResponse
+    public function update(UpdatePostRequest $request, Post $post): JsonResponse
     {
         if ($post->user_id !== $request->user()->id) {
             return ApiResponse::error('You are not allowed to update this post', [], 403);
-        }
-
-        $validator = Validator::make($request->all(), [
-            'content' => ['nullable', 'string', 'max:5000'],
-            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:2048'],
-        ]);
-
-        if ($validator->fails()) {
-            return ApiResponse::error('Validation failed', $validator->errors()->toArray(), 422);
         }
 
         $content = $request->exists('content') ? $request->input('content') : $post->content;
@@ -106,12 +89,6 @@ class PostController extends Controller
             }
 
             $imagePath = $request->file('image')->store('posts', 'public');
-        }
-
-        if (! $content && ! $imagePath) {
-            return ApiResponse::error('A post must include content or an image', [
-                'content' => ['A post must include content or an image.'],
-            ], 422);
         }
 
         $post->update([

@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreCommentRequest;
+use App\Http\Requests\UpdateCommentRequest;
 use App\Http\Resources\CommentResource;
 use App\Models\Comment;
 use App\Models\Post;
-use App\Support\ApiResponse;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
 
 class CommentController extends Controller
 {
@@ -37,16 +38,8 @@ class CommentController extends Controller
         ]);
     }
 
-    public function store(Request $request, Post $post): JsonResponse
+    public function store(StoreCommentRequest $request, Post $post): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'comment' => ['required', 'string', 'max:1000'],
-        ]);
-
-        if ($validator->fails()) {
-            return ApiResponse::error('Validation failed', $validator->errors()->toArray(), 422);
-        }
-
         $comment = $post->comments()->create([
             'user_id' => $request->user()->id,
             'comment' => $request->input('comment'),
@@ -60,18 +53,10 @@ class CommentController extends Controller
         ], 201);
     }
 
-    public function update(Request $request, Comment $comment): JsonResponse
+    public function update(UpdateCommentRequest $request, Comment $comment): JsonResponse
     {
         if ($comment->user_id !== $request->user()->id) {
             return ApiResponse::error('Unauthorized action', [], 403);
-        }
-
-        $validator = Validator::make($request->all(), [
-            'comment' => ['required', 'string', 'max:1000'],
-        ]);
-
-        if ($validator->fails()) {
-            return ApiResponse::error('Validation failed', $validator->errors()->toArray(), 422);
         }
 
         $comment->update([

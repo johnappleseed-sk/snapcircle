@@ -1,10 +1,15 @@
 # SnapCircle API
 
-SnapCircle API is the Laravel REST backend for the SnapCircle social media mobile application. This backend will provide JSON APIs for authentication, profiles, posts, image uploads, likes, comments, follows, and feed data.
+SnapCircle API is the Laravel REST backend for the SnapCircle social media mobile application. It provides authentication, profiles, follows, posts, likes, and comments for the Flutter mobile app.
 
-The backend is currently initialized as a clean Laravel API foundation. Full feature implementation will be added later.
+## Requirements
 
-## Backend Tech Stack
+- PHP 8.3 or newer
+- Composer
+- MySQL
+- Laravel-compatible PHP extensions: OpenSSL, PDO, Mbstring, Fileinfo, Tokenizer, XML, Ctype, JSON
+
+## Tech Stack
 
 - Laravel
 - MySQL
@@ -12,34 +17,13 @@ The backend is currently initialized as a clean Laravel API foundation. Full fea
 - Laravel Socialite
 - REST JSON API
 
-## Current API Endpoints
-
-```http
-GET /api/health
-```
-
-Response:
-
-```json
-{
-  "status": "ok",
-  "app": "SnapCircle API"
-}
-```
-
-## Setup Instructions
-
-### 1. Install Dependencies
+## Installation
 
 ```bash
 cd backend
 composer install
-```
-
-### 2. Create Environment File
-
-```bash
 cp .env.example .env
+php artisan key:generate
 ```
 
 On Windows PowerShell:
@@ -48,17 +32,13 @@ On Windows PowerShell:
 Copy-Item .env.example .env
 ```
 
-### 3. Generate Application Key
+## Environment Setup
 
-```bash
-php artisan key:generate
-```
-
-### 4. Configure MySQL Database
-
-Create a MySQL database named `snapcircle`, then update these values in `.env` if needed:
+Configure the app URL and database in `.env`:
 
 ```env
+APP_URL=http://127.0.0.1:8000
+
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
 DB_PORT=3306
@@ -67,49 +47,107 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
-### 5. Run Migrations
+Create the MySQL database before running migrations:
 
-```bash
-php artisan migrate
+```sql
+CREATE DATABASE snapcircle;
 ```
 
-### 6. Link Public Storage
+## Social Login Setup
 
-Post images are stored on the public disk. Create the public storage symlink before testing uploads:
+Laravel Socialite is configured for Google and Facebook. Add real credentials in `.env` when ready:
+
+```env
+GOOGLE_CLIENT_ID=
+GOOGLE_CLIENT_SECRET=
+GOOGLE_REDIRECT_URI=
+
+FACEBOOK_CLIENT_ID=
+FACEBOOK_CLIENT_SECRET=
+FACEBOOK_REDIRECT_URI=
+```
+
+Do not commit real credentials.
+
+## Database
+
+Run migrations and seed demo data:
+
+```bash
+php artisan migrate:fresh --seed
+```
+
+## Public Storage
+
+Post images and avatars use Laravel's public storage disk:
 
 ```bash
 php artisan storage:link
 ```
 
-### 7. Start Development Server
+Uploaded files are stored under:
+
+```txt
+storage/app/public/posts
+storage/app/public/avatars
+```
+
+## Run Server
 
 ```bash
 php artisan serve
 ```
 
-The API will be available at:
+API base URL:
 
 ```txt
-http://localhost:8000
+http://127.0.0.1:8000
 ```
 
 Health check:
 
 ```txt
-http://localhost:8000/api/health
+GET http://127.0.0.1:8000/api/health
 ```
 
-## Authentication Notes
+## Run Tests
 
-Laravel Sanctum is installed for API token authentication. Laravel Socialite is installed for Google and Facebook authentication. Authentication routes and controllers will be implemented in a later development step.
+```bash
+php artisan test
+```
 
-## Development Status
+## API Documentation
 
-- Laravel backend initialized
-- REST API routing enabled
-- Sanctum installed
-- Socialite installed
-- MySQL environment example configured
-- Health check endpoint added
+Full endpoint documentation is available at:
 
-No frontend code or advanced social media features have been implemented yet.
+```txt
+../docs/API_DOCUMENTATION.md
+```
+
+Postman collection:
+
+```txt
+../docs/postman/SnapCircle.postman_collection.json
+```
+
+## Response Format
+
+Success:
+
+```json
+{
+  "success": true,
+  "message": "Success message",
+  "data": {}
+}
+```
+
+Error:
+
+```json
+{
+  "success": false,
+  "message": "Error message",
+  "errors": {}
+}
+```
