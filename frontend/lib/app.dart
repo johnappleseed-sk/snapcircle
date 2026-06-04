@@ -12,14 +12,18 @@ class SnapCircleApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => AuthProvider()),
-      ],
-      child: MaterialApp.router(
-        title: AppStrings.appName,
-        debugShowCheckedModeBanner: false,
-        theme: AppTheme.lightTheme,
-        routerConfig: AppRouter.router,
+      providers: [ChangeNotifierProvider(create: (_) => AuthProvider())],
+      child: Builder(
+        builder: (context) {
+          final authProvider = context.read<AuthProvider>();
+
+          return MaterialApp.router(
+            title: AppStrings.appName,
+            debugShowCheckedModeBanner: false,
+            theme: AppTheme.lightTheme,
+            routerConfig: AppRouter.createRouter(authProvider),
+          );
+        },
       ),
     );
   }

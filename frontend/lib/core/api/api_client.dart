@@ -9,7 +9,7 @@ class ApiClient {
   late final Dio _dio;
 
   ApiClient({TokenStorage? tokenStorage})
-      : _tokenStorage = tokenStorage ?? const TokenStorage() {
+    : _tokenStorage = tokenStorage ?? const TokenStorage() {
     _dio = Dio(
       BaseOptions(
         baseUrl: AppConfig.baseUrl,
@@ -75,6 +75,19 @@ class ApiClient {
     final data = error.response?.data;
     if (data is Map<String, dynamic> && data['message'] is String) {
       return data['message'] as String;
+    }
+
+    if (data is Map<String, dynamic> && data['errors'] is Map) {
+      final errors = data['errors'] as Map;
+      for (final value in errors.values) {
+        if (value is List && value.isNotEmpty) {
+          return value.first.toString();
+        }
+      }
+    }
+
+    if (error.response?.statusCode == 401) {
+      return 'Your session is no longer valid. Please log in again.';
     }
 
     switch (error.type) {
