@@ -132,6 +132,55 @@ Authorization: Bearer laravel_sanctum_token_here
 
 The feed supports initial loading, pull to refresh, empty state, readable error state, a "Load more" button, and owner-only post deletion.
 
+## Likes Integration
+
+Post likes are connected through the Laravel likes endpoints:
+
+```http
+POST http://10.0.2.2:8000/api/posts/{post}/like
+DELETE http://10.0.2.2:8000/api/posts/{post}/like
+```
+
+`LikeRepository` sends the request and returns any updated `likes_count` and `liked_by_me` values from the API. `FeedProvider.toggleLike()` updates the selected post locally, keeps the heart icon in sync, and prevents negative like counts.
+
+To test likes:
+
+1. Log in.
+2. Open the feed.
+3. Tap the heart icon on a post.
+4. Confirm the heart toggles and the like count changes.
+5. Tap again to unlike.
+
+## Comments Integration
+
+Comments are connected through:
+
+```http
+GET http://10.0.2.2:8000/api/posts/{post}/comments
+POST http://10.0.2.2:8000/api/posts/{post}/comments
+PUT http://10.0.2.2:8000/api/comments/{comment}
+DELETE http://10.0.2.2:8000/api/comments/{comment}
+```
+
+The comments feature uses:
+
+- `CommentModel` for comment data
+- `CommentRepository` for API requests and response parsing
+- `CommentsProvider` for comments list state, pagination, submitting, updates, and deletes
+- `CommentsScreen` for the comments list and bottom input
+- `CommentTile` for individual comment UI and owner-only edit/delete actions
+
+The comments button on each feed post opens `/posts/{postId}/comments`. Creating a comment inserts it at the top of the comments list and increments the feed comment count. Deleting a comment removes it locally and decrements the feed count safely.
+
+To test comments:
+
+1. Log in.
+2. Open a post from the feed.
+3. Tap the comments icon.
+4. Add a non-empty comment.
+5. Edit or delete comments that belong to the logged-in user.
+6. Return to the feed and confirm the comment count updated.
+
 ## Create Post Flow
 
 Users can create a post from the bottom navigation Create item, the feed floating action button, or the `/create-post` route.
@@ -197,6 +246,7 @@ iOS setup is project-specific and should be completed before testing on iPhone o
 - Material 3 theme added
 - Authentication models, repository, provider, splash flow, and login screen connected to Laravel auth endpoints
 - Feed models, repository, provider, post cards, create post, image upload, and owner delete connected to Laravel posts endpoints
+- Likes and comments connected to Laravel API with local feed count updates
 
 ## Analyze
 

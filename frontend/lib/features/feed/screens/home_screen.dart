@@ -159,11 +159,7 @@ class _FeedBody extends StatelessWidget {
           post: post,
           canDelete: currentUserId != null && post.user.id == currentUserId,
           onCommentsTap: () {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Comments will be added in the next step.'),
-              ),
-            );
+            context.push('/posts/${post.id}/comments', extra: post);
           },
           onDelete: () => _confirmDelete(context, post.id),
         );

@@ -1,9 +1,11 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/utils/date_formatter.dart';
 import '../models/post_model.dart';
+import '../providers/feed_provider.dart';
 
 class PostCard extends StatelessWidget {
   final PostModel post;
@@ -23,6 +25,8 @@ class PostCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final hasContent = post.content != null && post.content!.trim().isNotEmpty;
     final hasImage = post.imageUrl != null && post.imageUrl!.isNotEmpty;
+    final feedProvider = context.watch<FeedProvider>();
+    final isLikeUpdating = feedProvider.isLikeUpdating(post.id);
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -126,12 +130,43 @@ class PostCard extends StatelessWidget {
           const SizedBox(height: 14),
           Row(
             children: [
-              _PostMetric(
-                icon: post.likedByMe
-                    ? Icons.favorite
-                    : Icons.favorite_border_outlined,
-                label: post.likesCount.toString(),
-                color: post.likedByMe ? AppColors.danger : AppColors.mutedText,
+              InkWell(
+                borderRadius: BorderRadius.circular(8),
+                onTap: isLikeUpdating
+                    ? null
+                    : () async {
+                        final success = await context
+                            .read<FeedProvider>()
+                            .toggleLike(post.id);
+                        if (!success && context.mounted) {
+                          final message = context
+                              .read<FeedProvider>()
+                              .errorMessage;
+                          if (message != null) {
+                            ScaffoldMessenger.of(
+                              context,
+                            ).showSnackBar(SnackBar(content: Text(message)));
+                          }
+                        }
+                      },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  child: isLikeUpdating
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : _PostMetric(
+                          icon: post.likedByMe
+                              ? Icons.favorite
+                              : Icons.favorite_border_outlined,
+                          label: post.likesCount.toString(),
+                          color: post.likedByMe
+                              ? AppColors.danger
+                              : AppColors.mutedText,
+                        ),
+                ),
               ),
               const SizedBox(width: 18),
               InkWell(

@@ -10,6 +10,10 @@ class ApiEndpoints {
   static const String createPost = '/posts';
 
   static String postById(int id) => '/posts/$id';
+  static String likePost(int postId) => '/posts/$postId/like';
+  static String unlikePost(int postId) => '/posts/$postId/like';
+  static String postComments(int postId) => '/posts/$postId/comments';
+  static String commentById(int commentId) => '/comments/$commentId';
   static String comments(int postId) => '/posts/$postId/comments';
   static String comment(int commentId) => '/comments/$commentId';
   static String like(int postId) => '/posts/$postId/like';

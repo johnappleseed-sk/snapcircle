@@ -3,6 +3,8 @@ import 'package:go_router/go_router.dart';
 import '../features/auth/providers/auth_provider.dart';
 import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/splash_screen.dart';
+import '../features/comments/screens/comments_screen.dart';
+import '../features/feed/models/post_model.dart';
 import '../features/feed/screens/home_screen.dart';
 import '../features/post/screens/create_post_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
@@ -47,6 +49,17 @@ class AppRouter {
         GoRoute(
           path: createPost,
           builder: (context, state) => const CreatePostScreen(),
+        ),
+        GoRoute(
+          path: '/posts/:postId/comments',
+          builder: (context, state) {
+            final postId = int.tryParse(state.pathParameters['postId'] ?? '');
+            final post = state.extra is PostModel
+                ? state.extra as PostModel
+                : null;
+
+            return CommentsScreen(postId: postId ?? 0, post: post);
+          },
         ),
         GoRoute(
           path: '/profile',
