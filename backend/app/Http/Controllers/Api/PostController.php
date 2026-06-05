@@ -8,6 +8,7 @@ use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
 use App\Http\Resources\PostResource;
 use App\Models\Post;
+use App\Support\Pagination;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -20,15 +21,15 @@ class PostController extends Controller
             'mode' => ['sometimes', 'string', 'in:all,following,popular,mine'],
             'search' => ['sometimes', 'nullable', 'string', 'max:255'],
             'page' => ['sometimes', 'integer', 'min:1'],
-            'per_page' => ['sometimes', 'integer', 'min:1', 'max:50'],
+            'per_page' => ['sometimes', 'integer', 'min:1'],
         ]);
 
         $mode = $validated['mode'] ?? 'all';
-        $perPage = (int) ($validated['per_page'] ?? 10);
+        $perPage = Pagination::perPage($request);
         $authUser = $request->user();
 
         $posts = Post::query()
-            ->with('user')
+            ->with('user.setting')
             ->withCount(['likes', 'comments', 'savedPosts'])
             ->withExists([
                 'likes as liked_by_me' => fn ($query) => $query->where('user_id', $authUser->id),
@@ -73,7 +74,7 @@ class PostController extends Controller
             'image_path' => $request->file('image')?->store('posts', 'public'),
         ]);
 
-        $post->load('user')->loadCount(['likes', 'comments', 'savedPosts']);
+        $post->load('user.setting')->loadCount(['likes', 'comments', 'savedPosts']);
         $post->liked_by_me = false;
         $post->saved_by_me = false;
 
@@ -84,7 +85,7 @@ class PostController extends Controller
 
     public function show(Request $request, Post $post): JsonResponse
     {
-        $post->load('user')->loadCount(['likes', 'comments', 'savedPosts']);
+        $post->load('user.setting')->loadCount(['likes', 'comments', 'savedPosts']);
         $post->liked_by_me = $post->likes()
             ->where('user_id', $request->user()->id)
             ->exists();
@@ -118,7 +119,7 @@ class PostController extends Controller
             'image_path' => $imagePath,
         ]);
 
-        $post->load('user')->loadCount(['likes', 'comments', 'savedPosts']);
+        $post->load('user.setting')->loadCount(['likes', 'comments', 'savedPosts']);
         $post->liked_by_me = $post->likes()
             ->where('user_id', $request->user()->id)
             ->exists();

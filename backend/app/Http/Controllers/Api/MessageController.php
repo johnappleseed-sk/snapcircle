@@ -8,6 +8,7 @@ use App\Http\Requests\StoreMessageRequest;
 use App\Http\Resources\MessageResource;
 use App\Models\Conversation;
 use App\Models\Message;
+use App\Support\Pagination;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -17,9 +18,9 @@ class MessageController extends Controller
     {
         $this->authorize('view', $conversation);
 
-        $perPage = min((int) $request->integer('per_page', 30), 50);
+        $perPage = Pagination::perPage($request, 'messages_per_page');
         $messages = $conversation->messages()
-            ->with('sender')
+            ->with('sender.setting')
             ->latest()
             ->paginate($perPage);
 
@@ -40,7 +41,7 @@ class MessageController extends Controller
             'message' => trim((string) $request->input('message')),
         ]);
         $conversation->touch();
-        $message->load('sender');
+        $message->load('sender.setting');
 
         return ApiResponse::success('Message sent successfully', [
             'message' => MessageResource::make($message),
@@ -57,7 +58,7 @@ class MessageController extends Controller
             $message->forceFill(['read_at' => now()])->save();
         }
 
-        $message->load('sender');
+        $message->load('sender.setting');
 
         return ApiResponse::success('Message marked as read', [
             'message' => MessageResource::make($message),

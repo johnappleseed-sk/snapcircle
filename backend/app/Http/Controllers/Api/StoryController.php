@@ -8,6 +8,7 @@ use App\Http\Requests\StoreStoryRequest;
 use App\Http\Resources\StoryResource;
 use App\Models\Story;
 use App\Models\User;
+use App\Support\Pagination;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -19,16 +20,16 @@ class StoryController extends Controller
         $validated = $request->validate([
             'mode' => ['sometimes', 'string', 'in:all,following,mine'],
             'page' => ['sometimes', 'integer', 'min:1'],
-            'per_page' => ['sometimes', 'integer', 'min:1', 'max:50'],
+            'per_page' => ['sometimes', 'integer', 'min:1'],
         ]);
 
         $authUser = $request->user();
         $mode = $validated['mode'] ?? 'all';
-        $perPage = (int) ($validated['per_page'] ?? 15);
+        $perPage = Pagination::perPage($request, 'stories_per_page');
 
         $stories = Story::query()
             ->where('expires_at', '>', now())
-            ->with('user')
+            ->with('user.setting')
             ->withCount('views')
             ->withExists([
                 'views as viewed_by_me' => fn ($query) => $query->where('user_id', $authUser->id),
@@ -60,7 +61,7 @@ class StoryController extends Controller
             'expires_at' => now()->addDay(),
         ]);
 
-        $story->load('user')->loadCount('views');
+        $story->load('user.setting')->loadCount('views');
         $story->viewed_by_me = false;
 
         return ApiResponse::success('Story created successfully', [
@@ -74,7 +75,7 @@ class StoryController extends Controller
             return ApiResponse::error('Story not found or expired', [], 404);
         }
 
-        $story->load('user')->loadCount('views');
+        $story->load('user.setting')->loadCount('views');
         $story->viewed_by_me = $story->views()
             ->where('user_id', $request->user()->id)
             ->exists();
@@ -117,11 +118,11 @@ class StoryController extends Controller
 
     public function userStories(Request $request, User $user): JsonResponse
     {
-        $perPage = min((int) $request->integer('per_page', 15), 50);
+        $perPage = Pagination::perPage($request, 'stories_per_page');
 
         $stories = $user->stories()
             ->where('expires_at', '>', now())
-            ->with('user')
+            ->with('user.setting')
             ->withCount('views')
             ->withExists([
                 'views as viewed_by_me' => fn ($query) => $query->where('user_id', $request->user()->id),

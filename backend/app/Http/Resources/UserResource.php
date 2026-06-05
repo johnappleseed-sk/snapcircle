@@ -16,9 +16,10 @@ class UserResource extends JsonResource
     {
         $authUser = $request->user();
         $isFollowedByMe = $this->is_followed_by_me;
-        $settings = $this->relationLoaded('setting')
-            ? $this->setting
-            : $this->setting()->first();
+        $settings = $this->whenLoaded('setting');
+        if ($settings instanceof \Illuminate\Http\Resources\MissingValue) {
+            $settings = $this->setting()->first();
+        }
         $showEmail = (bool) ($settings?->show_email ?? false);
         $isMe = $authUser?->id === $this->id;
 
@@ -49,9 +50,15 @@ class UserResource extends JsonResource
             'show_email' => $showEmail,
             'account_status' => $this->account_status ?? 'active',
             'provider' => $this->provider,
-            'posts_count' => $this->posts_count ?? $this->posts()->count(),
-            'followers_count' => $this->followers_count ?? $this->followers()->count(),
-            'following_count' => $this->following_count ?? $this->following()->count(),
+            'posts_count' => array_key_exists('posts_count', $this->resource->getAttributes())
+                ? (int) $this->posts_count
+                : $this->posts()->count(),
+            'followers_count' => array_key_exists('followers_count', $this->resource->getAttributes())
+                ? (int) $this->followers_count
+                : $this->followers()->count(),
+            'following_count' => array_key_exists('following_count', $this->resource->getAttributes())
+                ? (int) $this->following_count
+                : $this->following()->count(),
             'is_me' => $isMe,
             'is_followed_by_me' => (bool) $isFollowedByMe,
             'profile_completion' => $this->profileCompletion(),

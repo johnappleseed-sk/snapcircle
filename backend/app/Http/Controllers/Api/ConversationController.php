@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\StartConversationRequest;
 use App\Http\Resources\ConversationResource;
 use App\Models\Conversation;
+use App\Support\Pagination;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,11 +16,11 @@ class ConversationController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $perPage = min((int) $request->integer('per_page', 15), 50);
+        $perPage = Pagination::perPage($request);
 
         $conversations = Conversation::query()
             ->whereHas('users', fn ($query) => $query->where('users.id', $request->user()->id))
-            ->with(['users', 'latestMessage.sender'])
+            ->with(['users.setting', 'latestMessage.sender.setting'])
             ->withCount([
                 'messages as unread_count' => fn ($query) => $query
                     ->where('sender_id', '!=', $request->user()->id)
@@ -51,7 +52,7 @@ class ConversationController extends Controller
             });
         }
 
-        $conversation->load(['users', 'latestMessage.sender']);
+        $conversation->load(['users.setting', 'latestMessage.sender.setting']);
         $conversation->loadCount([
             'messages as unread_count' => fn ($query) => $query
                 ->where('sender_id', '!=', $authUserId)
@@ -67,7 +68,7 @@ class ConversationController extends Controller
     {
         $this->authorize('view', $conversation);
 
-        $conversation->load(['users', 'latestMessage.sender']);
+        $conversation->load(['users.setting', 'latestMessage.sender.setting']);
         $conversation->loadCount([
             'messages as unread_count' => fn ($query) => $query
                 ->where('sender_id', '!=', $request->user()->id)

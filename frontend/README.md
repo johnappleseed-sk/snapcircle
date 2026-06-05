@@ -18,6 +18,7 @@ SnapCircle frontend is the Flutter mobile application for the SnapCircle social 
 - `flutter_facebook_auth`
 - `image_picker`
 - `cached_network_image`
+- `flutter_image_compress`
 - `intl`
 - `go_router`
 
@@ -152,6 +153,20 @@ Authorization: Bearer laravel_sanctum_token_here
 ```
 
 The feed supports initial loading, pull to refresh, empty state, readable error state, a "Load more" button, and owner-only post deletion.
+
+## Performance Improvements
+
+- Remote images use `cached_network_image` with lightweight placeholders and fixed avatar/media dimensions where possible.
+- Post, avatar, cover, and story uploads are compressed before upload on supported platforms. If compression fails, the original file is uploaded.
+- Feed and list screens use initial skeleton placeholders for posts, stories, notifications, conversations, and users.
+- Providers guard load-more calls and keep fetches in `initState`, refresh handlers, or explicit user actions instead of inside `build()`.
+- Polling providers keep a single timer and dispose timers when the provider is disposed.
+
+More detail:
+
+```txt
+../docs/FRONTEND_PERFORMANCE_AUDIT.md
+```
 
 ### Better Feed Experience
 

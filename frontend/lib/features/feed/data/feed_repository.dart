@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import '../../../core/api/api_client.dart';
 import '../../../core/api/api_endpoints.dart';
 import '../../../core/models/paginated_response.dart';
+import '../../../core/utils/image_compressor.dart';
 import '../models/post_model.dart';
 
 class FeedException implements Exception {
@@ -18,9 +19,11 @@ class FeedException implements Exception {
 
 class FeedRepository {
   final ApiClient _apiClient;
+  final ImageCompressor _imageCompressor;
 
-  FeedRepository({ApiClient? apiClient})
-    : _apiClient = apiClient ?? ApiClient();
+  FeedRepository({ApiClient? apiClient, ImageCompressor? imageCompressor})
+    : _apiClient = apiClient ?? ApiClient(),
+      _imageCompressor = imageCompressor ?? const ImageCompressor();
 
   Future<PaginatedResponse<PostModel>> getPosts({
     int page = 1,
@@ -96,9 +99,10 @@ class FeedRepository {
     }
 
     if (image != null) {
+      final uploadImage = await _imageCompressor.compressPostImage(image);
       data['image'] = await MultipartFile.fromFile(
-        image.path,
-        filename: image.path.split(Platform.pathSeparator).last,
+        uploadImage.path,
+        filename: uploadImage.path.split(Platform.pathSeparator).last,
       );
     }
 

@@ -7,9 +7,9 @@ import '../../../core/realtime/realtime_provider.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
-import '../../../core/widgets/loading_view.dart';
 import '../models/notification_model.dart';
 import '../providers/notifications_provider.dart';
+import '../widgets/notification_skeleton_tile.dart';
 import '../widgets/notification_tile.dart';
 
 class NotificationsScreen extends StatefulWidget {
@@ -83,9 +83,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             }
 
             if (provider.isLoading && provider.notifications.isEmpty) {
-              return const SizedBox(
-                height: 320,
-                child: LoadingView(message: 'Loading notifications...'),
+              return const Column(
+                children: [
+                  NotificationSkeletonTile(),
+                  SizedBox(height: AppSizes.paddingMedium),
+                  NotificationSkeletonTile(),
+                  SizedBox(height: AppSizes.paddingMedium),
+                  NotificationSkeletonTile(),
+                ],
               );
             }
 

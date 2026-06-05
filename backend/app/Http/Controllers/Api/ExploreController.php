@@ -8,6 +8,7 @@ use App\Http\Resources\PostResource;
 use App\Http\Resources\UserResource;
 use App\Models\Post;
 use App\Models\User;
+use App\Support\Pagination;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -17,7 +18,7 @@ class ExploreController extends Controller
     {
         $validated = $request->validate([
             'page' => ['sometimes', 'integer', 'min:1'],
-            'per_page' => ['sometimes', 'integer', 'min:1', 'max:50'],
+            'per_page' => ['sometimes', 'integer', 'min:1'],
             'search' => ['sometimes', 'nullable', 'string', 'max:255'],
             'sort' => ['sometimes', 'string', 'in:latest,popular'],
         ]);
@@ -32,7 +33,7 @@ class ExploreController extends Controller
 
         return $this->postPageResponse(
             'Explore posts fetched successfully',
-            $posts->paginate((int) ($validated['per_page'] ?? 12))->withQueryString()
+            $posts->paginate(Pagination::perPage($request))->withQueryString()
         );
     }
 
@@ -40,7 +41,7 @@ class ExploreController extends Controller
     {
         $validated = $request->validate([
             'page' => ['sometimes', 'integer', 'min:1'],
-            'per_page' => ['sometimes', 'integer', 'min:1', 'max:50'],
+            'per_page' => ['sometimes', 'integer', 'min:1'],
             'search' => ['sometimes', 'nullable', 'string', 'max:255'],
         ]);
 
@@ -54,7 +55,7 @@ class ExploreController extends Controller
                 });
             })
             ->latest()
-            ->paginate((int) ($validated['per_page'] ?? 15))
+            ->paginate(Pagination::perPage($request))
             ->withQueryString();
 
         return $this->userPageResponse('Explore users fetched successfully', $users);
@@ -64,7 +65,7 @@ class ExploreController extends Controller
     {
         $validated = $request->validate([
             'page' => ['sometimes', 'integer', 'min:1'],
-            'per_page' => ['sometimes', 'integer', 'min:1', 'max:50'],
+            'per_page' => ['sometimes', 'integer', 'min:1'],
             'days' => ['sometimes', 'integer', 'min:1', 'max:365'],
         ]);
 
@@ -81,7 +82,7 @@ class ExploreController extends Controller
 
         return $this->postPageResponse(
             'Trending posts fetched successfully',
-            $posts->paginate((int) ($validated['per_page'] ?? 12))->withQueryString()
+            $posts->paginate(Pagination::perPage($request))->withQueryString()
         );
     }
 
@@ -89,7 +90,7 @@ class ExploreController extends Controller
     {
         $validated = $request->validate([
             'page' => ['sometimes', 'integer', 'min:1'],
-            'per_page' => ['sometimes', 'integer', 'min:1', 'max:50'],
+            'per_page' => ['sometimes', 'integer', 'min:1'],
         ]);
 
         $authUser = $request->user();
@@ -100,7 +101,7 @@ class ExploreController extends Controller
             ->orderByDesc('followers_count')
             ->orderByDesc('posts_count')
             ->latest()
-            ->paginate((int) ($validated['per_page'] ?? 10))
+            ->paginate(Pagination::perPage($request))
             ->withQueryString();
 
         return $this->userPageResponse('Recommended users fetched successfully', $users);
@@ -112,12 +113,12 @@ class ExploreController extends Controller
             'q' => ['required', 'string', 'max:255'],
             'type' => ['sometimes', 'string', 'in:all,posts,users'],
             'page' => ['sometimes', 'integer', 'min:1'],
-            'per_page' => ['sometimes', 'integer', 'min:1', 'max:50'],
+            'per_page' => ['sometimes', 'integer', 'min:1'],
         ]);
 
         $type = $validated['type'] ?? 'all';
         $query = $validated['q'];
-        $perPage = (int) ($validated['per_page'] ?? 10);
+        $perPage = Pagination::perPage($request);
         $data = [];
 
         if ($type === 'all' || $type === 'posts') {
@@ -150,7 +151,7 @@ class ExploreController extends Controller
         $authUser = $request->user();
 
         return Post::query()
-            ->with('user')
+            ->with('user.setting')
             ->withCount(['likes', 'comments', 'savedPosts'])
             ->withExists([
                 'likes as liked_by_me' => fn ($query) => $query->where('user_id', $authUser->id),
@@ -164,6 +165,7 @@ class ExploreController extends Controller
 
         return User::query()
             ->where('id', '!=', $authUser->id)
+            ->with('setting')
             ->withCount(['posts', 'followers', 'following'])
             ->withExists([
                 'followers as is_followed_by_me' => fn ($query) => $query->where('follower_id', $authUser->id),

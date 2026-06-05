@@ -6,6 +6,7 @@ use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\NotificationResource;
 use App\Models\Notification;
+use App\Support\Pagination;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -15,16 +16,16 @@ class NotificationController extends Controller
     {
         $validated = $request->validate([
             'page' => ['sometimes', 'integer', 'min:1'],
-            'per_page' => ['sometimes', 'integer', 'min:1', 'max:50'],
+            'per_page' => ['sometimes', 'integer', 'min:1'],
             'filter' => ['sometimes', 'string', 'in:all,unread,read'],
         ]);
 
         $filter = $validated['filter'] ?? 'all';
-        $perPage = (int) ($validated['per_page'] ?? 15);
+        $perPage = Pagination::perPage($request, 'notifications_per_page');
 
         $notifications = Notification::query()
             ->where('user_id', $request->user()->id)
-            ->with(['actor', 'post', 'comment'])
+            ->with(['actor.setting', 'post.user.setting', 'comment.user.setting'])
             ->when($filter === 'unread', fn ($query) => $query->whereNull('read_at'))
             ->when($filter === 'read', fn ($query) => $query->whereNotNull('read_at'))
             ->latest()
@@ -58,7 +59,7 @@ class NotificationController extends Controller
             $notification->update(['read_at' => now()]);
         }
 
-        $notification->load(['actor', 'post', 'comment']);
+        $notification->load(['actor.setting', 'post.user.setting', 'comment.user.setting']);
 
         return ApiResponse::success('Notification marked as read', [
             'notification' => NotificationResource::make($notification),

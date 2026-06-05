@@ -8,6 +8,7 @@ use App\Http\Resources\UserResource;
 use App\Models\Follow;
 use App\Models\User;
 use App\Services\NotificationService;
+use App\Support\Pagination;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -54,12 +55,13 @@ class FollowController extends Controller
     public function followers(Request $request, User $user): JsonResponse
     {
         $followers = $user->followers()
+            ->with('setting')
             ->withCount(['posts', 'followers', 'following'])
             ->withExists([
                 'followers as is_followed_by_me' => fn ($query) => $query->where('follower_id', $request->user()->id),
             ])
             ->latest('follows.created_at')
-            ->paginate(10);
+            ->paginate(Pagination::perPage($request));
 
         return ApiResponse::paginated(
             'Followers retrieved successfully',
@@ -72,12 +74,13 @@ class FollowController extends Controller
     public function following(Request $request, User $user): JsonResponse
     {
         $following = $user->following()
+            ->with('setting')
             ->withCount(['posts', 'followers', 'following'])
             ->withExists([
                 'followers as is_followed_by_me' => fn ($query) => $query->where('follower_id', $request->user()->id),
             ])
             ->latest('follows.created_at')
-            ->paginate(10);
+            ->paginate(Pagination::perPage($request));
 
         return ApiResponse::paginated(
             'Following retrieved successfully',

@@ -10,6 +10,7 @@ use App\Http\Resources\CommentResource;
 use App\Models\Comment;
 use App\Models\Post;
 use App\Services\NotificationService;
+use App\Support\Pagination;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -17,12 +18,12 @@ class CommentController extends Controller
 {
     public function __construct(private readonly NotificationService $notifications) {}
 
-    public function index(Post $post): JsonResponse
+    public function index(Request $request, Post $post): JsonResponse
     {
         $comments = $post->comments()
-            ->with('user')
+            ->with('user.setting')
             ->latest()
-            ->paginate(10);
+            ->paginate(Pagination::perPage($request));
 
         return ApiResponse::paginated(
             'Comments retrieved successfully',
@@ -39,7 +40,7 @@ class CommentController extends Controller
             'comment' => $request->input('comment'),
         ]);
 
-        $comment->load('user');
+        $comment->load('user.setting');
 
         $this->notifications->createPostCommentedNotification($request->user(), $post, $comment);
 
@@ -57,7 +58,7 @@ class CommentController extends Controller
             'comment' => $request->input('comment'),
         ]);
 
-        $comment->load('user');
+        $comment->load('user.setting');
 
         return ApiResponse::success('Comment updated successfully', [
             'comment' => CommentResource::make($comment),

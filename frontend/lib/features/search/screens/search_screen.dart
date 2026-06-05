@@ -9,8 +9,8 @@ import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
-import '../../../core/widgets/loading_view.dart';
 import '../providers/users_provider.dart';
+import '../widgets/user_skeleton_tile.dart';
 import '../widgets/user_tile.dart';
 
 class SearchScreen extends StatefulWidget {
@@ -95,8 +95,16 @@ class _SearchResults extends StatelessWidget {
   Widget build(BuildContext context) {
     if (usersProvider.isLoading && usersProvider.users.isEmpty) {
       return const Padding(
-        padding: EdgeInsets.only(top: 96),
-        child: LoadingView(message: 'Searching people...'),
+        padding: EdgeInsets.only(top: 8),
+        child: Column(
+          children: [
+            UserSkeletonTile(),
+            SizedBox(height: 12),
+            UserSkeletonTile(),
+            SizedBox(height: 12),
+            UserSkeletonTile(),
+          ],
+        ),
       );
     }
 

@@ -8,6 +8,7 @@ use App\Http\Requests\UpdateProfileRequest;
 use App\Http\Resources\PostResource;
 use App\Http\Resources\UserResource;
 use App\Models\User;
+use App\Support\Pagination;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
@@ -17,6 +18,7 @@ class ProfileController extends Controller
     public function profile(Request $request): JsonResponse
     {
         $user = $request->user()
+            ->load('setting')
             ->loadCount(['posts', 'followers', 'following']);
 
         $user->is_followed_by_me = false;
@@ -53,7 +55,7 @@ class ProfileController extends Controller
             'is_private' => $request->has('is_private') ? $request->boolean('is_private') : (bool) $user->is_private,
         ]);
 
-        $user->loadCount(['posts', 'followers', 'following']);
+        $user->load('setting')->loadCount(['posts', 'followers', 'following']);
         $user->is_followed_by_me = false;
 
         return ApiResponse::success('Profile updated successfully', [
@@ -66,6 +68,7 @@ class ProfileController extends Controller
         $authUser = $request->user();
 
         $users = User::query()
+            ->with('setting')
             ->withCount(['posts', 'followers', 'following'])
             ->withExists([
                 'followers as is_followed_by_me' => fn ($query) => $query->where('follower_id', $authUser->id),
@@ -80,7 +83,7 @@ class ProfileController extends Controller
                 });
             })
             ->latest()
-            ->paginate(10)
+            ->paginate(Pagination::perPage($request))
             ->withQueryString();
 
         return ApiResponse::paginated(
@@ -93,7 +96,7 @@ class ProfileController extends Controller
 
     public function show(Request $request, User $user): JsonResponse
     {
-        $user->loadCount(['posts', 'followers', 'following']);
+        $user->load('setting')->loadCount(['posts', 'followers', 'following']);
         $user->is_followed_by_me = $user->followers()
             ->where('follower_id', $request->user()->id)
             ->exists();
@@ -118,11 +121,11 @@ class ProfileController extends Controller
 
     public function posts(Request $request, User $user): JsonResponse
     {
-        $perPage = min(max((int) $request->integer('per_page', 10), 1), 30);
+        $perPage = Pagination::perPage($request);
         $sort = $request->string('sort')->toString();
 
         $postsQuery = $user->posts()
-            ->with('user')
+            ->with('user.setting')
             ->withCount(['likes', 'comments', 'savedPosts'])
             ->withExists([
                 'likes as liked_by_me' => fn ($query) => $query->where('user_id', $request->user()->id),

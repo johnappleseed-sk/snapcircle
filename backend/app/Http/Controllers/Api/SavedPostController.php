@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\PostResource;
 use App\Models\Post;
 use App\Models\SavedPost;
+use App\Support\Pagination;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -16,15 +17,15 @@ class SavedPostController extends Controller
     {
         $validated = $request->validate([
             'page' => ['sometimes', 'integer', 'min:1'],
-            'per_page' => ['sometimes', 'integer', 'min:1', 'max:50'],
+            'per_page' => ['sometimes', 'integer', 'min:1'],
         ]);
 
-        $perPage = (int) ($validated['per_page'] ?? 10);
+        $perPage = Pagination::perPage($request);
         $authUser = $request->user();
 
         $savedPosts = Post::query()
             ->whereHas('savedPosts', fn ($query) => $query->where('user_id', $authUser->id))
-            ->with('user')
+            ->with('user.setting')
             ->withCount(['likes', 'comments', 'savedPosts'])
             ->withExists([
                 'likes as liked_by_me' => fn ($query) => $query->where('user_id', $authUser->id),

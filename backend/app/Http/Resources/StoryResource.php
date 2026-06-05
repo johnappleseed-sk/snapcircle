@@ -32,7 +32,9 @@ class StoryResource extends JsonResource
             'expires_at' => $this->expires_at?->toISOString(),
             'created_at' => $this->created_at?->toISOString(),
             'is_expired' => $this->expires_at?->isPast() ?? true,
-            'views_count' => $this->views_count ?? $this->views()->count(),
+            'views_count' => array_key_exists('views_count', $this->resource->getAttributes())
+                ? (int) $this->views_count
+                : $this->views()->count(),
             'viewed_by_me' => (bool) $viewedByMe,
             'is_owner' => $isOwner,
             'can_delete' => $isOwner,

@@ -6,6 +6,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../core/api/api_client.dart';
 import '../../../core/api/api_endpoints.dart';
+import '../../../core/utils/image_compressor.dart';
 import '../../auth/models/user_model.dart';
 import '../../feed/models/post_model.dart';
 
@@ -20,9 +21,11 @@ class ProfileException implements Exception {
 
 class ProfileRepository {
   final ApiClient _apiClient;
+  final ImageCompressor _imageCompressor;
 
-  ProfileRepository({ApiClient? apiClient})
-    : _apiClient = apiClient ?? ApiClient();
+  ProfileRepository({ApiClient? apiClient, ImageCompressor? imageCompressor})
+    : _apiClient = apiClient ?? ApiClient(),
+      _imageCompressor = imageCompressor ?? const ImageCompressor();
 
   Future<UserModel> getProfile() async {
     final result = await _apiClient.get(ApiEndpoints.profile);
@@ -144,30 +147,36 @@ class ProfileRepository {
     };
 
     if (avatar != null) {
+      final avatarFile = kIsWeb
+          ? null
+          : await _imageCompressor.compressAvatar(File(avatar.path));
       data['avatar'] = kIsWeb
           ? MultipartFile.fromBytes(
               await avatar.readAsBytes(),
               filename: avatar.name,
             )
           : await MultipartFile.fromFile(
-              avatar.path,
+              avatarFile!.path,
               filename: avatar.name.isNotEmpty
                   ? avatar.name
-                  : avatar.path.split(Platform.pathSeparator).last,
+                  : avatarFile.path.split(Platform.pathSeparator).last,
             );
     }
 
     if (coverImage != null) {
+      final coverFile = kIsWeb
+          ? null
+          : await _imageCompressor.compressCoverImage(File(coverImage.path));
       data['cover_image'] = kIsWeb
           ? MultipartFile.fromBytes(
               await coverImage.readAsBytes(),
               filename: coverImage.name,
             )
           : await MultipartFile.fromFile(
-              coverImage.path,
+              coverFile!.path,
               filename: coverImage.name.isNotEmpty
                   ? coverImage.name
-                  : coverImage.path.split(Platform.pathSeparator).last,
+                  : coverFile.path.split(Platform.pathSeparator).last,
             );
     }
 

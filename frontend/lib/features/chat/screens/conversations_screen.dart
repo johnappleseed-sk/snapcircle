@@ -6,9 +6,9 @@ import '../../../core/constants/app_sizes.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
-import '../../../core/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/conversations_provider.dart';
+import '../widgets/conversation_skeleton_tile.dart';
 import '../widgets/conversation_tile.dart';
 
 class ConversationsScreen extends StatefulWidget {
@@ -48,9 +48,14 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
               const SizedBox(height: AppSizes.paddingMedium),
           itemBuilder: (context, index) {
             if (provider.isLoading && provider.conversations.isEmpty) {
-              return const SizedBox(
-                height: 320,
-                child: LoadingView(message: 'Loading conversations...'),
+              return const Column(
+                children: [
+                  ConversationSkeletonTile(),
+                  SizedBox(height: AppSizes.paddingMedium),
+                  ConversationSkeletonTile(),
+                  SizedBox(height: AppSizes.paddingMedium),
+                  ConversationSkeletonTile(),
+                ],
               );
             }
 

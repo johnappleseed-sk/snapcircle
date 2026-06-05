@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 
 import '../../../core/api/api_client.dart';
 import '../../../core/api/api_endpoints.dart';
+import '../../../core/utils/image_compressor.dart';
 import '../models/story_model.dart';
 
 class StoryException implements Exception {
@@ -17,9 +18,11 @@ class StoryException implements Exception {
 
 class StoryRepository {
   final ApiClient _apiClient;
+  final ImageCompressor _imageCompressor;
 
-  StoryRepository({ApiClient? apiClient})
-    : _apiClient = apiClient ?? ApiClient();
+  StoryRepository({ApiClient? apiClient, ImageCompressor? imageCompressor})
+    : _apiClient = apiClient ?? ApiClient(),
+      _imageCompressor = imageCompressor ?? const ImageCompressor();
 
   Future<List<StoryModel>> getStories({
     int page = 1,
@@ -37,10 +40,11 @@ class StoryRepository {
   }
 
   Future<StoryModel> createStory({required File media, String? caption}) async {
+    final uploadMedia = await _imageCompressor.compressStoryImage(media);
     final data = <String, dynamic>{
       'media': await MultipartFile.fromFile(
-        media.path,
-        filename: media.path.split(Platform.pathSeparator).last,
+        uploadMedia.path,
+        filename: uploadMedia.path.split(Platform.pathSeparator).last,
       ),
     };
     final trimmedCaption = caption?.trim();

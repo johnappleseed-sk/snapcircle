@@ -880,3 +880,36 @@ API errors use a consistent JSON shape:
   "errors": {}
 }
 ```
+
+## Performance Improvements
+
+### Pagination Limits
+
+List endpoints accept `page` and `per_page`. The backend clamps `per_page` to the configured maximum in `config/snapcircle.php`:
+
+```text
+default_per_page: 10
+max_per_page: 50
+messages_per_page: 30
+stories_per_page: 15
+notifications_per_page: 15
+```
+
+This applies to posts, comments, users, followers/following, saved posts, notifications, conversations, messages, stories, and explore endpoints.
+
+### Query Efficiency
+
+List endpoints preload relationships and counts used by resources:
+
+```text
+posts: user, likes_count, comments_count, saves_count, liked_by_me, saved_by_me
+users: setting, posts_count, followers_count, following_count, is_followed_by_me
+notifications: actor, post, comment
+conversations: participants, latestMessage
+messages: sender
+stories: user, views_count, viewed_by_me
+```
+
+### Indexing
+
+A performance migration adds indexes for common feed, profile, notification, story, conversation, and message query patterns. Existing unique constraints and foreign keys are not renamed or removed.

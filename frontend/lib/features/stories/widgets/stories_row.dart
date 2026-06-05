@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_sizes.dart';
 import '../providers/stories_provider.dart';
+import 'story_skeleton_circle.dart';
 import 'story_circle.dart';
 
 class StoriesRow extends StatelessWidget {
@@ -30,7 +31,7 @@ class StoriesRow extends StatelessWidget {
           }
 
           if (provider.isLoading) {
-            return StoryCircle(label: 'Loading', isViewed: true, onTap: () {});
+            return const StorySkeletonCircle();
           }
 
           final story = provider.stories[index - 1];

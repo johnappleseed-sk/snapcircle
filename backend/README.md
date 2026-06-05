@@ -124,6 +124,12 @@ Full endpoint documentation is available at:
 ../docs/API_DOCUMENTATION.md
 ```
 
+Performance audit:
+
+```txt
+../docs/PERFORMANCE_AUDIT.md
+```
+
 Setup guide:
 
 ```txt
@@ -161,6 +167,14 @@ search    optional post content keyword
 page      optional page number
 per_page  optional page size, max 50
 ```
+
+## Performance Improvements
+
+- Pagination limits live in `config/snapcircle.php` and oversized `per_page` values are clamped to the configured max.
+- Timeline, notification, story, conversation, and message queries have additional database indexes for common sort/filter paths.
+- Controllers eager load user/settings, actors, post users, message senders, conversation participants, and story users where those relationships appear in API resources.
+- API resources keep fallback counts for single-record safety, while list endpoints preload counts with `withCount()` and user-specific flags with `withExists()`.
+- Future scaling work should add Redis, queues, object storage/CDN, thumbnails, WebSockets, and production query monitoring.
 
 Post detail:
 

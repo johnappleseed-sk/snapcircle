@@ -442,3 +442,23 @@ Strengthen authentication, authorization, rate limiting, upload safety, API erro
 - Upload validation confirmed for supported image types and file sizes.
 - Sensitive fields kept out of API resources.
 - Flutter token storage remains in secure storage and user-facing security errors are clearer.
+
+## Performance Improvements
+
+### Purpose
+
+Make SnapCircle faster and safer to scale without rewriting the project architecture.
+
+### Backend Additions
+
+- Shared pagination config caps large `per_page` requests.
+- Additional database indexes support feed, profile, notification, story, conversation, and message queries.
+- Controllers preload common relationships and counts with `with()`, `withCount()`, and `withExists()`.
+- Performance tests protect pagination and response structure.
+
+### Flutter Additions
+
+- Cached remote images remain the default for avatars, posts, covers, stories, explore, conversations, and notifications.
+- Upload images are compressed for avatars, covers, posts, and stories with fallback to originals.
+- Initial loading skeletons improve perceived speed for common lists.
+- Provider fetches stay out of `build()` and load-more calls remain guarded.
