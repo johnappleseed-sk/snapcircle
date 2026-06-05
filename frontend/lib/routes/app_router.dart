@@ -18,6 +18,9 @@ import '../features/profile/screens/follow_list_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
 import '../features/profile/screens/user_profile_screen.dart';
 import '../features/search/screens/search_screen.dart';
+import '../features/stories/models/story_model.dart';
+import '../features/stories/screens/create_story_screen.dart';
+import '../features/stories/screens/story_viewer_screen.dart';
 
 class AppRouter {
   static const String splash = '/';
@@ -73,6 +76,24 @@ class AppRouter {
         GoRoute(
           path: '/saved-posts',
           builder: (context, state) => const SavedPostsScreen(),
+        ),
+        GoRoute(
+          path: '/stories/create',
+          builder: (context, state) => const CreateStoryScreen(),
+        ),
+        GoRoute(
+          path: '/stories/:storyId',
+          builder: (context, state) {
+            final storyId = int.tryParse(state.pathParameters['storyId'] ?? '');
+            final story = state.extra is StoryModel
+                ? state.extra as StoryModel
+                : null;
+
+            return StoryViewerScreen(
+              storyId: storyId ?? 0,
+              initialStory: story,
+            );
+          },
         ),
         GoRoute(
           path: '/notifications',

@@ -281,6 +281,30 @@ Flutter files:
 
 Users can open Messages from the feed app bar or start a new conversation from another user's profile. This MVP uses REST and manual refresh rather than WebSockets. Future phases can add live message delivery with Laravel Broadcasting, Laravel Reverb, Pusher, or Firebase Cloud Messaging.
 
+## Stories Feature MVP
+
+Stories are connected through:
+
+```http
+GET http://10.0.2.2:8000/api/stories
+POST http://10.0.2.2:8000/api/stories
+GET http://10.0.2.2:8000/api/stories/{story}
+DELETE http://10.0.2.2:8000/api/stories/{story}
+POST http://10.0.2.2:8000/api/stories/{story}/view
+GET http://10.0.2.2:8000/api/users/{user}/stories
+```
+
+Flutter files:
+
+- `StoryModel` parses story data from Laravel.
+- `StoryRepository` handles story API calls and multipart uploads.
+- `StoriesProvider` owns story list state, creation, deletion, and view updates.
+- `StoriesRow` and `StoryCircle` show active stories above the feed.
+- `CreateStoryScreen` lets users select an image and caption.
+- `StoryViewerScreen` displays a full-screen story and owner delete action.
+
+Stories expire after 24 hours. Opening a story marks it as viewed; the API prevents duplicate view records for the same user and story.
+
 ## Comments Integration
 
 Comments are connected through:

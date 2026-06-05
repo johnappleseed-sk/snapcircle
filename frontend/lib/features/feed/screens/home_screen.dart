@@ -15,6 +15,8 @@ import '../../auth/providers/auth_provider.dart';
 import '../../notifications/providers/notifications_provider.dart';
 import '../../profile/screens/profile_screen.dart';
 import '../../search/screens/search_screen.dart';
+import '../../stories/providers/stories_provider.dart';
+import '../../stories/widgets/stories_row.dart';
 import '../providers/feed_provider.dart';
 import '../widgets/post_card.dart';
 import '../widgets/post_skeleton_card.dart';
@@ -104,6 +106,7 @@ class _FeedTabState extends State<_FeedTab> {
       if (feedProvider.posts.isEmpty) {
         feedProvider.fetchPosts(refresh: true);
       }
+      context.read<StoriesProvider>().fetchStories(refresh: true);
       final notificationsProvider = context.read<NotificationsProvider>();
       final realtimeProvider = context.read<RealtimeProvider>();
       notificationsProvider.fetchUnreadCount().then((_) {
@@ -187,6 +190,11 @@ class _FeedTabState extends State<_FeedTab> {
             onPressed: () async {
               await feedProvider.fetchPosts(refresh: true);
               if (context.mounted) {
+                await context.read<StoriesProvider>().fetchStories(
+                  refresh: true,
+                );
+              }
+              if (context.mounted) {
                 context.read<RealtimeProvider>().markFeedAsSeen();
                 context.read<RealtimeProvider>().checkFeedStatus();
               }
@@ -199,6 +207,9 @@ class _FeedTabState extends State<_FeedTab> {
       body: RefreshIndicator(
         onRefresh: () async {
           await feedProvider.fetchPosts(refresh: true);
+          if (context.mounted) {
+            await context.read<StoriesProvider>().fetchStories(refresh: true);
+          }
           if (context.mounted) {
             context.read<RealtimeProvider>().markFeedAsSeen();
             context.read<RealtimeProvider>().checkFeedStatus();
@@ -282,6 +293,8 @@ class _FeedBody extends StatelessWidget {
                 _NewPostsBanner(onRefresh: onRefreshNewPosts),
                 const SizedBox(height: AppSizes.paddingMedium),
               ],
+              const StoriesRow(),
+              const SizedBox(height: AppSizes.paddingMedium),
               _FeedControls(
                 selectedMode: feedProvider.currentMode,
                 searchController: searchController,

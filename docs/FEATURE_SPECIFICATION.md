@@ -296,3 +296,47 @@ PUT /api/messages/{message}/read
 ### Future Real-Time Upgrade Notes
 
 The REST chat can later be upgraded with Laravel Broadcasting, Laravel Reverb, Pusher, or Firebase Cloud Messaging for live message delivery, push notifications, typing indicators, and read receipt updates.
+
+## Stories Feature MVP
+
+### Purpose
+
+Allow users to share temporary image stories with an optional caption. Stories appear above the home feed and expire after 24 hours.
+
+### Database Tables
+
+- `stories`: owner, uploaded media path, caption, expiry timestamp, and soft delete state.
+- `story_views`: unique viewer records for story view tracking.
+
+### Backend Endpoints
+
+```http
+GET /api/stories
+POST /api/stories
+GET /api/stories/{story}
+DELETE /api/stories/{story}
+POST /api/stories/{story}/view
+GET /api/users/{user}/stories
+```
+
+### Frontend Screens And Widgets
+
+- `StoriesRow` appears above feed controls.
+- `StoryCircle` shows active stories with viewed/unviewed styling.
+- `CreateStoryScreen` lets users pick an image, add a caption, and upload.
+- `StoryViewerScreen` opens stories full-screen, marks them viewed, and lets owners delete.
+
+### Rules
+
+- Stories expire 24 hours after creation.
+- Expired stories are not returned by list, show, or user-story endpoints.
+- Each user can view a story once; duplicate view records are prevented.
+- Only story owners can delete their stories.
+
+### Testing Notes
+
+- Create a story and confirm it appears in the home stories row.
+- Open a story and confirm it becomes viewed.
+- Confirm view counts do not increase on duplicate opens by the same user.
+- Delete your own story and confirm it disappears.
+- Confirm expired stories are hidden.

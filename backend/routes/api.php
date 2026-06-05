@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\SavedPostController;
+use App\Http\Controllers\Api\StoryController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -40,6 +41,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::put('/profile', [ProfileController::class, 'update']);
     Route::get('/users', [ProfileController::class, 'users']);
     Route::get('/users/{user}', [ProfileController::class, 'show']);
+    Route::get('/users/{user}/stories', [StoryController::class, 'userStories']);
 
     Route::post('/users/{user}/follow', [FollowController::class, 'store']);
     Route::delete('/users/{user}/follow', [FollowController::class, 'destroy']);
@@ -66,6 +68,12 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::post('/posts/{post}/save', [SavedPostController::class, 'store']);
     Route::delete('/posts/{post}/save', [SavedPostController::class, 'destroy']);
     Route::get('/saved-posts', [SavedPostController::class, 'index']);
+
+    Route::get('/stories', [StoryController::class, 'index']);
+    Route::post('/stories', [StoryController::class, 'store']);
+    Route::get('/stories/{story}', [StoryController::class, 'show']);
+    Route::delete('/stories/{story}', [StoryController::class, 'destroy']);
+    Route::post('/stories/{story}/view', [StoryController::class, 'markAsViewed']);
 
     Route::get('/notifications', [NotificationController::class, 'index']);
     Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);

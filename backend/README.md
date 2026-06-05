@@ -255,6 +255,34 @@ messages
 
 The MVP supports one-to-one conversations, participant-only access, latest-message previews, unread counts, sending text messages, and marking received messages as read. Conversation delete/archive is intentionally deferred to a later phase.
 
+## Stories Feature MVP
+
+Stories use Laravel storage and Sanctum-protected REST endpoints:
+
+```http
+GET /api/stories
+POST /api/stories
+GET /api/stories/{story}
+DELETE /api/stories/{story}
+POST /api/stories/{story}/view
+GET /api/users/{user}/stories
+```
+
+Database tables:
+
+```txt
+stories
+story_views
+```
+
+Stories are image-based, can include a caption, expire after 24 hours, and track unique views per user. Uploaded story media is stored under:
+
+```txt
+storage/app/public/stories
+```
+
+Run `php artisan storage:link` so story media URLs resolve through `/storage`.
+
 ## Response Format
 
 Success:

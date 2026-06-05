@@ -547,6 +547,77 @@ Authentication: Yes
 
 Marks a received message as read when the authenticated user participates in the conversation.
 
+## Stories
+
+Stories are temporary image posts that expire after 24 hours.
+
+### GET /api/stories
+
+Authentication: Yes
+
+Query parameters:
+
+```txt
+mode     optional string: all, following, mine
+page     optional integer min:1
+per_page optional integer min:1 max:50
+```
+
+Returns active, non-expired stories latest first.
+
+### POST /api/stories
+
+Authentication: Yes
+
+Request type: `multipart/form-data`
+
+Fields:
+
+```txt
+media   required image jpg,jpeg,png,webp max:4MB
+caption nullable string max:500
+```
+
+Creates a story with `expires_at` set to 24 hours after creation.
+
+### GET /api/stories/{story}
+
+Authentication: Yes
+
+Returns one active story with owner, view state, and view count. Expired stories return a clean not-found response.
+
+### DELETE /api/stories/{story}
+
+Authentication: Yes
+
+Only the story owner can delete. Local media is removed from storage.
+
+### POST /api/stories/{story}/view
+
+Authentication: Yes
+
+Marks a story as viewed. Duplicate views are prevented.
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Story marked as viewed",
+  "data": {
+    "story_id": 1,
+    "viewed_by_me": true,
+    "views_count": 8
+  }
+}
+```
+
+### GET /api/users/{user}/stories
+
+Authentication: Yes
+
+Returns active stories for the selected user, latest first.
+
 ## Comments
 
 ### GET /api/posts/{post}/comments/status
