@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\ConversationController;
+use App\Http\Controllers\Api\ExploreController;
 use App\Http\Controllers\Api\FeedStatusController;
 use App\Http\Controllers\Api\FollowController;
 use App\Http\Controllers\Api\LikeController;
@@ -42,6 +43,12 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/users', [ProfileController::class, 'users']);
     Route::get('/users/{user}', [ProfileController::class, 'show']);
     Route::get('/users/{user}/stories', [StoryController::class, 'userStories']);
+
+    Route::get('/explore/posts', [ExploreController::class, 'posts']);
+    Route::get('/explore/users', [ExploreController::class, 'users']);
+    Route::get('/explore/trending-posts', [ExploreController::class, 'trendingPosts']);
+    Route::get('/explore/recommended-users', [ExploreController::class, 'recommendedUsers']);
+    Route::get('/explore/search', [ExploreController::class, 'search']);
 
     Route::post('/users/{user}/follow', [FollowController::class, 'store']);
     Route::delete('/users/{user}/follow', [FollowController::class, 'destroy']);

@@ -7,6 +7,7 @@ import '../features/chat/models/conversation_model.dart';
 import '../features/chat/screens/chat_detail_screen.dart';
 import '../features/chat/screens/conversations_screen.dart';
 import '../features/comments/screens/comments_screen.dart';
+import '../features/explore/screens/explore_screen.dart';
 import '../features/feed/models/post_model.dart';
 import '../features/feed/screens/home_screen.dart';
 import '../features/feed/screens/post_detail_screen.dart';
@@ -17,7 +18,6 @@ import '../features/profile/screens/edit_profile_screen.dart';
 import '../features/profile/screens/follow_list_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
 import '../features/profile/screens/user_profile_screen.dart';
-import '../features/search/screens/search_screen.dart';
 import '../features/stories/models/story_model.dart';
 import '../features/stories/screens/create_story_screen.dart';
 import '../features/stories/screens/story_viewer_screen.dart';
@@ -58,6 +58,10 @@ class AppRouter {
         ),
         GoRoute(path: login, builder: (context, state) => const LoginScreen()),
         GoRoute(path: home, builder: (context, state) => const HomeScreen()),
+        GoRoute(
+          path: '/explore',
+          builder: (context, state) => const ExploreScreen(),
+        ),
         GoRoute(
           path: createPost,
           builder: (context, state) => const CreatePostScreen(),
@@ -169,7 +173,7 @@ class AppRouter {
         ),
         GoRoute(
           path: '/search',
-          builder: (context, state) => const SearchScreen(),
+          builder: (context, state) => const ExploreScreen(),
         ),
       ],
     );

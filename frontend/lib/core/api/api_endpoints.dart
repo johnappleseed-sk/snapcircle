@@ -16,6 +16,11 @@ class ApiEndpoints {
   static const String markAllNotificationsRead = '/notifications/read-all';
   static const String conversations = '/conversations';
   static const String stories = '/stories';
+  static const String explorePosts = '/explore/posts';
+  static const String exploreUsers = '/explore/users';
+  static const String trendingPosts = '/explore/trending-posts';
+  static const String recommendedUsers = '/explore/recommended-users';
+  static const String exploreSearch = '/explore/search';
 
   static String postById(int id) => '/posts/$id';
   static String userById(int id) => '/users/$id';

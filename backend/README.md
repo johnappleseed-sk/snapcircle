@@ -283,6 +283,20 @@ storage/app/public/stories
 
 Run `php artisan storage:link` so story media URLs resolve through `/storage`.
 
+## Explore and Discovery
+
+Explore endpoints are protected by Sanctum:
+
+```http
+GET /api/explore/posts
+GET /api/explore/users
+GET /api/explore/trending-posts
+GET /api/explore/recommended-users
+GET /api/explore/search
+```
+
+The backend returns discoverable posts with engagement metadata, users with follow/profile counts, trending posts ranked by a simple engagement score, and recommended users excluding people the authenticated user already follows.
+
 ## Response Format
 
 Success:

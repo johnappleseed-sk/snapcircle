@@ -340,3 +340,47 @@ GET /api/users/{user}/stories
 - Confirm view counts do not increase on duplicate opens by the same user.
 - Delete your own story and confirm it disappears.
 - Confirm expired stories are hidden.
+
+## Explore and Discovery
+
+### Purpose
+
+Help users discover posts, people, trending content, and recommended accounts inside SnapCircle.
+
+### Backend Endpoints
+
+```http
+GET /api/explore/posts
+GET /api/explore/users
+GET /api/explore/trending-posts
+GET /api/explore/recommended-users
+GET /api/explore/search
+```
+
+### Discovery Surfaces
+
+- Explore posts: latest or popular discoverable posts.
+- Trending posts: engagement-ranked posts from a recent window.
+- Recommended users: users the authenticated user does not already follow.
+- Global search: searches posts and users together.
+
+### Flutter UI
+
+The bottom navigation uses Explore instead of the older Search tab. The old `/search` route still opens the Explore screen.
+
+Explore includes:
+
+- debounced search bar
+- recommended users horizontal section
+- trending posts horizontal section
+- latest/popular sort chips
+- post discovery grid
+- follow/unfollow from recommended user cards
+
+### Testing Notes
+
+- Open Explore and confirm recommended users, trending posts, and explore posts load.
+- Search by post text and by user name.
+- Toggle Latest and Popular sorting.
+- Follow a recommended user and confirm the card state updates.
+- Open a post and a user from Explore.

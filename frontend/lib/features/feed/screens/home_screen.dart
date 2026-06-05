@@ -14,7 +14,7 @@ import '../../../core/utils/snackbar_helper.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../notifications/providers/notifications_provider.dart';
 import '../../profile/screens/profile_screen.dart';
-import '../../search/screens/search_screen.dart';
+import '../../explore/screens/explore_screen.dart';
 import '../../stories/providers/stories_provider.dart';
 import '../../stories/widgets/stories_row.dart';
 import '../providers/feed_provider.dart';
@@ -33,7 +33,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   static const List<Widget> _tabs = [
     _FeedTab(),
-    SearchScreen(),
+    ExploreScreen(),
     ProfileScreen(),
   ];
 
@@ -67,9 +67,9 @@ class _HomeScreenState extends State<HomeScreen> {
             label: 'Feed',
           ),
           NavigationDestination(
-            icon: Icon(Icons.search_outlined),
-            selectedIcon: Icon(Icons.search),
-            label: 'Search',
+            icon: Icon(Icons.travel_explore_outlined),
+            selectedIcon: Icon(Icons.travel_explore),
+            label: 'Explore',
           ),
           NavigationDestination(
             icon: Icon(Icons.add_box_outlined),

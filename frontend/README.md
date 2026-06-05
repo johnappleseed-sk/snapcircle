@@ -305,6 +305,29 @@ Flutter files:
 
 Stories expire after 24 hours. Opening a story marks it as viewed; the API prevents duplicate view records for the same user and story.
 
+## Explore And Discovery
+
+Explore is connected through:
+
+```http
+GET http://10.0.2.2:8000/api/explore/posts
+GET http://10.0.2.2:8000/api/explore/users
+GET http://10.0.2.2:8000/api/explore/trending-posts
+GET http://10.0.2.2:8000/api/explore/recommended-users
+GET http://10.0.2.2:8000/api/explore/search
+```
+
+Flutter files:
+
+- `ExploreRepository` handles Explore API calls.
+- `ExploreProvider` owns Explore posts, trending posts, recommended users, search, sorting, and follow state.
+- `ExploreScreen` replaces the old Search tab in bottom navigation.
+- `ExploreSearchBar` debounces global search input.
+- `RecommendedUserCard` displays people to follow.
+- `ExplorePostGridItem` displays discoverable posts.
+
+The old `/search` route remains available and opens the Explore screen.
+
 ## Comments Integration
 
 Comments are connected through:

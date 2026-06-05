@@ -618,6 +618,82 @@ Authentication: Yes
 
 Returns active stories for the selected user, latest first.
 
+## Explore and Discovery
+
+All Explore endpoints require authentication.
+
+### GET /api/explore/posts
+
+Query parameters:
+
+```txt
+page     optional integer min:1
+per_page optional integer min:1 max:50
+search   optional string max:255
+sort     optional string: latest, popular
+```
+
+Returns discoverable posts with owner, counts, `liked_by_me`, `saved_by_me`, and owner permission flags.
+
+### GET /api/explore/users
+
+Query parameters:
+
+```txt
+page     optional integer min:1
+per_page optional integer min:1 max:50
+search   optional string max:255
+```
+
+Returns users except the authenticated user with profile counts and `is_followed_by_me`.
+
+### GET /api/explore/trending-posts
+
+Query parameters:
+
+```txt
+page     optional integer min:1
+per_page optional integer min:1 max:50
+days     optional integer min:1 max:365
+```
+
+Ranks posts by simple engagement score: likes, comments, and saves.
+
+### GET /api/explore/recommended-users
+
+Query parameters:
+
+```txt
+page     optional integer min:1
+per_page optional integer min:1 max:50
+```
+
+Returns users the authenticated user is not already following, ordered by follower and post counts.
+
+### GET /api/explore/search
+
+Query parameters:
+
+```txt
+q        required string max:255
+type     optional string: all, posts, users
+page     optional integer min:1
+per_page optional integer min:1 max:50
+```
+
+Response for `type=all`:
+
+```json
+{
+  "success": true,
+  "message": "Search results fetched successfully",
+  "data": {
+    "posts": [],
+    "users": []
+  }
+}
+```
+
 ## Comments
 
 ### GET /api/posts/{post}/comments/status
