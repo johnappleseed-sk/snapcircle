@@ -11,6 +11,7 @@ import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/loading_view.dart';
 import '../../auth/models/user_model.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../chat/providers/conversations_provider.dart';
 import '../providers/profile_provider.dart';
 
 class UserProfileScreen extends StatefulWidget {
@@ -157,24 +158,34 @@ class _UserProfileBody extends StatelessWidget {
               ),
               if (!isCurrentUser) ...[
                 const SizedBox(height: AppSizes.paddingMedium),
-                AppButton(
-                  label: loadedUser.isFollowedByMe ? 'Unfollow' : 'Follow',
-                  icon: loadedUser.isFollowedByMe
-                      ? Icons.person_remove_outlined
-                      : Icons.person_add_outlined,
-                  variant: loadedUser.isFollowedByMe
-                      ? AppButtonVariant.outline
-                      : AppButtonVariant.primary,
-                  isLoading: isFollowing,
-                  onPressed: isFollowing
-                      ? null
-                      : () => loadedUser.isFollowedByMe
-                            ? context.read<ProfileProvider>().unfollowUser(
-                                loadedUser.id,
-                              )
-                            : context.read<ProfileProvider>().followUser(
-                                loadedUser.id,
-                              ),
+                Row(
+                  children: [
+                    Expanded(
+                      child: AppButton(
+                        label: loadedUser.isFollowedByMe
+                            ? 'Unfollow'
+                            : 'Follow',
+                        icon: loadedUser.isFollowedByMe
+                            ? Icons.person_remove_outlined
+                            : Icons.person_add_outlined,
+                        variant: loadedUser.isFollowedByMe
+                            ? AppButtonVariant.outline
+                            : AppButtonVariant.primary,
+                        isLoading: isFollowing,
+                        onPressed: isFollowing
+                            ? null
+                            : () => loadedUser.isFollowedByMe
+                                  ? context
+                                        .read<ProfileProvider>()
+                                        .unfollowUser(loadedUser.id)
+                                  : context.read<ProfileProvider>().followUser(
+                                      loadedUser.id,
+                                    ),
+                      ),
+                    ),
+                    const SizedBox(width: AppSizes.paddingSmall),
+                    Expanded(child: _MessageButton(userId: loadedUser.id)),
+                  ],
                 ),
               ],
             ],
@@ -193,6 +204,38 @@ class _UserProfileBody extends StatelessWidget {
 
   void _openFollowList(BuildContext context, String type) {
     context.push('/users/${user!.id}/$type');
+  }
+}
+
+class _MessageButton extends StatelessWidget {
+  final int userId;
+
+  const _MessageButton({required this.userId});
+
+  @override
+  Widget build(BuildContext context) {
+    final conversationsProvider = context.watch<ConversationsProvider>();
+    final isStarting = conversationsProvider.isStartingConversation(userId);
+
+    return AppButton(
+      label: 'Message',
+      icon: Icons.chat_bubble_outline,
+      variant: AppButtonVariant.outline,
+      isLoading: isStarting,
+      onPressed: isStarting
+          ? null
+          : () async {
+              final conversation = await context
+                  .read<ConversationsProvider>()
+                  .startConversation(userId);
+              if (context.mounted && conversation != null) {
+                context.push(
+                  '/messages/${conversation.id}',
+                  extra: conversation,
+                );
+              }
+            },
+    );
   }
 }
 

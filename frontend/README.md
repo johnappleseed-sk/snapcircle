@@ -257,6 +257,30 @@ UI behavior:
 
 This phase uses lightweight polling instead of WebSockets. In future production versions, Laravel Broadcasting, Laravel Reverb, Pusher, or Firebase Cloud Messaging can be used for real-time updates.
 
+## Messaging / Chat MVP
+
+Chat is connected through:
+
+```http
+GET http://10.0.2.2:8000/api/conversations
+POST http://10.0.2.2:8000/api/conversations
+GET http://10.0.2.2:8000/api/conversations/{conversation}
+GET http://10.0.2.2:8000/api/conversations/{conversation}/messages
+POST http://10.0.2.2:8000/api/conversations/{conversation}/messages
+PUT http://10.0.2.2:8000/api/messages/{message}/read
+```
+
+Flutter files:
+
+- `ConversationModel` and `MessageModel` parse chat data from Laravel.
+- `ConversationRepository` and `MessageRepository` handle chat API calls.
+- `ConversationsProvider` owns conversation list state, pagination, and start-chat actions.
+- `MessagesProvider` owns message list state, pagination, sending, and read receipts.
+- `ConversationsScreen` shows the messages inbox at `/messages`.
+- `ChatDetailScreen` shows messages and the composer at `/messages/{conversationId}`.
+
+Users can open Messages from the feed app bar or start a new conversation from another user's profile. This MVP uses REST and manual refresh rather than WebSockets. Future phases can add live message delivery with Laravel Broadcasting, Laravel Reverb, Pusher, or Firebase Cloud Messaging.
+
 ## Comments Integration
 
 Comments are connected through:

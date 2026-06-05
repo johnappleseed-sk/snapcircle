@@ -70,6 +70,17 @@ class User extends Authenticatable
         return $this->hasMany(Notification::class, 'actor_id');
     }
 
+    public function conversations(): BelongsToMany
+    {
+        return $this->belongsToMany(Conversation::class)
+            ->withTimestamps();
+    }
+
+    public function messages(): HasMany
+    {
+        return $this->hasMany(Message::class, 'sender_id');
+    }
+
     public function followers(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'follows', 'following_id', 'follower_id')

@@ -14,6 +14,7 @@ class ApiEndpoints {
   static const String notifications = '/notifications';
   static const String notificationUnreadCount = '/notifications/unread-count';
   static const String markAllNotificationsRead = '/notifications/read-all';
+  static const String conversations = '/conversations';
 
   static String postById(int id) => '/posts/$id';
   static String userById(int id) => '/users/$id';
@@ -34,4 +35,8 @@ class ApiEndpoints {
   static String following(int userId) => '/users/$userId/following';
   static String markNotificationRead(int id) => '/notifications/$id/read';
   static String deleteNotification(int id) => '/notifications/$id';
+  static String conversationById(int id) => '/conversations/$id';
+  static String conversationMessages(int conversationId) =>
+      '/conversations/$conversationId/messages';
+  static String markMessageRead(int messageId) => '/messages/$messageId/read';
 }

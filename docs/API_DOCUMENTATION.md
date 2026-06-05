@@ -471,6 +471,82 @@ Authentication: Yes
 
 Deletes one owned notification.
 
+## Messaging / Chat
+
+Messages are REST-based for the MVP. Message list responses are returned latest first.
+
+### GET /api/conversations
+
+Authentication: Yes
+
+Query parameters:
+
+```txt
+page     optional integer min:1
+per_page optional integer min:1 max:50
+```
+
+Returns paginated conversations for the authenticated user with participants, latest message, and unread count.
+
+### POST /api/conversations
+
+Authentication: Yes
+
+Request:
+
+```json
+{
+  "user_id": 2
+}
+```
+
+Starts or returns an existing one-to-one conversation. Users cannot start conversations with themselves.
+
+### GET /api/conversations/{conversation}
+
+Authentication: Yes
+
+Returns one conversation if the authenticated user is a participant.
+
+### DELETE /api/conversations/{conversation}
+
+Authentication: Yes
+
+For the MVP, hard delete/archive is not implemented. The API returns a clean success message explaining that delete can be added later.
+
+### GET /api/conversations/{conversation}/messages
+
+Authentication: Yes
+
+Query parameters:
+
+```txt
+page     optional integer min:1
+per_page optional integer min:1 max:50
+```
+
+Returns paginated messages latest first.
+
+### POST /api/conversations/{conversation}/messages
+
+Authentication: Yes
+
+Request:
+
+```json
+{
+  "message": "Hello!"
+}
+```
+
+Rules: `message` is required, string, max 2000 characters.
+
+### PUT /api/messages/{message}/read
+
+Authentication: Yes
+
+Marks a received message as read when the authenticated user participates in the conversation.
+
 ## Comments
 
 ### GET /api/posts/{post}/comments/status

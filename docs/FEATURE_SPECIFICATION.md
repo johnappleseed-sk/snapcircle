@@ -247,3 +247,52 @@ Both routes are protected by Laravel Sanctum and return counts plus latest recor
 ### Future WebSocket Upgrade Plan
 
 This phase uses lightweight polling instead of WebSockets. In future production versions, Laravel Broadcasting, Laravel Reverb, Pusher, or Firebase Cloud Messaging can be used for real-time updates.
+
+## Messaging / Chat MVP
+
+### Purpose
+
+Allow users to start private one-to-one conversations and exchange direct messages through the existing Laravel REST API and Flutter app.
+
+### Database Tables
+
+- `conversations`: shared conversation record.
+- `conversation_user`: participants in each conversation.
+- `messages`: message text, sender, read timestamp, and conversation relationship.
+
+### Backend Endpoints
+
+```http
+GET /api/conversations
+POST /api/conversations
+GET /api/conversations/{conversation}
+GET /api/conversations/{conversation}/messages
+POST /api/conversations/{conversation}/messages
+PUT /api/messages/{message}/read
+```
+
+### Frontend Screens
+
+- Conversations screen at `/messages`
+- Chat detail screen at `/messages/{conversationId}`
+- Message button on other users' profiles
+- Messages icon in the home feed app bar
+
+### User Flow
+
+1. User opens another user's profile.
+2. User taps Message.
+3. The app starts or reuses a one-to-one conversation.
+4. User sends and reads messages in the chat detail screen.
+5. The conversations list shows latest message previews and unread badges.
+
+### Limitations
+
+- This MVP uses REST requests, not WebSockets.
+- Conversations are one-to-one only.
+- Conversation delete/archive is intentionally not implemented yet.
+- Message attachments and typing indicators are future work.
+
+### Future Real-Time Upgrade Notes
+
+The REST chat can later be upgraded with Laravel Broadcasting, Laravel Reverb, Pusher, or Firebase Cloud Messaging for live message delivery, push notifications, typing indicators, and read receipt updates.

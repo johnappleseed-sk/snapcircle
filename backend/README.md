@@ -231,6 +231,30 @@ These routes are protected by Sanctum and return only latest IDs, timestamps, to
 
 This phase uses lightweight polling instead of WebSockets. In future production versions, Laravel Broadcasting, Laravel Reverb, Pusher, or Firebase Cloud Messaging can be used for real-time updates.
 
+## Messaging / Chat MVP
+
+Chat uses REST endpoints protected by Sanctum:
+
+```http
+GET /api/conversations
+POST /api/conversations
+GET /api/conversations/{conversation}
+DELETE /api/conversations/{conversation}
+GET /api/conversations/{conversation}/messages
+POST /api/conversations/{conversation}/messages
+PUT /api/messages/{message}/read
+```
+
+Database tables:
+
+```txt
+conversations
+conversation_user
+messages
+```
+
+The MVP supports one-to-one conversations, participant-only access, latest-message previews, unread counts, sending text messages, and marking received messages as read. Conversation delete/archive is intentionally deferred to a later phase.
+
 ## Response Format
 
 Success:

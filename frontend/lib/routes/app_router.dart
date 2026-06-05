@@ -3,6 +3,9 @@ import 'package:go_router/go_router.dart';
 import '../features/auth/providers/auth_provider.dart';
 import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/splash_screen.dart';
+import '../features/chat/models/conversation_model.dart';
+import '../features/chat/screens/chat_detail_screen.dart';
+import '../features/chat/screens/conversations_screen.dart';
 import '../features/comments/screens/comments_screen.dart';
 import '../features/feed/models/post_model.dart';
 import '../features/feed/screens/home_screen.dart';
@@ -74,6 +77,26 @@ class AppRouter {
         GoRoute(
           path: '/notifications',
           builder: (context, state) => const NotificationsScreen(),
+        ),
+        GoRoute(
+          path: '/messages',
+          builder: (context, state) => const ConversationsScreen(),
+        ),
+        GoRoute(
+          path: '/messages/:conversationId',
+          builder: (context, state) {
+            final conversationId = int.tryParse(
+              state.pathParameters['conversationId'] ?? '',
+            );
+            final conversation = state.extra is ConversationModel
+                ? state.extra as ConversationModel
+                : null;
+
+            return ChatDetailScreen(
+              conversationId: conversationId ?? 0,
+              initialConversation: conversation,
+            );
+          },
         ),
         GoRoute(
           path: '/posts/:postId/comments',

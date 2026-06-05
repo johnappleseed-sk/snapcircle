@@ -158,6 +158,11 @@ class _FeedTabState extends State<_FeedTab> {
           ],
         ),
         actions: [
+          IconButton(
+            onPressed: () => context.push('/messages'),
+            icon: const Icon(Icons.chat_bubble_outline),
+            tooltip: 'Messages',
+          ),
           _NotificationIconButton(
             unreadCount: unreadCount,
             onPressed: () async {
