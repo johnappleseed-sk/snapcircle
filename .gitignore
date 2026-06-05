@@ -66,7 +66,9 @@ backend/storage/framework/cache/*
 backend/storage/framework/sessions/*
 backend/storage/framework/views/*
 backend/storage/logs/*
-backend/bootstrap/cache/*.php
+!backend/storage/logs/.gitignore
+backend/bootstrap/cache/*
+!backend/bootstrap/cache/.gitignore
 backend/public/storage
 backend/.phpunit.result.cache
 

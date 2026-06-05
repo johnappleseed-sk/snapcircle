@@ -1,155 +1,177 @@
 # SnapCircle Technical Audit
 
-## Purpose
+## 1. Current Project Overview
 
-This audit records the current state of SnapCircle before larger startup-focused improvements. The goal of Phase 1 is to understand the existing architecture, preserve stable behavior, and make only small refactors that reduce duplication without changing the API or mobile app feature set.
+SnapCircle is a Flutter and Laravel social media mobile application. The Flutter app provides the mobile experience, while the Laravel REST API handles authentication, profiles, posts, image uploads, likes, comments, follows, and user search. The project is still suitable for an academic assignment, but it now has enough structure to begin evolving into a maintainable startup-style product.
 
-## Current Features
+The current architecture is a monorepo:
 
-- Laravel REST API with Sanctum token authentication.
-- Social login foundation for Google and Facebook through Laravel Socialite.
-- Demo login endpoint for development and testing.
-- Authenticated profile viewing and profile update with avatar upload.
-- User search and public user profile API.
-- Follow and unfollow users with follower/following lists.
-- Post feed with pagination, search, images, counts, and `liked_by_me`.
-- Create, view, update, soft delete posts.
-- Create, list, update, and soft delete comments.
+- `backend/` contains the Laravel API.
+- `frontend/` contains the Flutter mobile app.
+- `docs/` contains setup, testing, API, assignment, submission, Postman, screenshot, and audit documentation.
+
+## 2. Current Features
+
+- Social authentication with Google and Facebook through Laravel Socialite.
+- Laravel Sanctum API token authentication.
+- Development/demo authentication endpoint.
+- Authenticated feed with paginated posts.
+- Create, view, update, and soft delete posts.
+- Image upload support for posts.
 - Like and unlike posts with duplicate prevention.
-- Flutter mobile app using Provider, Dio, GoRouter, and feature-based folders.
-- Reusable Flutter theme, constants, buttons, cards, avatars, loading, empty, and error views.
-- Backend feature tests for auth, health, posts, comments, likes, follows, and profile APIs.
+- Create, list, update, and soft delete comments.
+- User profiles with avatar and bio.
+- Profile update with avatar upload.
+- Search users.
+- Follow and unfollow users.
+- Followers and following lists.
+- API documentation, setup guide, testing checklist, assignment report, submission guide, and Postman collection.
 
-## Backend Structure Review
+## 3. Backend Review
 
-The backend is organized around standard Laravel conventions:
+| Area | Review |
+|---|---|
+| Route organization | `backend/routes/api.php` separates public routes from Sanctum-protected routes. The file is readable at the current size, but future features should use clearer grouped sections or route files if it grows. |
+| Controllers | API controllers are organized by feature: auth, posts, comments, likes, follows, and profile. They are mostly small and readable. Inline authorization exists and should later move to policies. |
+| Validation | Create/update post, comment, and profile flows use form request classes. This is a good foundation. Future complex features should continue this pattern. |
+| Resources | `PostResource`, `CommentResource`, and `UserResource` keep API output consistent and prevent exposing raw model internals. |
+| Models | Models define relationships for users, posts, comments, likes, and follows. Fillable fields and soft deletes are used where appropriate. |
+| Migrations | Core social tables exist: users, posts, comments, likes, follows, Sanctum tokens, jobs, cache. Unique constraints exist for likes and follows. |
+| Authentication | Sanctum protects private API routes. Socialite supports Google and Facebook token-based login. |
+| Authorization | Users are blocked from editing or deleting posts/comments they do not own. Policies are not yet implemented, which is acceptable for MVP but less scalable. |
+| Testing | Feature tests cover health, auth, posts, comments, likes, follows, and profile behavior. |
+| Response consistency | `ApiResponse` standardizes success/error responses. Phase 1 now also centralizes paginated responses. |
 
-- `routes/api.php` contains public and Sanctum-protected API routes.
-- `app/Http/Controllers/Api` contains controllers for auth, posts, comments, likes, follows, and profiles.
-- `app/Http/Requests` contains reusable validation request classes.
-- `app/Http/Resources` contains JSON resource transformers.
-- `app/Helpers/ApiResponse.php` centralizes the API success/error response format.
-- `app/Models` contains the social domain models and relationships.
-- `tests/Feature` covers the main API behavior.
+## 4. Frontend Review
 
-Strengths:
+| Area | Review |
+|---|---|
+| Folder structure | `frontend/lib` is organized into `core`, `features`, and `routes`, which is a good feature-based structure. |
+| Routing | `go_router` centralizes navigation in `lib/routes/app_router.dart`. |
+| Providers | Provider classes manage state for auth, feed, comments, profile, and users. This keeps business state out of widgets. |
+| Repositories | API calls live in repositories, keeping network code separate from UI screens. |
+| Models | Dart models parse API responses for auth, posts, comments, and users. |
+| Reusable widgets | Core widgets exist for buttons, text fields, cards, avatars, empty states, error states, loading states, and section headers. |
+| Theme | The app has centralized theme and color constants. This is a good base for Phase 2 UI work. |
+| Error handling | Dio errors are normalized in `ApiClient`, and UI flows show readable messages. |
+| Loading/empty states | Reusable views exist, but some screens can still use more contextual empty and retry states. |
+| UI consistency | The app is clean for an MVP, but spacing, card hierarchy, feed polish, and profile presentation should be improved in the next phase. |
 
-- Existing features are covered by feature tests.
-- Controllers use API resources and form requests in important write paths.
-- Soft deletes are used for user-generated posts and comments.
-- API responses are consistently shaped with `success`, `message`, and `data` or `errors`.
-- Eager loading and count loading are already used in feed-style endpoints.
+## 5. Security Review
 
-Areas to improve later:
+| Check | Status |
+|---|---|
+| `.env` ignored | Root `.gitignore` ignores `.env`, `.env.*`, `backend/.env`, and `backend/.env.*`, while allowing `.env.example`. |
+| Tokens stored securely | Flutter uses secure token storage through `flutter_secure_storage`. |
+| Protected routes | Private API routes are wrapped in `auth:sanctum`. |
+| Ownership checks | Users cannot edit or delete posts/comments owned by other users. |
+| Social login secrets | OAuth placeholders are in `.env.example`; real credentials should stay in local `.env` files only. |
+| Upload validation | Post and profile image uploads are validated by request classes. |
 
-- Authorization checks are currently mostly inline controller checks; policies would scale better.
-- Route files are still manageable, but route grouping can be clearer as more features arrive.
-- Pagination response metadata was duplicated across several controllers before this phase.
-- File upload validation is present, but production hardening should add image scanning and stricter storage notes.
-- Some counts are computed with relationship queries after writes; this is safe now but should be reviewed under higher traffic.
+Security concerns to address later:
 
-## Frontend Structure Review
+- Disable or protect demo login before production.
+- Add rate limiting for auth, comments, likes, follows, and future chat endpoints.
+- Move inline authorization into Laravel policies.
+- Review CORS and production session/cookie settings before deployment.
 
-The Flutter app uses a feature-based layout:
+## 6. Performance Review
 
-- `lib/core` contains API client, configuration, constants, theme, storage, utilities, and shared widgets.
-- `lib/features/auth` contains authentication models, repository, provider, and screens.
-- `lib/features/feed` contains feed repository, provider, model, screen, and post card widget.
-- `lib/features/comments` contains comment API, provider, model, screen, and comment tile.
-- `lib/features/profile` contains profile repository, provider, and profile-related screens.
-- `lib/features/search` contains user search provider, screen, and user tile.
-- `lib/routes/app_router.dart` centralizes navigation.
+| Area | Status |
+|---|---|
+| Pagination | Posts, comments, users, followers, and following lists are paginated. |
+| Eager loading | Feed-style endpoints use eager loading and counts to reduce N+1 risk. |
+| Image loading/caching | Flutter uses `cached_network_image` for network images. |
+| Indexes | Unique constraints exist for likes and follows. More performance indexes should be added later for feed and discovery queries. |
+| Repeated API calls | Current flows are acceptable for MVP. Future infinite scroll, polling, and notifications need careful throttling. |
+| Provider rebuild risks | Provider usage is clean enough for the current scope. Later UI polish should watch for large widgets rebuilding unnecessarily. |
 
-Strengths:
+Recommended future indexes:
 
-- Feature folders keep the app understandable.
-- Provider state is separated from repositories and screens.
-- Dio errors are normalized in one API client.
-- Shared widgets and constants already exist for a design system foundation.
-- API endpoints are centralized instead of hardcoded across screens.
+- `posts.user_id`
+- `posts.created_at`
+- `comments.post_id`
+- `comments.created_at`
+- `likes.post_id`
+- `follows.follower_id`
+- `follows.following_id`
 
-Areas to improve later:
+## 7. UI/UX Review
 
-- Some widgets still duplicate layout patterns that could move into shared components.
-- Feed, comments, and profile flows can use richer loading, empty, and retry states.
-- The app currently uses a local development API base URL; future phases should add environment switching for staging and production.
-- Large screens should continue being split into smaller widgets as product features grow.
-- Widget tests are minimal and should expand around core social interactions.
+- Design consistency is improving through shared colors, theme, and core widgets.
+- Navigation is understandable and centralized.
+- Empty, loading, and error views exist but can become more contextual.
+- Feed and profile screens need stronger visual hierarchy and more polished social app patterns.
+- Login and social authentication screens should feel more branded.
+- Post cards should eventually support richer actions such as save, share, and post detail navigation.
+- Profile screens should later include cover image, username, joined date, website, location, and profile post layout.
 
-## Security Concerns
+## 8. Testing Review
 
-- OAuth secrets must remain in `.env` only and must never be committed.
-- Demo authentication is useful for development, but production deployment should disable or strongly protect it.
-- Auth, comments, likes, follows, and profile update endpoints should receive rate limiting before real users.
-- Inline authorization should be replaced with policies for posts and comments.
-- User resources should continue avoiding sensitive fields such as tokens, password hashes, and provider internals.
-- Uploads should remain size/type validated, and production deployments should use safe public storage configuration.
-- CORS configuration should be reviewed before deployment.
+Current strengths:
 
-## UI/UX Issues
+- Backend feature tests cover major API flows.
+- `php artisan route:list` verifies route registration.
+- `php artisan test` verifies backend behavior.
+- `flutter analyze` verifies frontend static analysis.
+- `docs/TESTING_CHECKLIST.md` supports manual assignment testing.
 
-- The UI foundation is clean, but screens still feel closer to an MVP than a polished social product.
-- Feed interactions need pull-to-refresh, infinite loading polish, and stronger visual hierarchy.
-- Post cards should eventually include clearer ownership actions, share/save placeholders, and better media treatment.
-- Empty and error states exist, but some flows can use more contextual copy and actions.
-- Profile screens need richer headers, cover image support, joined date, and follower previews in later phases.
+Missing or future test areas:
 
-## Performance Issues
+- More negative auth tests for social token failures.
+- Rate limit tests after rate limiting is added.
+- Backend policy tests after policies are introduced.
+- Flutter widget tests for login, post card, profile, empty/error/loading views, and comments.
+- Provider tests for feed, comments, profile, and auth state transitions.
 
-- Feed endpoints use eager loading and counts, which is good for the current scope.
-- Future growth will require database indexes on high-traffic columns such as `posts.created_at`, `comments.post_id`, `likes.post_id`, and follow columns.
-- Pagination exists for core list endpoints, but infinite scroll and caching are not fully developed on mobile.
-- Image loading uses caching on the Flutter side, but upload compression and backend media processing are future work.
-- Notification, messaging, and story features should be designed with pagination from the beginning.
+## 9. Issues Found
 
-## Safe Refactors Applied In Phase 1
+| Priority | Area | Issue | Recommended Fix |
+|---|---|---|---|
+| High | Security | Demo login exists and is useful for testing, but unsafe for production if left public. | Disable in production or protect behind an environment flag before deployment. |
+| High | Security | Auth and high-frequency social endpoints do not yet have explicit rate limiting. | Add route rate limiters for auth, comments, likes, follows, and future messaging. |
+| Medium | Authorization | Post/comment ownership checks are inline in controllers. | Add `PostPolicy` and `CommentPolicy` in a security hardening phase. |
+| Medium | Performance | Additional feed and relationship indexes are not fully defined yet. | Add safe indexes before advanced feed, explore, notifications, and chat features. |
+| Medium | Frontend | API base URL is local-development focused. | Add environment switching for development, staging, and production. |
+| Medium | Testing | Flutter widget/provider test coverage is still minimal. | Add focused widget/provider tests for core screens and state flows. |
+| Low | UI/UX | MVP screens need stronger polish, empty states, and profile/feed hierarchy. | Continue with Phase 2 UI/UX redesign system. |
+| Low | Documentation | Production deployment guidance is not complete yet. | Add a deployment guide in a later production-preparation phase. |
 
-- Added `ApiResponse::paginated()` to centralize paginated API response formatting.
-- Updated post, comment, user search, followers, and following list endpoints to reuse the shared pagination helper.
-- Preserved existing response shape:
-  - collection key such as `posts`, `comments`, or `users`
-  - `meta.current_page`
-  - `meta.last_page`
-  - `meta.per_page`
-  - `meta.total`
-  - `links.first`
-  - `links.last`
-  - `links.prev`
-  - `links.next`
+## 10. Safe Refactoring Plan
 
-No API paths, request bodies, resource fields, or Flutter screens were changed in this phase.
+Safe improvements completed or appropriate for Phase 1:
 
-## Recommended Improvements
+- Keep the existing route names and API paths unchanged.
+- Keep current authentication flow unchanged.
+- Centralize duplicated paginated response formatting in `ApiResponse::paginated()`.
+- Preserve the existing paginated JSON shape with collection data, `meta`, and `links`.
+- Verify `.gitignore` protects environment files, dependencies, build outputs, IDE files, OS files, and generated caches.
+- Add this technical audit as startup-quality documentation.
+- Link the audit from the root README.
 
-1. Add backend policies for posts, comments, and future resources.
-2. Add rate limiting to auth and high-frequency social actions.
-3. Expand Flutter widget tests for shared widgets and social screens.
-4. Add frontend environment switching for development, staging, and production API URLs.
-5. Improve feed UX with tabs, pull-to-refresh, infinite scroll, and skeleton loading.
-6. Add saved posts before notifications because save/share is lower-risk and improves product usefulness.
-7. Add database indexes before heavier discovery, notifications, and messaging features.
-8. Document production deployment and CORS/storage configuration before hosting.
+Safe improvements deferred to later phases:
 
-## Development Roadmap
+- Route grouping refinements after more APIs are added.
+- Policies for post/comment authorization.
+- Rate limiting.
+- More indexes.
+- More widget/provider tests.
+- Frontend environment switching.
 
-1. Phase 2: UI/UX redesign system and screen polish.
-2. Phase 3: Better feed modes and post detail experience.
-3. Phase 4: Save and share posts.
-4. Phase 5: Notifications.
-5. Phase 6: Near-real-time refresh strategy.
-6. Phase 7: Messaging MVP.
-7. Phase 8: Stories.
-8. Phase 9: Explore and discovery.
-9. Phase 10: Profile improvements.
-10. Phase 11: Settings and account management.
-11. Phase 12: Security hardening.
-12. Phase 13: Performance improvements.
-13. Phase 14: Admin and moderation foundation.
-14. Phase 15: Production deployment preparation.
-15. Phase 16: Testing and quality system.
-16. Phase 17: Product documentation.
-17. Phase 18: Branding and startup polish.
+## 11. Long-Term Roadmap
 
-## Phase 1 Status
+Recommended next phases:
 
-Phase 1 is intentionally small and stable. The project is ready to proceed to Phase 2 after backend tests and Flutter analysis pass.
+1. UI/UX redesign system.
+2. Better feed experience.
+3. Save posts.
+4. Notifications.
+5. Chat.
+6. Stories.
+7. Explore.
+8. Settings.
+9. Security hardening.
+10. Performance optimization.
+11. Deployment preparation.
+
+Phase 1 status: complete. The project has been audited, the documentation has been updated, and only a safe backend pagination-response refactor was applied.

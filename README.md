@@ -95,6 +95,7 @@ http://127.0.0.1:8000/api
 ## Documentation
 
 - [Backend API Documentation](docs/API_DOCUMENTATION.md)
+- [Technical Audit](docs/TECHNICAL_AUDIT.md)
 - [Setup Guide](docs/SETUP_GUIDE.md)
 - [Testing Checklist](docs/TESTING_CHECKLIST.md)
 - [Assignment Report Draft](docs/ASSIGNMENT_REPORT.md)
