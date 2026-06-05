@@ -344,3 +344,13 @@ DELETE /api/account
 ```
 
 Deactivation sets `account_status=deactivated` and revokes tokens. The delete endpoint is intentionally safe for the MVP and deactivates instead of hard deleting user data.
+
+## Security Notes
+
+- Keep `.env` private and use `.env.example` placeholders only.
+- Use `APP_DEBUG=false` in production.
+- Restrict CORS to the real frontend domain before launch.
+- Configure production Google/Facebook OAuth credentials and redirect URIs.
+- Rate limits are applied to auth and write-heavy endpoints.
+- Uploads are restricted to jpg, jpeg, png, and webp with endpoint-specific size limits.
+- Public media is stored under intended directories: `avatars`, `covers`, `posts`, and `stories`.

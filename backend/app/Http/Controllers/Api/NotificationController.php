@@ -52,9 +52,7 @@ class NotificationController extends Controller
 
     public function markAsRead(Request $request, Notification $notification): JsonResponse
     {
-        if ($notification->user_id !== $request->user()->id) {
-            return ApiResponse::error('Unauthorized action', [], 403);
-        }
+        $this->authorize('update', $notification);
 
         if (! $notification->read_at) {
             $notification->update(['read_at' => now()]);
@@ -81,9 +79,7 @@ class NotificationController extends Controller
 
     public function destroy(Request $request, Notification $notification): JsonResponse
     {
-        if ($notification->user_id !== $request->user()->id) {
-            return ApiResponse::error('Unauthorized action', [], 403);
-        }
+        $this->authorize('delete', $notification);
 
         $notification->delete();
 

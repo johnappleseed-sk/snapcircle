@@ -99,15 +99,14 @@ class PostController extends Controller
 
     public function update(UpdatePostRequest $request, Post $post): JsonResponse
     {
-        if ($post->user_id !== $request->user()->id) {
-            return ApiResponse::error('You are not allowed to update this post', [], 403);
-        }
+        $this->authorize('update', $post);
 
         $content = $request->exists('content') ? $request->input('content') : $post->content;
         $imagePath = $post->image_path;
 
         if ($request->hasFile('image')) {
             if ($post->image_path) {
+                // Post images are stored locally in the public disk; external URLs are never deleted.
                 Storage::disk('public')->delete($post->image_path);
             }
 
@@ -134,9 +133,7 @@ class PostController extends Controller
 
     public function destroy(Request $request, Post $post): JsonResponse
     {
-        if ($post->user_id !== $request->user()->id) {
-            return ApiResponse::error('You are not allowed to delete this post', [], 403);
-        }
+        $this->authorize('delete', $post);
 
         $post->delete();
 

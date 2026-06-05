@@ -86,11 +86,10 @@ class StoryController extends Controller
 
     public function destroy(Request $request, Story $story): JsonResponse
     {
-        if ($story->user_id !== $request->user()->id) {
-            return ApiResponse::error('Unauthorized action', [], 403);
-        }
+        $this->authorize('delete', $story);
 
         if ($story->media_path && ! str_starts_with($story->media_path, 'http')) {
+            // Story media is deleted only when it is a local public-disk path.
             Storage::disk('public')->delete($story->media_path);
         }
 

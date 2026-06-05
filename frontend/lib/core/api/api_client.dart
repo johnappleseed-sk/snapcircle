@@ -86,8 +86,25 @@ class ApiClient {
       }
     }
 
-    if (error.response?.statusCode == 401) {
-      return 'Session expired. Please log in again.';
+    final statusCode = error.response?.statusCode;
+    if (statusCode == 401) {
+      return 'Your session expired. Please log in again.';
+    }
+
+    if (statusCode == 403) {
+      return 'You are not allowed to perform this action.';
+    }
+
+    if (statusCode == 413) {
+      return 'The uploaded image is too large.';
+    }
+
+    if (statusCode == 422) {
+      return 'Please check the information and try again.';
+    }
+
+    if (statusCode == 429) {
+      return 'Too many requests. Please try again later.';
     }
 
     switch (error.type) {

@@ -15,9 +15,7 @@ class MessageController extends Controller
 {
     public function index(Request $request, Conversation $conversation): JsonResponse
     {
-        if (! $this->isParticipant($conversation, $request->user()->id)) {
-            return ApiResponse::error('Unauthorized action', [], 403);
-        }
+        $this->authorize('view', $conversation);
 
         $perPage = min((int) $request->integer('per_page', 30), 50);
         $messages = $conversation->messages()
@@ -35,9 +33,7 @@ class MessageController extends Controller
 
     public function store(StoreMessageRequest $request, Conversation $conversation): JsonResponse
     {
-        if (! $this->isParticipant($conversation, $request->user()->id)) {
-            return ApiResponse::error('Unauthorized action', [], 403);
-        }
+        $this->authorize('sendMessage', $conversation);
 
         $message = $conversation->messages()->create([
             'sender_id' => $request->user()->id,
@@ -55,9 +51,7 @@ class MessageController extends Controller
     {
         $message->load('conversation');
 
-        if (! $this->isParticipant($message->conversation, $request->user()->id)) {
-            return ApiResponse::error('Unauthorized action', [], 403);
-        }
+        $this->authorize('view', $message->conversation);
 
         if ($message->sender_id !== $request->user()->id && $message->read_at === null) {
             $message->forceFill(['read_at' => now()])->save();
@@ -70,10 +64,4 @@ class MessageController extends Controller
         ]);
     }
 
-    private function isParticipant(Conversation $conversation, int $userId): bool
-    {
-        return $conversation->users()
-            ->where('users.id', $userId)
-            ->exists();
-    }
 }

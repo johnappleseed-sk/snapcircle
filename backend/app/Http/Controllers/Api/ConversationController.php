@@ -65,9 +65,7 @@ class ConversationController extends Controller
 
     public function show(Request $request, Conversation $conversation): JsonResponse
     {
-        if (! $this->isParticipant($conversation, $request->user()->id)) {
-            return ApiResponse::error('Unauthorized action', [], 403);
-        }
+        $this->authorize('view', $conversation);
 
         $conversation->load(['users', 'latestMessage.sender']);
         $conversation->loadCount([
@@ -83,9 +81,7 @@ class ConversationController extends Controller
 
     public function destroy(Request $request, Conversation $conversation): JsonResponse
     {
-        if (! $this->isParticipant($conversation, $request->user()->id)) {
-            return ApiResponse::error('Unauthorized action', [], 403);
-        }
+        $this->authorize('delete', $conversation);
 
         return ApiResponse::success('Conversation delete is not implemented for the MVP', [
             'conversation_id' => $conversation->id,
@@ -117,10 +113,4 @@ class ConversationController extends Controller
         return $conversation;
     }
 
-    private function isParticipant(Conversation $conversation, int $userId): bool
-    {
-        return $conversation->users()
-            ->where('users.id', $userId)
-            ->exists();
-    }
 }

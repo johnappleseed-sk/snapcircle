@@ -426,3 +426,19 @@ Give users control over privacy, notification preferences, and safe account stat
 - `/settings/privacy` manages message availability and profile email visibility.
 - `/settings/notifications` manages push, email, and product email preferences.
 - `/settings/account` shows account status, logout, deactivation, and safe deletion request actions.
+
+## Security Hardening
+
+### Purpose
+
+Strengthen authentication, authorization, rate limiting, upload safety, API error consistency, and security documentation.
+
+### Applied Improvements
+
+- Route throttles for authentication and write-heavy actions.
+- Policies for post, comment, story, conversation, and notification authorization.
+- Active-account middleware for protected user actions.
+- Consistent JSON API errors for validation, unauthenticated, forbidden, not found, and rate-limit cases.
+- Upload validation confirmed for supported image types and file sizes.
+- Sensitive fields kept out of API resources.
+- Flutter token storage remains in secure storage and user-facing security errors are clearer.

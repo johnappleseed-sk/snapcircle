@@ -51,9 +51,7 @@ class CommentController extends Controller
 
     public function update(UpdateCommentRequest $request, Comment $comment): JsonResponse
     {
-        if ($comment->user_id !== $request->user()->id) {
-            return ApiResponse::error('Unauthorized action', [], 403);
-        }
+        $this->authorize('update', $comment);
 
         $comment->update([
             'comment' => $request->input('comment'),
@@ -68,9 +66,7 @@ class CommentController extends Controller
 
     public function destroy(Request $request, Comment $comment): JsonResponse
     {
-        if ($comment->user_id !== $request->user()->id) {
-            return ApiResponse::error('Unauthorized action', [], 403);
-        }
+        $this->authorize('delete', $comment);
 
         $post = $comment->post;
 

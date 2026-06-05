@@ -835,3 +835,48 @@ Sets `account_status` to `deactivated`, revokes tokens, and keeps user data inta
 Authentication: Yes
 
 MVP-safe deletion behavior: deactivates the account and revokes tokens. Full deletion is documented as future work to avoid breaking posts, messages, follows, and other relationships.
+
+## Security Hardening
+
+### Protected Route Strategy
+
+Only health and social authentication endpoints are public. Application routes use `auth:sanctum`; most user actions also use active-account middleware.
+
+Local demo login remains available only in local environments and is throttled.
+
+### Rate Limits
+
+```text
+POST /api/auth/google                         10/min
+POST /api/auth/facebook                       10/min
+POST /api/auth/demo                           10/min
+POST /api/posts                               20/min
+POST /api/posts/{post}/comments               30/min
+POST /api/posts/{post}/like                   60/min
+POST /api/users/{user}/follow                 30/min
+POST /api/stories                             10/min
+POST /api/conversations/{conversation}/messages 60/min
+PUT /api/account/deactivate                   5/min
+DELETE /api/account                           5/min
+```
+
+### Upload Rules
+
+```text
+avatar      jpg,jpeg,png,webp max 2MB stored in avatars
+cover_image jpg,jpeg,png,webp max 4MB stored in covers
+post image  jpg,jpeg,png,webp max 2MB stored in posts
+story media jpg,jpeg,png,webp max 4MB stored in stories
+```
+
+### Error Responses
+
+API errors use a consistent JSON shape:
+
+```json
+{
+  "success": false,
+  "message": "Unauthorized action",
+  "errors": {}
+}
+```

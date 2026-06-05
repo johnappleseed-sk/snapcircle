@@ -68,6 +68,14 @@ Settings screens are available at:
 
 Users can manage privacy controls, notification preferences, logout, deactivate their account, or request safe account deletion. Delete currently uses backend deactivation behavior to protect posts, messages, and relationships during the MVP.
 
+## Security Notes
+
+- API tokens are stored only in `flutter_secure_storage`.
+- Logout clears local secure storage.
+- Expired sessions show a friendly message and return users to login through auth status checks.
+- The app avoids displaying raw Dio errors or backend stack traces.
+- Upload-related errors are mapped to user-friendly messages.
+
 The Laravel backend must be running before social login can complete:
 
 ```bash
