@@ -2,6 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_sizes.dart';
+import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/empty_view.dart';
+import '../../../core/widgets/error_view.dart';
+import '../../../core/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../feed/models/post_model.dart';
 import '../../feed/providers/feed_provider.dart';
@@ -117,13 +122,13 @@ class _CommentsBody extends StatelessWidget {
     final commentsProvider = context.watch<CommentsProvider>();
 
     if (commentsProvider.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const LoadingView(message: 'Loading comments...');
     }
 
     if (commentsProvider.errorMessage != null &&
         commentsProvider.comments.isEmpty) {
       return _ScrollableState(
-        child: _CommentsErrorState(
+        child: ErrorView(
           message: commentsProvider.errorMessage!,
           onRetry: () => commentsProvider.fetchComments(postId, refresh: true),
         ),
@@ -131,11 +136,22 @@ class _CommentsBody extends StatelessWidget {
     }
 
     if (commentsProvider.comments.isEmpty) {
-      return const _ScrollableState(child: _EmptyCommentsState());
+      return const _ScrollableState(
+        child: EmptyView(
+          icon: Icons.chat_bubble_outline,
+          title: 'No comments yet',
+          subtitle: 'Start the conversation with the first comment.',
+        ),
+      );
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
+      padding: const EdgeInsets.fromLTRB(
+        AppSizes.paddingMedium,
+        AppSizes.paddingMedium,
+        AppSizes.paddingMedium,
+        AppSizes.paddingLarge,
+      ),
       itemCount: commentsProvider.comments.length + 1,
       separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
@@ -191,18 +207,14 @@ class _LoadMoreCommentsSection extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: OutlinedButton(
+      padding: const EdgeInsets.symmetric(vertical: AppSizes.paddingSmall),
+      child: AppButton(
+        label: 'Load more',
+        variant: AppButtonVariant.outline,
         onPressed: commentsProvider.isLoadingMore
             ? null
             : () => commentsProvider.loadMoreComments(postId),
-        child: commentsProvider.isLoadingMore
-            ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : const Text('Load more'),
+        isLoading: commentsProvider.isLoadingMore,
       ),
     );
   }
@@ -229,7 +241,12 @@ class _CommentComposer extends StatelessWidget {
         border: Border(top: BorderSide(color: AppColors.border)),
       ),
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+        padding: EdgeInsets.fromLTRB(
+          AppSizes.paddingMedium,
+          AppSizes.paddingSmall,
+          AppSizes.paddingMedium,
+          AppSizes.paddingSmall + MediaQuery.viewInsetsOf(context).bottom,
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
@@ -254,6 +271,7 @@ class _CommentComposer extends StatelessWidget {
                     enabled: !isSubmitting,
                     decoration: const InputDecoration(
                       hintText: 'Write a comment...',
+                      labelText: 'Comment',
                     ),
                   ),
                 ),
@@ -289,70 +307,10 @@ class _ScrollableState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(AppSizes.paddingLarge),
       children: [
         SizedBox(height: MediaQuery.sizeOf(context).height * 0.18),
         child,
-      ],
-    );
-  }
-}
-
-class _CommentsErrorState extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
-
-  const _CommentsErrorState({required this.message, required this.onRetry});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const Icon(Icons.error_outline, color: AppColors.danger, size: 42),
-        const SizedBox(height: 12),
-        Text(
-          message,
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyLarge,
-        ),
-        const SizedBox(height: 16),
-        FilledButton.icon(
-          onPressed: onRetry,
-          icon: const Icon(Icons.refresh),
-          label: const Text('Retry'),
-        ),
-      ],
-    );
-  }
-}
-
-class _EmptyCommentsState extends StatelessWidget {
-  const _EmptyCommentsState();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const Icon(
-          Icons.chat_bubble_outline,
-          color: AppColors.mutedText,
-          size: 48,
-        ),
-        const SizedBox(height: 12),
-        Text(
-          'No comments yet',
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          'Start the conversation with the first comment.',
-          textAlign: TextAlign.center,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(color: AppColors.mutedText),
-        ),
       ],
     );
   }

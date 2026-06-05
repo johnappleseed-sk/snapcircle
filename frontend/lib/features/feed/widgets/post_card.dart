@@ -3,6 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_sizes.dart';
+import '../../../core/widgets/app_avatar.dart';
+import '../../../core/widgets/app_card.dart';
+import '../../../core/utils/snackbar_helper.dart';
 import '../../../core/utils/date_formatter.dart';
 import '../models/post_model.dart';
 import '../providers/feed_provider.dart';
@@ -28,21 +32,19 @@ class PostCard extends StatelessWidget {
     final feedProvider = context.watch<FeedProvider>();
     final isLikeUpdating = feedProvider.isLikeUpdating(post.id);
 
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(8),
-      ),
+    return AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _UserAvatar(imageUrl: post.user.avatar),
-              const SizedBox(width: 12),
+              AppAvatar(
+                name: post.user.name,
+                imageUrl: post.user.avatar,
+                size: AppAvatarSize.medium,
+              ),
+              const SizedBox(width: AppSizes.paddingMedium),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -57,7 +59,7 @@ class PostCard extends StatelessWidget {
                         fontWeight: FontWeight.w800,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: AppSizes.paddingXS),
                     Text(
                       DateFormatter.timeAgo(post.createdAt),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
@@ -92,7 +94,7 @@ class PostCard extends StatelessWidget {
             ],
           ),
           if (hasContent) ...[
-            const SizedBox(height: 14),
+            const SizedBox(height: AppSizes.paddingMedium),
             Text(
               post.content!,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
@@ -102,9 +104,9 @@ class PostCard extends StatelessWidget {
             ),
           ],
           if (hasImage) ...[
-            const SizedBox(height: 14),
+            const SizedBox(height: AppSizes.paddingMedium),
             ClipRRect(
-              borderRadius: BorderRadius.circular(8),
+              borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
               child: AspectRatio(
                 aspectRatio: 4 / 3,
                 child: CachedNetworkImage(
@@ -127,7 +129,7 @@ class PostCard extends StatelessWidget {
               ),
             ),
           ],
-          const SizedBox(height: 14),
+          const SizedBox(height: AppSizes.paddingMedium),
           Row(
             children: [
               InkWell(
@@ -143,9 +145,7 @@ class PostCard extends StatelessWidget {
                               .read<FeedProvider>()
                               .errorMessage;
                           if (message != null) {
-                            ScaffoldMessenger.of(
-                              context,
-                            ).showSnackBar(SnackBar(content: Text(message)));
+                            SnackbarHelper.showError(context, message);
                           }
                         }
                       },
@@ -168,7 +168,7 @@ class PostCard extends StatelessWidget {
                         ),
                 ),
               ),
-              const SizedBox(width: 18),
+              const SizedBox(width: AppSizes.paddingLarge),
               InkWell(
                 borderRadius: BorderRadius.circular(8),
                 onTap: onCommentsTap,
@@ -184,50 +184,6 @@ class PostCard extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _UserAvatar extends StatelessWidget {
-  final String? imageUrl;
-
-  const _UserAvatar({this.imageUrl});
-
-  @override
-  Widget build(BuildContext context) {
-    final url = imageUrl;
-
-    if (url != null && url.isNotEmpty) {
-      return ClipOval(
-        child: CachedNetworkImage(
-          imageUrl: url,
-          height: 44,
-          width: 44,
-          fit: BoxFit.cover,
-          errorWidget: (context, url, error) => const _AvatarFallback(),
-          placeholder: (context, url) => const _AvatarFallback(),
-        ),
-      );
-    }
-
-    return const _AvatarFallback();
-  }
-}
-
-class _AvatarFallback extends StatelessWidget {
-  const _AvatarFallback();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 44,
-      width: 44,
-      alignment: Alignment.center,
-      decoration: const BoxDecoration(
-        color: AppColors.background,
-        shape: BoxShape.circle,
-      ),
-      child: const Icon(Icons.person, color: AppColors.mutedText),
     );
   }
 }

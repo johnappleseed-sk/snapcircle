@@ -4,7 +4,9 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_sizes.dart';
 import '../../../core/constants/app_strings.dart';
+import '../../../core/constants/app_text_styles.dart';
 import '../../../core/widgets/app_button.dart';
 import '../providers/auth_provider.dart';
 
@@ -44,79 +46,104 @@ class LoginScreen extends StatelessWidget {
 
     return Scaffold(
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              const Spacer(),
-              Container(
-                height: 68,
-                width: 68,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(20),
-                ),
-                child: const Icon(
-                  Icons.camera_alt,
-                  color: Colors.white,
-                  size: 32,
-                ),
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSizes.paddingLarge),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight:
+                  MediaQuery.sizeOf(context).height -
+                  MediaQuery.paddingOf(context).vertical -
+                  AppSizes.paddingLarge * 2,
+            ),
+            child: IntrinsicHeight(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const Spacer(),
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Container(
+                      height: 76,
+                      width: 76,
+                      alignment: Alignment.center,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [AppColors.primary, AppColors.secondary],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(
+                          AppSizes.radiusLarge,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.primary.withValues(alpha: 0.18),
+                            blurRadius: 24,
+                            offset: const Offset(0, 12),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.camera_alt,
+                        color: Colors.white,
+                        size: 34,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: AppSizes.paddingLarge),
+                  Text(AppStrings.appName, style: AppTextStyles.headingLarge),
+                  const SizedBox(height: AppSizes.paddingSmall),
+                  Text(
+                    'Share moments. Build your circle.',
+                    style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                  if (authProvider.errorMessage != null) ...[
+                    const SizedBox(height: AppSizes.paddingLarge),
+                    _AuthErrorMessage(
+                      message: authProvider.errorMessage!,
+                      onDismissed: authProvider.clearError,
+                    ),
+                  ],
+                  const SizedBox(height: AppSizes.paddingXL),
+                  AppButton(
+                    label: 'Continue with Google',
+                    icon: Icons.g_mobiledata,
+                    isLoading: authProvider.isLoading,
+                    onPressed: () => _loginWithGoogle(context),
+                  ),
+                  const SizedBox(height: AppSizes.paddingMedium),
+                  AppButton(
+                    label: 'Continue with Facebook',
+                    icon: Icons.facebook,
+                    isLoading: authProvider.isLoading,
+                    onPressed: () => _loginWithFacebook(context),
+                    variant: AppButtonVariant.secondary,
+                  ),
+                  if (kDebugMode) ...[
+                    const SizedBox(height: AppSizes.paddingMedium),
+                    AppButton(
+                      label: 'Use local demo account',
+                      icon: Icons.bolt_outlined,
+                      variant: AppButtonVariant.outline,
+                      onPressed: authProvider.isLoading
+                          ? null
+                          : () => _loginWithDemo(context),
+                    ),
+                  ],
+                  const SizedBox(height: AppSizes.paddingLarge),
+                  Text(
+                    'Login securely with your social account to continue.',
+                    textAlign: TextAlign.center,
+                    style: Theme.of(
+                      context,
+                    ).textTheme.bodySmall?.copyWith(color: AppColors.mutedText),
+                  ),
+                  const Spacer(),
+                ],
               ),
-              const SizedBox(height: 24),
-              Text(
-                AppStrings.appName,
-                style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                  fontWeight: FontWeight.w900,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                'Share moments, follow friends, and keep your circle close.',
-                style: Theme.of(context).textTheme.bodyLarge,
-              ),
-              if (authProvider.errorMessage != null) ...[
-                const SizedBox(height: 20),
-                _AuthErrorMessage(
-                  message: authProvider.errorMessage!,
-                  onDismissed: authProvider.clearError,
-                ),
-              ],
-              const SizedBox(height: 32),
-              AppButton(
-                label: 'Continue with Google',
-                icon: Icons.g_mobiledata,
-                isLoading: authProvider.isLoading,
-                onPressed: () => _loginWithGoogle(context),
-              ),
-              const SizedBox(height: 12),
-              AppButton(
-                label: 'Continue with Facebook',
-                icon: Icons.facebook,
-                isLoading: authProvider.isLoading,
-                onPressed: () => _loginWithFacebook(context),
-              ),
-              if (kDebugMode) ...[
-                const SizedBox(height: 12),
-                OutlinedButton.icon(
-                  onPressed: authProvider.isLoading
-                      ? null
-                      : () => _loginWithDemo(context),
-                  icon: const Icon(Icons.bolt_outlined),
-                  label: const Text('Use local demo account'),
-                ),
-              ],
-              const SizedBox(height: 18),
-              Text(
-                'Login securely with your social account to continue.',
-                textAlign: TextAlign.center,
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: AppColors.mutedText),
-              ),
-              const Spacer(),
-            ],
+            ),
           ),
         ),
       ),
@@ -135,20 +162,20 @@ class _AuthErrorMessage extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: AppColors.danger.withValues(alpha: 0.08),
-        border: Border.all(color: AppColors.danger.withValues(alpha: 0.24)),
-        borderRadius: BorderRadius.circular(12),
+        color: AppColors.error.withValues(alpha: 0.08),
+        border: Border.all(color: AppColors.error.withValues(alpha: 0.24)),
+        borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Icon(Icons.error_outline, color: AppColors.danger, size: 20),
+          const Icon(Icons.error_outline, color: AppColors.error, size: 20),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
               message,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                color: AppColors.danger,
+                color: AppColors.error,
                 fontWeight: FontWeight.w600,
               ),
             ),
@@ -156,7 +183,7 @@ class _AuthErrorMessage extends StatelessWidget {
           IconButton(
             onPressed: onDismissed,
             icon: const Icon(Icons.close, size: 18),
-            color: AppColors.danger,
+            color: AppColors.error,
             tooltip: 'Dismiss error',
             visualDensity: VisualDensity.compact,
           ),

@@ -33,25 +33,29 @@ class EmptyView extends StatelessWidget {
               backgroundColor: AppColors.primary.withValues(alpha: 0.10),
               child: Icon(icon, color: AppColors.primary, size: 34),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: AppSizes.paddingMedium),
             Text(
               title,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 8),
             Text(
               subtitle,
               textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: AppColors.textSecondary,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
             ),
             if (actionLabel != null && onAction != null) ...[
               const SizedBox(height: 18),
-              AppButton(label: actionLabel!, onPressed: onAction),
+              AppButton(
+                label: actionLabel!,
+                onPressed: onAction,
+                fullWidth: false,
+              ),
             ],
           ],
         ),

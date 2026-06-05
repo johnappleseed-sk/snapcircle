@@ -1,8 +1,11 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_sizes.dart';
+import '../../../core/widgets/app_avatar.dart';
+import '../../../core/widgets/app_card.dart';
 import '../../../core/utils/date_formatter.dart';
+import '../../../core/utils/snackbar_helper.dart';
 import '../models/comment_model.dart';
 
 class CommentTile extends StatelessWidget {
@@ -24,16 +27,15 @@ class CommentTile extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        _CommentAvatar(imageUrl: comment.user.avatar),
-        const SizedBox(width: 12),
+        AppAvatar(
+          name: comment.user.name,
+          imageUrl: comment.user.avatar,
+          size: AppAvatarSize.small,
+        ),
+        const SizedBox(width: AppSizes.paddingMedium),
         Expanded(
-          child: Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.surface,
-              border: Border.all(color: AppColors.border),
-              borderRadius: BorderRadius.circular(8),
-            ),
+          child: AppCard(
+            padding: const EdgeInsets.all(AppSizes.paddingMedium),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -102,7 +104,7 @@ class CommentTile extends StatelessWidget {
                       ),
                   ],
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSizes.paddingSmall),
                 Text(
                   comment.comment,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
@@ -153,13 +155,11 @@ class CommentTile extends StatelessWidget {
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          success ? 'Comment updated.' : 'Unable to update comment.',
-        ),
-      ),
-    );
+    if (success) {
+      SnackbarHelper.showSuccess(context, 'Comment updated.');
+    } else {
+      SnackbarHelper.showError(context, 'Unable to update comment.');
+    }
   }
 
   Future<void> _confirmDelete(BuildContext context) async {
@@ -191,56 +191,10 @@ class CommentTile extends StatelessWidget {
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          success ? 'Comment deleted.' : 'Unable to delete comment.',
-        ),
-      ),
-    );
-  }
-}
-
-class _CommentAvatar extends StatelessWidget {
-  final String? imageUrl;
-
-  const _CommentAvatar({this.imageUrl});
-
-  @override
-  Widget build(BuildContext context) {
-    final url = imageUrl;
-
-    if (url != null && url.isNotEmpty) {
-      return ClipOval(
-        child: CachedNetworkImage(
-          imageUrl: url,
-          height: 40,
-          width: 40,
-          fit: BoxFit.cover,
-          errorWidget: (context, url, error) => const _AvatarFallback(),
-          placeholder: (context, url) => const _AvatarFallback(),
-        ),
-      );
+    if (success) {
+      SnackbarHelper.showSuccess(context, 'Comment deleted.');
+    } else {
+      SnackbarHelper.showError(context, 'Unable to delete comment.');
     }
-
-    return const _AvatarFallback();
-  }
-}
-
-class _AvatarFallback extends StatelessWidget {
-  const _AvatarFallback();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 40,
-      width: 40,
-      alignment: Alignment.center,
-      decoration: const BoxDecoration(
-        color: AppColors.background,
-        shape: BoxShape.circle,
-      ),
-      child: const Icon(Icons.person, color: AppColors.mutedText, size: 20),
-    );
   }
 }

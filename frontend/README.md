@@ -296,6 +296,44 @@ iOS setup is project-specific and should be completed before testing on iPhone o
 - Likes and comments connected to Laravel API with local feed count updates
 - Profile, edit profile, user search, user profiles, follow/unfollow, followers, and following screens connected to Laravel API
 
+## UI/UX Redesign Summary
+
+Phase 2 improves the Flutter app with a cleaner startup-style social interface while keeping the existing Provider state, GoRouter routes, and Laravel API integrations intact.
+
+Design system files:
+
+- `lib/core/constants/app_colors.dart`
+- `lib/core/constants/app_sizes.dart`
+- `lib/core/constants/app_text_styles.dart`
+- `lib/core/theme/app_theme.dart`
+
+Reusable widgets:
+
+- `AppButton`
+- `AppTextField`
+- `AppAvatar`
+- `AppCard`
+- `EmptyView`
+- `ErrorView`
+- `LoadingView`
+- `SectionHeader`
+
+Screens polished:
+
+- Splash screen
+- Login screen
+- Home feed screen
+- Post cards
+- Create post screen
+- Comments screen
+- Profile screen
+- Edit profile screen
+- Search/Explore screen
+- User profile screen
+- Followers and following lists
+
+The redesign adds consistent spacing, rounded cards, clearer buttons, improved avatars, friendly loading/empty/error states, and consistent snackbar feedback.
+
 ## App Screens
 
 - Splash screen
@@ -339,3 +377,20 @@ See the root documentation folder:
 ```bash
 flutter analyze
 ```
+
+## Run And Verify UI
+
+```bash
+flutter pub get
+flutter analyze
+flutter run
+```
+
+Manual UI verification checklist:
+
+- Open the splash and login screens.
+- Log in with the configured provider or local demo account.
+- Refresh the feed and create a text post.
+- Open comments, add a comment, and return to the feed.
+- Open profile, edit profile, and view another user profile.
+- Search users and open followers/following lists.

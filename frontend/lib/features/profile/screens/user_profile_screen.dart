@@ -1,9 +1,14 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_sizes.dart';
+import '../../../core/widgets/app_avatar.dart';
+import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/error_view.dart';
+import '../../../core/widgets/loading_view.dart';
 import '../../auth/models/user_model.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/profile_provider.dart';
@@ -69,30 +74,22 @@ class _UserProfileBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isLoading && user == null) {
-      return const Center(child: CircularProgressIndicator());
+      return const LoadingView(message: 'Loading profile...');
     }
 
     if (errorMessage != null && user == null) {
       return ListView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppSizes.paddingLarge),
         children: [
           const SizedBox(height: 96),
-          const Icon(Icons.error_outline, color: AppColors.danger, size: 42),
-          const SizedBox(height: 12),
-          Text(errorMessage!, textAlign: TextAlign.center),
-          const SizedBox(height: 16),
-          FilledButton.icon(
-            onPressed: onRetry,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Retry'),
-          ),
+          ErrorView(message: errorMessage!, onRetry: onRetry),
         ],
       );
     }
 
     if (user == null) {
       return ListView(
-        padding: EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppSizes.paddingLarge),
         children: const [
           SizedBox(height: 96),
           Center(child: Text('User not found.')),
@@ -105,19 +102,22 @@ class _UserProfileBody extends StatelessWidget {
         currentUserId != null && currentUserId == loadedUser.id;
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+      padding: const EdgeInsets.fromLTRB(
+        AppSizes.paddingMedium,
+        AppSizes.paddingMedium,
+        AppSizes.paddingMedium,
+        AppSizes.paddingXL,
+      ),
       children: [
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            border: Border.all(color: AppColors.border),
-            borderRadius: BorderRadius.circular(8),
-          ),
+        AppCard(
           child: Column(
             children: [
-              _Avatar(imageUrl: loadedUser.avatar),
-              const SizedBox(height: 12),
+              AppAvatar(
+                name: loadedUser.name,
+                imageUrl: loadedUser.avatar,
+                size: AppAvatarSize.extraLarge,
+              ),
+              const SizedBox(height: AppSizes.paddingMedium),
               Text(
                 loadedUser.name,
                 textAlign: TextAlign.center,
@@ -127,10 +127,10 @@ class _UserProfileBody extends StatelessWidget {
               ),
               if (loadedUser.bio != null &&
                   loadedUser.bio!.trim().isNotEmpty) ...[
-                const SizedBox(height: 8),
+                const SizedBox(height: AppSizes.paddingSmall),
                 Text(loadedUser.bio!, textAlign: TextAlign.center),
               ],
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSizes.paddingMedium),
               Row(
                 children: [
                   Expanded(
@@ -156,42 +156,33 @@ class _UserProfileBody extends StatelessWidget {
                 ],
               ),
               if (!isCurrentUser) ...[
-                const SizedBox(height: 16),
-                SizedBox(
-                  width: double.infinity,
-                  child: loadedUser.isFollowedByMe
-                      ? OutlinedButton.icon(
-                          onPressed: isFollowing
-                              ? null
-                              : () => context
-                                    .read<ProfileProvider>()
-                                    .unfollowUser(loadedUser.id),
-                          icon: const Icon(Icons.person_remove_outlined),
-                          label: Text(isFollowing ? 'Updating...' : 'Unfollow'),
-                        )
-                      : FilledButton.icon(
-                          onPressed: isFollowing
-                              ? null
-                              : () => context
-                                    .read<ProfileProvider>()
-                                    .followUser(loadedUser.id),
-                          icon: const Icon(Icons.person_add_outlined),
-                          label: Text(isFollowing ? 'Updating...' : 'Follow'),
-                        ),
+                const SizedBox(height: AppSizes.paddingMedium),
+                AppButton(
+                  label: loadedUser.isFollowedByMe ? 'Unfollow' : 'Follow',
+                  icon: loadedUser.isFollowedByMe
+                      ? Icons.person_remove_outlined
+                      : Icons.person_add_outlined,
+                  variant: loadedUser.isFollowedByMe
+                      ? AppButtonVariant.outline
+                      : AppButtonVariant.primary,
+                  isLoading: isFollowing,
+                  onPressed: isFollowing
+                      ? null
+                      : () => loadedUser.isFollowedByMe
+                            ? context.read<ProfileProvider>().unfollowUser(
+                                loadedUser.id,
+                              )
+                            : context.read<ProfileProvider>().followUser(
+                                loadedUser.id,
+                              ),
                 ),
               ],
             ],
           ),
         ),
-        const SizedBox(height: 20),
-        Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            border: Border.all(color: AppColors.border),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: const Text(
+        const SizedBox(height: AppSizes.paddingLarge),
+        const AppCard(
+          child: Text(
             'User posts will be improved later.',
             style: TextStyle(color: AppColors.mutedText),
           ),
@@ -202,25 +193,6 @@ class _UserProfileBody extends StatelessWidget {
 
   void _openFollowList(BuildContext context, String type) {
     context.push('/users/${user!.id}/$type');
-  }
-}
-
-class _Avatar extends StatelessWidget {
-  final String? imageUrl;
-
-  const _Avatar({this.imageUrl});
-
-  @override
-  Widget build(BuildContext context) {
-    final url = imageUrl;
-    if (url != null && url.isNotEmpty) {
-      return CircleAvatar(
-        radius: 48,
-        backgroundImage: CachedNetworkImageProvider(url),
-      );
-    }
-
-    return const CircleAvatar(radius: 48, child: Icon(Icons.person, size: 48));
   }
 }
 

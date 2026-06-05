@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../constants/app_colors.dart';
+import '../constants/app_text_styles.dart';
 
 class SectionHeader extends StatelessWidget {
   final String title;
@@ -18,21 +18,11 @@ class SectionHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Expanded(
-          child: Text(
-            title,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w800,
-                ),
-          ),
-        ),
+        Expanded(child: Text(title, style: AppTextStyles.headingSmall)),
         if (actionLabel != null)
           TextButton(
             onPressed: onAction,
-            child: Text(
-              actionLabel!,
-              style: const TextStyle(color: AppColors.primary),
-            ),
+            child: Text(actionLabel!, style: AppTextStyles.link),
           ),
       ],
     );

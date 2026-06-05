@@ -12,12 +12,13 @@ class SnackbarHelper {
   }
 
   static void showInfo(BuildContext context, String message) {
-    _show(context, message, AppColors.primary);
+    _show(context, message, AppColors.info);
   }
 
   static void _show(BuildContext context, String message, Color color) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(message), backgroundColor: color),
-    );
+    ScaffoldMessenger.of(context).clearSnackBars();
+    ScaffoldMessenger.of(
+      context,
+    ).showSnackBar(SnackBar(content: Text(message), backgroundColor: color));
   }
 }

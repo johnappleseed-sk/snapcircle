@@ -4,8 +4,12 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_sizes.dart';
+import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_text_field.dart';
+import '../../../core/widgets/empty_view.dart';
+import '../../../core/widgets/error_view.dart';
+import '../../../core/widgets/loading_view.dart';
 import '../providers/users_provider.dart';
 import '../widgets/user_tile.dart';
 
@@ -50,7 +54,7 @@ class _SearchScreenState extends State<SearchScreen> {
     final usersProvider = context.watch<UsersProvider>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Search')),
+      appBar: AppBar(title: const Text('Explore')),
       body: RefreshIndicator(
         onRefresh: () => usersProvider.fetchUsers(
           refresh: true,
@@ -59,13 +63,19 @@ class _SearchScreenState extends State<SearchScreen> {
               : _searchController.text.trim(),
         ),
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+          padding: const EdgeInsets.fromLTRB(
+            AppSizes.paddingMedium,
+            AppSizes.paddingMedium,
+            AppSizes.paddingMedium,
+            AppSizes.paddingXL,
+          ),
           children: [
             AppTextField(
               label: 'Search users',
               hint: 'Find by name or email',
               controller: _searchController,
               onChanged: _onSearchChanged,
+              prefixIcon: const Icon(Icons.search_outlined),
             ),
             const SizedBox(height: 16),
             _SearchResults(usersProvider: usersProvider),
@@ -86,25 +96,16 @@ class _SearchResults extends StatelessWidget {
     if (usersProvider.isLoading && usersProvider.users.isEmpty) {
       return const Padding(
         padding: EdgeInsets.only(top: 96),
-        child: Center(child: CircularProgressIndicator()),
+        child: LoadingView(message: 'Searching people...'),
       );
     }
 
     if (usersProvider.errorMessage != null && usersProvider.users.isEmpty) {
       return Padding(
         padding: const EdgeInsets.only(top: 72),
-        child: Column(
-          children: [
-            const Icon(Icons.error_outline, color: AppColors.danger, size: 42),
-            const SizedBox(height: 12),
-            Text(usersProvider.errorMessage!, textAlign: TextAlign.center),
-            const SizedBox(height: 16),
-            FilledButton.icon(
-              onPressed: () => usersProvider.fetchUsers(refresh: true),
-              icon: const Icon(Icons.refresh),
-              label: const Text('Retry'),
-            ),
-          ],
+        child: ErrorView(
+          message: usersProvider.errorMessage!,
+          onRetry: () => usersProvider.fetchUsers(refresh: true),
         ),
       );
     }
@@ -112,21 +113,10 @@ class _SearchResults extends StatelessWidget {
     if (usersProvider.users.isEmpty) {
       return Padding(
         padding: const EdgeInsets.only(top: 72),
-        child: Column(
-          children: [
-            const Icon(
-              Icons.search_off_outlined,
-              color: AppColors.mutedText,
-              size: 48,
-            ),
-            const SizedBox(height: 12),
-            Text(
-              'No users found',
-              style: Theme.of(
-                context,
-              ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
-            ),
-          ],
+        child: const EmptyView(
+          icon: Icons.search_off_outlined,
+          title: 'No users found',
+          subtitle: 'Try another name, email, or profile keyword.',
         ),
       );
     }
@@ -138,17 +128,13 @@ class _SearchResults extends StatelessWidget {
           const SizedBox(height: 12),
         ],
         if (usersProvider.hasMore)
-          OutlinedButton(
+          AppButton(
+            label: 'Load more',
+            variant: AppButtonVariant.outline,
             onPressed: usersProvider.isLoadingMore
                 ? null
                 : usersProvider.loadMoreUsers,
-            child: usersProvider.isLoadingMore
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text('Load more'),
+            isLoading: usersProvider.isLoadingMore,
           ),
       ],
     );

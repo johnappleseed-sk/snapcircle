@@ -1,9 +1,14 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_sizes.dart';
+import '../../../core/widgets/app_avatar.dart';
+import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/error_view.dart';
+import '../../../core/widgets/loading_view.dart';
 import '../../auth/models/user_model.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/profile_provider.dart';
@@ -82,30 +87,22 @@ class _ProfileBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isLoading && profile == null) {
-      return const Center(child: CircularProgressIndicator());
+      return const LoadingView(message: 'Loading profile...');
     }
 
     if (errorMessage != null && profile == null) {
       return ListView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppSizes.paddingLarge),
         children: [
           const SizedBox(height: 96),
-          const Icon(Icons.error_outline, color: AppColors.danger, size: 42),
-          const SizedBox(height: 12),
-          Text(errorMessage!, textAlign: TextAlign.center),
-          const SizedBox(height: 16),
-          FilledButton.icon(
-            onPressed: onRetry,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Retry'),
-          ),
+          ErrorView(message: errorMessage!, onRetry: onRetry),
         ],
       );
     }
 
     if (profile == null) {
       return ListView(
-        padding: EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppSizes.paddingLarge),
         children: const [
           SizedBox(height: 96),
           Center(child: Text('No profile found.')),
@@ -116,25 +113,31 @@ class _ProfileBody extends StatelessWidget {
     final loadedProfile = profile!;
 
     return ListView(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+      padding: const EdgeInsets.fromLTRB(
+        AppSizes.paddingMedium,
+        AppSizes.paddingMedium,
+        AppSizes.paddingMedium,
+        AppSizes.paddingXL,
+      ),
       children: [
         _ProfileHeader(user: loadedProfile),
-        const SizedBox(height: 16),
+        const SizedBox(height: AppSizes.paddingMedium),
         Row(
           children: [
             Expanded(
-              child: FilledButton.icon(
+              child: AppButton(
+                label: 'Edit Profile',
+                icon: Icons.edit_outlined,
                 onPressed: () => context.push('/profile/edit'),
-                icon: const Icon(Icons.edit_outlined),
-                label: const Text('Edit Profile'),
               ),
             ),
-            const SizedBox(width: 12),
+            const SizedBox(width: AppSizes.paddingMedium),
             Expanded(
-              child: OutlinedButton.icon(
+              child: AppButton(
+                label: 'Logout',
+                icon: Icons.logout,
+                variant: AppButtonVariant.outline,
                 onPressed: onLogout,
-                icon: const Icon(Icons.logout),
-                label: const Text('Logout'),
               ),
             ),
           ],
@@ -153,17 +156,15 @@ class _ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(8),
-      ),
+    return AppCard(
       child: Column(
         children: [
-          _ProfileAvatar(imageUrl: user.avatar, radius: 44),
-          const SizedBox(height: 12),
+          AppAvatar(
+            name: user.name,
+            imageUrl: user.avatar,
+            size: AppAvatarSize.extraLarge,
+          ),
+          const SizedBox(height: AppSizes.paddingMedium),
           Text(
             user.name,
             textAlign: TextAlign.center,
@@ -171,7 +172,7 @@ class _ProfileHeader extends StatelessWidget {
               context,
             ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w900),
           ),
-          const SizedBox(height: 4),
+          const SizedBox(height: AppSizes.paddingXS),
           Text(
             user.email,
             textAlign: TextAlign.center,
@@ -180,14 +181,14 @@ class _ProfileHeader extends StatelessWidget {
             ).textTheme.bodyMedium?.copyWith(color: AppColors.mutedText),
           ),
           if (user.bio != null && user.bio!.trim().isNotEmpty) ...[
-            const SizedBox(height: 10),
+            const SizedBox(height: AppSizes.paddingSmall),
             Text(
               user.bio!,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium,
             ),
           ],
-          const SizedBox(height: 16),
+          const SizedBox(height: AppSizes.paddingMedium),
           Row(
             children: [
               Expanded(
@@ -209,29 +210,6 @@ class _ProfileHeader extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _ProfileAvatar extends StatelessWidget {
-  final String? imageUrl;
-  final double radius;
-
-  const _ProfileAvatar({this.imageUrl, required this.radius});
-
-  @override
-  Widget build(BuildContext context) {
-    final url = imageUrl;
-    if (url != null && url.isNotEmpty) {
-      return CircleAvatar(
-        radius: radius,
-        backgroundImage: CachedNetworkImageProvider(url),
-      );
-    }
-
-    return CircleAvatar(
-      radius: radius,
-      child: Icon(Icons.person, size: radius),
     );
   }
 }
@@ -269,14 +247,8 @@ class _PostsPlaceholder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.surface,
-        border: Border.all(color: AppColors.border),
-        borderRadius: BorderRadius.circular(8),
-      ),
-      child: const Text(
+    return const AppCard(
+      child: Text(
         'User posts will be improved later.',
         style: TextStyle(color: AppColors.mutedText),
       ),

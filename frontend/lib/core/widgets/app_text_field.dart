@@ -8,6 +8,10 @@ class AppTextField extends StatelessWidget {
   final ValueChanged<String>? onChanged;
   final int maxLines;
   final TextInputType? keyboardType;
+  final bool obscureText;
+  final Widget? prefixIcon;
+  final Widget? suffixIcon;
+  final bool enabled;
 
   const AppTextField({
     super.key,
@@ -18,6 +22,10 @@ class AppTextField extends StatelessWidget {
     this.onChanged,
     this.maxLines = 1,
     this.keyboardType,
+    this.obscureText = false,
+    this.prefixIcon,
+    this.suffixIcon,
+    this.enabled = true,
   });
 
   @override
@@ -28,7 +36,14 @@ class AppTextField extends StatelessWidget {
       onChanged: onChanged,
       maxLines: maxLines,
       keyboardType: keyboardType,
-      decoration: InputDecoration(labelText: label, hintText: hint),
+      obscureText: obscureText,
+      enabled: enabled,
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        prefixIcon: prefixIcon,
+        suffixIcon: suffixIcon,
+      ),
     );
   }
 }

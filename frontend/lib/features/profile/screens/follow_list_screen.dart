@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_sizes.dart';
+import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/empty_view.dart';
+import '../../../core/widgets/error_view.dart';
+import '../../../core/widgets/loading_view.dart';
 import '../../auth/models/user_model.dart';
 import '../../search/providers/users_provider.dart';
 import '../../search/widgets/user_tile.dart';
@@ -95,39 +99,35 @@ class _FollowListBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (isLoading && users.isEmpty) {
-      return const Center(child: CircularProgressIndicator());
+      return const LoadingView(message: 'Loading people...');
     }
 
     if (errorMessage != null && users.isEmpty) {
       return ListView(
-        padding: const EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppSizes.paddingLarge),
         children: [
           const SizedBox(height: 96),
-          const Icon(Icons.error_outline, color: AppColors.danger, size: 42),
-          const SizedBox(height: 12),
-          Text(errorMessage!, textAlign: TextAlign.center),
-          const SizedBox(height: 16),
-          FilledButton.icon(
-            onPressed: onRetry,
-            icon: const Icon(Icons.refresh),
-            label: const Text('Retry'),
-          ),
+          ErrorView(message: errorMessage!, onRetry: onRetry),
         ],
       );
     }
 
     if (users.isEmpty) {
       return ListView(
-        padding: EdgeInsets.all(24),
+        padding: const EdgeInsets.all(AppSizes.paddingLarge),
         children: const [
           SizedBox(height: 96),
-          Center(child: Text('No users found.')),
+          EmptyView(
+            icon: Icons.people_outline,
+            title: 'No users found',
+            subtitle: 'This list is empty for now.',
+          ),
         ],
       );
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(AppSizes.paddingMedium),
       itemCount: users.length + 1,
       separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
@@ -136,15 +136,11 @@ class _FollowListBody extends StatelessWidget {
             return const SizedBox.shrink();
           }
 
-          return OutlinedButton(
+          return AppButton(
+            label: 'Load more',
+            variant: AppButtonVariant.outline,
             onPressed: isLoadingMore ? null : onLoadMore,
-            child: isLoadingMore
-                ? const SizedBox(
-                    height: 20,
-                    width: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2),
-                  )
-                : const Text('Load more'),
+            isLoading: isLoadingMore,
           );
         }
 

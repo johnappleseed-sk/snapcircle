@@ -1,7 +1,9 @@
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_sizes.dart';
+import '../../../core/widgets/app_avatar.dart';
+import '../../../core/widgets/app_card.dart';
 import '../../auth/models/user_model.dart';
 
 class UserTile extends StatelessWidget {
@@ -16,20 +18,14 @@ class UserTile extends StatelessWidget {
         ? user.bio!
         : user.email;
 
-    return InkWell(
+    return AppCard(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
       child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: AppColors.surface,
-          border: Border.all(color: AppColors.border),
-          borderRadius: BorderRadius.circular(8),
-        ),
+        padding: EdgeInsets.zero,
         child: Row(
           children: [
-            _UserAvatar(imageUrl: user.avatar),
-            const SizedBox(width: 12),
+            AppAvatar(name: user.name, imageUrl: user.avatar),
+            const SizedBox(width: AppSizes.paddingMedium),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -55,11 +51,14 @@ class UserTile extends StatelessWidget {
               ),
             ),
             if (user.isFollowedByMe) ...[
-              const SizedBox(width: 10),
+              const SizedBox(width: AppSizes.paddingSmall),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.08),
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.16),
+                  ),
                   borderRadius: BorderRadius.circular(999),
                 ),
                 child: Text(
@@ -74,50 +73,6 @@ class UserTile extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _UserAvatar extends StatelessWidget {
-  final String? imageUrl;
-
-  const _UserAvatar({this.imageUrl});
-
-  @override
-  Widget build(BuildContext context) {
-    final url = imageUrl;
-
-    if (url != null && url.isNotEmpty) {
-      return ClipOval(
-        child: CachedNetworkImage(
-          imageUrl: url,
-          height: 48,
-          width: 48,
-          fit: BoxFit.cover,
-          placeholder: (context, url) => const _AvatarFallback(),
-          errorWidget: (context, url, error) => const _AvatarFallback(),
-        ),
-      );
-    }
-
-    return const _AvatarFallback();
-  }
-}
-
-class _AvatarFallback extends StatelessWidget {
-  const _AvatarFallback();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 48,
-      width: 48,
-      alignment: Alignment.center,
-      decoration: const BoxDecoration(
-        color: AppColors.background,
-        shape: BoxShape.circle,
-      ),
-      child: const Icon(Icons.person, color: AppColors.mutedText),
     );
   }
 }

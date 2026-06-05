@@ -7,8 +7,12 @@ import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_sizes.dart';
+import '../../../core/utils/snackbar_helper.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_text_field.dart';
+import '../../../core/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/profile_provider.dart';
 
@@ -80,9 +84,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
 
     if (updatedProfile != null) {
       context.read<AuthProvider>().updateUser(updatedProfile);
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Profile updated successfully.')),
-      );
+      SnackbarHelper.showSuccess(context, 'Profile updated successfully.');
       context.pop();
       return;
     }
@@ -102,68 +104,68 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
       appBar: AppBar(title: const Text('Edit Profile')),
       body: SafeArea(
         child: profile == null
-            ? const Center(child: CircularProgressIndicator())
+            ? const LoadingView(message: 'Loading profile...')
             : Form(
                 key: _formKey,
                 child: ListView(
-                  padding: const EdgeInsets.all(16),
+                  padding: const EdgeInsets.all(AppSizes.paddingMedium),
                   children: [
-                    Center(
-                      child: Stack(
+                    AppCard(
+                      child: Column(
                         children: [
-                          _EditableAvatar(
-                            selectedAvatar: _selectedAvatar,
-                            avatarUrl: profile.avatar,
+                          Stack(
+                            children: [
+                              _EditableAvatar(
+                                selectedAvatar: _selectedAvatar,
+                                avatarUrl: profile.avatar,
+                              ),
+                              Positioned(
+                                right: 0,
+                                bottom: 0,
+                                child: IconButton.filled(
+                                  onPressed: profileProvider.isUpdating
+                                      ? null
+                                      : _pickAvatar,
+                                  icon: const Icon(Icons.camera_alt_outlined),
+                                  tooltip: 'Choose avatar',
+                                ),
+                              ),
+                            ],
                           ),
-                          Positioned(
-                            right: 0,
-                            bottom: 0,
-                            child: IconButton.filled(
-                              onPressed: profileProvider.isUpdating
-                                  ? null
-                                  : _pickAvatar,
-                              icon: const Icon(Icons.camera_alt_outlined),
-                              tooltip: 'Choose avatar',
-                            ),
+                          const SizedBox(height: AppSizes.paddingLarge),
+                          AppTextField(
+                            label: 'Name',
+                            hint: 'Your name',
+                            controller: _nameController,
+                            prefixIcon: const Icon(Icons.person_outline),
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return 'Name is required.';
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: AppSizes.paddingMedium),
+                          AppTextField(
+                            label: 'Bio',
+                            hint: 'Tell people about yourself',
+                            controller: _bioController,
+                            maxLines: 4,
+                            prefixIcon: const Icon(Icons.notes_outlined),
+                          ),
+                          if (_localError != null) ...[
+                            const SizedBox(height: AppSizes.paddingMedium),
+                            _EditProfileError(message: _localError!),
+                          ],
+                          const SizedBox(height: AppSizes.paddingLarge),
+                          AppButton(
+                            label: 'Save Profile',
+                            icon: Icons.save_outlined,
+                            isLoading: profileProvider.isUpdating,
+                            onPressed: _submit,
                           ),
                         ],
                       ),
-                    ),
-                    const SizedBox(height: 24),
-                    AppTextField(
-                      label: 'Name',
-                      hint: 'Your name',
-                      controller: _nameController,
-                      validator: (value) {
-                        if (value == null || value.trim().isEmpty) {
-                          return 'Name is required.';
-                        }
-                        return null;
-                      },
-                    ),
-                    const SizedBox(height: 14),
-                    AppTextField(
-                      label: 'Bio',
-                      hint: 'Tell people about yourself',
-                      controller: _bioController,
-                      maxLines: 4,
-                    ),
-                    if (_localError != null) ...[
-                      const SizedBox(height: 14),
-                      Text(
-                        _localError!,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppColors.danger,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ],
-                    const SizedBox(height: 24),
-                    AppButton(
-                      label: 'Save Profile',
-                      icon: Icons.save_outlined,
-                      isLoading: profileProvider.isUpdating,
-                      onPressed: _submit,
                     ),
                   ],
                 ),
@@ -186,18 +188,47 @@ class _EditableAvatar extends StatelessWidget {
   Widget build(BuildContext context) {
     if (selectedAvatar != null) {
       return CircleAvatar(
-        radius: 54,
+        radius: AppSizes.avatarXL / 2,
         backgroundImage: FileImage(selectedAvatar!),
       );
     }
 
     if (avatarUrl != null && avatarUrl!.isNotEmpty) {
       return CircleAvatar(
-        radius: 54,
+        radius: AppSizes.avatarXL / 2,
         backgroundImage: CachedNetworkImageProvider(avatarUrl!),
       );
     }
 
-    return const CircleAvatar(radius: 54, child: Icon(Icons.person, size: 54));
+    return const CircleAvatar(
+      radius: AppSizes.avatarXL / 2,
+      child: Icon(Icons.person, size: AppSizes.avatarLarge),
+    );
+  }
+}
+
+class _EditProfileError extends StatelessWidget {
+  final String message;
+
+  const _EditProfileError({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSizes.paddingMedium),
+      decoration: BoxDecoration(
+        color: AppColors.error.withValues(alpha: 0.08),
+        border: Border.all(color: AppColors.error.withValues(alpha: 0.24)),
+        borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+      ),
+      child: Text(
+        message,
+        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+          color: AppColors.error,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
   }
 }

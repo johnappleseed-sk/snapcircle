@@ -31,6 +31,7 @@ class SnapCircleApp extends StatelessWidget {
             title: AppStrings.appName,
             debugShowCheckedModeBanner: false,
             theme: AppTheme.lightTheme,
+            darkTheme: AppTheme.darkTheme,
             routerConfig: AppRouter.createRouter(authProvider),
           );
         },

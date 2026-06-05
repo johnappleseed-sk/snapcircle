@@ -87,16 +87,16 @@ class ApiClient {
     }
 
     if (error.response?.statusCode == 401) {
-      return 'Your session is no longer valid. Please log in again.';
+      return 'Session expired. Please log in again.';
     }
 
     switch (error.type) {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.receiveTimeout:
       case DioExceptionType.sendTimeout:
-        return 'Connection timed out. Please try again.';
+        return 'Please check your internet connection.';
       case DioExceptionType.connectionError:
-        return 'Unable to connect to the API server.';
+        return 'Unable to connect to server.';
       default:
         return 'Request failed. Please try again.';
     }

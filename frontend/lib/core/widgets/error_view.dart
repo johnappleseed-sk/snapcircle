@@ -2,16 +2,13 @@ import 'package:flutter/material.dart';
 
 import '../constants/app_colors.dart';
 import '../constants/app_sizes.dart';
+import 'app_button.dart';
 
 class ErrorView extends StatelessWidget {
   final String message;
   final VoidCallback? onRetry;
 
-  const ErrorView({
-    super.key,
-    required this.message,
-    this.onRetry,
-  });
+  const ErrorView({super.key, required this.message, this.onRetry});
 
   @override
   Widget build(BuildContext context) {
@@ -21,7 +18,15 @@ class ErrorView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.error_outline, color: AppColors.error, size: 40),
+            CircleAvatar(
+              radius: 36,
+              backgroundColor: AppColors.error.withValues(alpha: 0.10),
+              child: const Icon(
+                Icons.error_outline,
+                color: AppColors.error,
+                size: 34,
+              ),
+            ),
             const SizedBox(height: 12),
             Text(
               message,
@@ -30,9 +35,12 @@ class ErrorView extends StatelessWidget {
             ),
             if (onRetry != null) ...[
               const SizedBox(height: 16),
-              OutlinedButton(
+              AppButton(
+                label: 'Retry',
                 onPressed: onRetry,
-                child: const Text('Retry'),
+                icon: Icons.refresh,
+                variant: AppButtonVariant.outline,
+                fullWidth: false,
               ),
             ],
           ],

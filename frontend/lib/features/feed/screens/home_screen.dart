@@ -3,6 +3,12 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
+import '../../../core/constants/app_sizes.dart';
+import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/empty_view.dart';
+import '../../../core/widgets/error_view.dart';
+import '../../../core/widgets/loading_view.dart';
+import '../../../core/utils/snackbar_helper.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../profile/screens/profile_screen.dart';
 import '../../search/screens/search_screen.dart';
@@ -37,6 +43,7 @@ class _HomeScreenState extends State<HomeScreen> {
             )
           : null,
       bottomNavigationBar: NavigationBar(
+        height: 72,
         selectedIndex: _currentIndex == 2 ? 3 : _currentIndex,
         onDestinationSelected: (index) {
           if (index == 2) {
@@ -100,7 +107,18 @@ class _FeedTabState extends State<_FeedTab> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('SnapCircle'),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('SnapCircle'),
+            Text(
+              'Share moments. Build your circle.',
+              style: Theme.of(
+                context,
+              ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+            ),
+          ],
+        ),
         actions: [
           IconButton(
             onPressed: () => feedProvider.fetchPosts(refresh: true),
@@ -129,12 +147,12 @@ class _FeedBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (feedProvider.isLoading) {
-      return const Center(child: CircularProgressIndicator());
+      return const LoadingView(message: 'Loading your feed...');
     }
 
     if (feedProvider.errorMessage != null && feedProvider.posts.isEmpty) {
       return _ScrollableState(
-        child: _FeedErrorState(
+        child: ErrorView(
           message: feedProvider.errorMessage!,
           onRetry: () => feedProvider.fetchPosts(refresh: true),
         ),
@@ -142,11 +160,24 @@ class _FeedBody extends StatelessWidget {
     }
 
     if (feedProvider.posts.isEmpty) {
-      return const _ScrollableState(child: _EmptyFeedState());
+      return _ScrollableState(
+        child: EmptyView(
+          icon: Icons.dynamic_feed_outlined,
+          title: 'No posts yet',
+          subtitle: 'Create the first SnapCircle post to start the feed.',
+          actionLabel: 'Create post',
+          onAction: () => context.push('/create-post'),
+        ),
+      );
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
+      padding: const EdgeInsets.fromLTRB(
+        AppSizes.paddingMedium,
+        AppSizes.paddingMedium,
+        AppSizes.paddingMedium,
+        96,
+      ),
       itemCount: feedProvider.posts.length + 1,
       separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
@@ -196,16 +227,15 @@ class _FeedBody extends StatelessWidget {
       return;
     }
 
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          deleted
-              ? 'Post deleted.'
-              : context.read<FeedProvider>().errorMessage ??
-                    'Unable to delete post.',
-        ),
-      ),
-    );
+    final message = deleted
+        ? 'Post deleted.'
+        : context.read<FeedProvider>().errorMessage ?? 'Unable to delete post.';
+
+    if (deleted) {
+      SnackbarHelper.showSuccess(context, message);
+    } else {
+      SnackbarHelper.showError(context, message);
+    }
   }
 }
 
@@ -230,18 +260,14 @@ class _LoadMoreSection extends StatelessWidget {
     }
 
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 8),
-      child: OutlinedButton(
+      padding: const EdgeInsets.symmetric(vertical: AppSizes.paddingSmall),
+      child: AppButton(
+        label: 'Load more',
+        variant: AppButtonVariant.outline,
         onPressed: feedProvider.isLoadingMore
             ? null
             : feedProvider.loadMorePosts,
-        child: feedProvider.isLoadingMore
-            ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : const Text('Load more'),
+        isLoading: feedProvider.isLoadingMore,
       ),
     );
   }
@@ -255,70 +281,10 @@ class _ScrollableState extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListView(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(AppSizes.paddingLarge),
       children: [
         SizedBox(height: MediaQuery.sizeOf(context).height * 0.18),
         child,
-      ],
-    );
-  }
-}
-
-class _FeedErrorState extends StatelessWidget {
-  final String message;
-  final VoidCallback onRetry;
-
-  const _FeedErrorState({required this.message, required this.onRetry});
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const Icon(Icons.error_outline, color: AppColors.danger, size: 42),
-        const SizedBox(height: 12),
-        Text(
-          message,
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyLarge,
-        ),
-        const SizedBox(height: 16),
-        FilledButton.icon(
-          onPressed: onRetry,
-          icon: const Icon(Icons.refresh),
-          label: const Text('Retry'),
-        ),
-      ],
-    );
-  }
-}
-
-class _EmptyFeedState extends StatelessWidget {
-  const _EmptyFeedState();
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        const Icon(
-          Icons.dynamic_feed_outlined,
-          color: AppColors.mutedText,
-          size: 48,
-        ),
-        const SizedBox(height: 12),
-        Text(
-          'No posts yet',
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w800),
-        ),
-        const SizedBox(height: 6),
-        Text(
-          'Create the first SnapCircle post to start the feed.',
-          textAlign: TextAlign.center,
-          style: Theme.of(
-            context,
-          ).textTheme.bodyMedium?.copyWith(color: AppColors.mutedText),
-        ),
       ],
     );
   }
