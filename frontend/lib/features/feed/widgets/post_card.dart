@@ -17,6 +17,8 @@ class PostCard extends StatelessWidget {
   final VoidCallback? onDelete;
   final VoidCallback? onCommentsTap;
   final VoidCallback? onTap;
+  final Future<bool> Function()? onSaveTap;
+  final VoidCallback? onShareTap;
 
   const PostCard({
     super.key,
@@ -25,6 +27,8 @@ class PostCard extends StatelessWidget {
     this.onDelete,
     this.onCommentsTap,
     this.onTap,
+    this.onSaveTap,
+    this.onShareTap,
   });
 
   @override
@@ -33,6 +37,7 @@ class PostCard extends StatelessWidget {
     final hasImage = post.imageUrl != null && post.imageUrl!.isNotEmpty;
     final feedProvider = context.watch<FeedProvider>();
     final isLikeUpdating = feedProvider.isLikeUpdating(post.id);
+    final isSaveUpdating = feedProvider.isSaveUpdating(post.id);
 
     return AppCard(
       onTap: onTap,
@@ -133,7 +138,9 @@ class PostCard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: AppSizes.paddingMedium),
-          Row(
+          Wrap(
+            spacing: AppSizes.paddingLarge,
+            runSpacing: AppSizes.paddingSmall,
             children: [
               InkWell(
                 borderRadius: BorderRadius.circular(8),
@@ -180,6 +187,57 @@ class PostCard extends StatelessWidget {
                   child: _PostMetric(
                     icon: Icons.chat_bubble_outline,
                     label: post.commentsCount.toString(),
+                  ),
+                ),
+              ),
+              InkWell(
+                borderRadius: BorderRadius.circular(8),
+                onTap: isSaveUpdating
+                    ? null
+                    : () async {
+                        final success =
+                            await (onSaveTap?.call() ??
+                                context.read<FeedProvider>().toggleSave(
+                                  post.id,
+                                ));
+                        if (!success && context.mounted) {
+                          final message = context
+                              .read<FeedProvider>()
+                              .errorMessage;
+                          if (message != null) {
+                            SnackbarHelper.showError(context, message);
+                          }
+                        }
+                      },
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  child: isSaveUpdating
+                      ? const SizedBox(
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : _PostMetric(
+                          icon: post.savedByMe
+                              ? Icons.bookmark
+                              : Icons.bookmark_border_outlined,
+                          label: post.savesCount.toString(),
+                          color: post.savedByMe
+                              ? AppColors.primary
+                              : AppColors.mutedText,
+                        ),
+                ),
+              ),
+              InkWell(
+                borderRadius: BorderRadius.circular(8),
+                onTap:
+                    onShareTap ??
+                    () => context.read<FeedProvider>().sharePost(post),
+                child: const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 6),
+                  child: _PostMetric(
+                    icon: Icons.ios_share_outlined,
+                    label: 'Share',
                   ),
                 ),
               ),

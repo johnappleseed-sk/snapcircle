@@ -180,6 +180,27 @@ To test likes:
 4. Confirm the heart toggles and the like count changes.
 5. Tap again to unlike.
 
+## Save And Share Posts
+
+Saved posts are connected through:
+
+```http
+POST http://10.0.2.2:8000/api/posts/{post}/save
+DELETE http://10.0.2.2:8000/api/posts/{post}/save
+GET http://10.0.2.2:8000/api/saved-posts
+```
+
+Flutter files:
+
+- `SavedPostRepository` handles save, unsave, and saved-post list API calls.
+- `SavedPostsProvider` owns saved-post list state and pagination.
+- `SavedPostsScreen` shows saved posts with pull to refresh and load more.
+- `PostCard` includes Save and Share actions.
+
+Sharing is client-side through `share_plus`. The shared text includes the post content when available and a SnapCircle post-link placeholder.
+
+Saved posts can be opened from the feed app bar or the Profile screen.
+
 ## Comments Integration
 
 Comments are connected through:

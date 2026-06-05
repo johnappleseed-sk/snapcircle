@@ -6,7 +6,9 @@ class PostModel {
   final String? imageUrl;
   final int likesCount;
   final int commentsCount;
+  final int savesCount;
   final bool likedByMe;
+  final bool savedByMe;
   final bool isOwner;
   final bool canDelete;
   final bool canUpdate;
@@ -20,7 +22,9 @@ class PostModel {
     this.imageUrl,
     this.likesCount = 0,
     this.commentsCount = 0,
+    this.savesCount = 0,
     this.likedByMe = false,
+    this.savedByMe = false,
     this.isOwner = false,
     this.canDelete = false,
     this.canUpdate = false,
@@ -36,7 +40,9 @@ class PostModel {
       imageUrl: _parseImageUrl(json),
       likesCount: _parseInt(json['likes_count']),
       commentsCount: _parseInt(json['comments_count']),
+      savesCount: _parseInt(json['saves_count']),
       likedByMe: _parseBool(json['liked_by_me']),
+      savedByMe: _parseBool(json['saved_by_me']),
       isOwner: _parseBool(json['is_owner']),
       canDelete: _parseBool(json['can_delete']),
       canUpdate: _parseBool(json['can_update']),
@@ -54,7 +60,9 @@ class PostModel {
       'image_url': imageUrl,
       'likes_count': likesCount,
       'comments_count': commentsCount,
+      'saves_count': savesCount,
       'liked_by_me': likedByMe,
+      'saved_by_me': savedByMe,
       'is_owner': isOwner,
       'can_delete': canDelete,
       'can_update': canUpdate,
@@ -69,7 +77,9 @@ class PostModel {
     String? imageUrl,
     int? likesCount,
     int? commentsCount,
+    int? savesCount,
     bool? likedByMe,
+    bool? savedByMe,
     bool? isOwner,
     bool? canDelete,
     bool? canUpdate,
@@ -82,7 +92,9 @@ class PostModel {
       imageUrl: imageUrl ?? this.imageUrl,
       likesCount: likesCount ?? this.likesCount,
       commentsCount: commentsCount ?? this.commentsCount,
+      savesCount: savesCount ?? this.savesCount,
       likedByMe: likedByMe ?? this.likedByMe,
+      savedByMe: savedByMe ?? this.savedByMe,
       isOwner: isOwner ?? this.isOwner,
       canDelete: canDelete ?? this.canDelete,
       canUpdate: canUpdate ?? this.canUpdate,

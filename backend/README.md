@@ -177,6 +177,25 @@ can_update
 can_delete
 ```
 
+## Save Posts
+
+Authenticated users can save posts for later:
+
+```http
+POST /api/posts/{post}/save
+DELETE /api/posts/{post}/save
+GET /api/saved-posts
+```
+
+Saved post responses include:
+
+```txt
+saved_by_me
+saves_count
+```
+
+The saved-posts list is paginated and returns full post resources.
+
 ## Response Format
 
 Success:

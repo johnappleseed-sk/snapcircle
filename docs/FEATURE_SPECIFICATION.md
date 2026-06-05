@@ -90,3 +90,64 @@ The post detail screen:
 | Popular | No popular posts yet. | Like and comment on posts to make them trend. |
 | Mine | You have not posted yet. | Share your first SnapCircle moment. |
 | Search | No posts found. | Try a different keyword. |
+
+## Save and Share Posts
+
+### Purpose
+
+Let users keep posts for later and share interesting posts outside SnapCircle.
+
+### Backend Endpoints
+
+```http
+POST /api/posts/{post}/save
+DELETE /api/posts/{post}/save
+GET /api/saved-posts
+```
+
+### Backend Behavior
+
+- Saving a post creates a unique `saved_posts` record for the authenticated user and post.
+- Duplicate saves are prevented.
+- Unsaving a post removes the saved record if it exists.
+- Saved posts are returned latest saved first.
+- Post resources include `saves_count` and `saved_by_me`.
+
+### Frontend Screens
+
+- Feed post cards include Save and Share actions.
+- Saved posts can be opened from the feed app bar.
+- Profile includes a Saved Posts card.
+- Saved Posts screen shows saved posts with loading, empty, error, pull-to-refresh, and load-more states.
+
+### User Flow
+
+1. User opens the feed.
+2. User taps the bookmark icon on a post.
+3. The post is saved and the saves count updates.
+4. User opens Saved Posts from the feed app bar or Profile screen.
+5. User can revisit, open, comment on, share, or unsave posts.
+
+### Sharing
+
+Sharing is handled in Flutter using `share_plus`.
+
+Example share text:
+
+```txt
+Check out this post on SnapCircle: {content}
+```
+
+If a post has no text content:
+
+```txt
+Check out this post on SnapCircle.
+```
+
+### Testing Notes
+
+- Save a post from the feed and confirm the bookmark state changes.
+- Save the same post again and confirm no duplicate saved record is created.
+- Open Saved Posts and confirm the saved post appears.
+- Unsave from Saved Posts and confirm it is removed from the list.
+- Share a post and confirm the platform share sheet opens.

@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\FollowController;
 use App\Http\Controllers\Api\LikeController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\SavedPostController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -54,4 +55,8 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
     Route::post('/posts/{post}/like', [LikeController::class, 'store']);
     Route::delete('/posts/{post}/like', [LikeController::class, 'destroy']);
+
+    Route::post('/posts/{post}/save', [SavedPostController::class, 'store']);
+    Route::delete('/posts/{post}/save', [SavedPostController::class, 'destroy']);
+    Route::get('/saved-posts', [SavedPostController::class, 'index']);
 });

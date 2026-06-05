@@ -49,6 +49,17 @@ class User extends Authenticatable
         return $this->hasMany(Like::class);
     }
 
+    public function savedPosts(): HasMany
+    {
+        return $this->hasMany(SavedPost::class);
+    }
+
+    public function savedPostItems(): BelongsToMany
+    {
+        return $this->belongsToMany(Post::class, 'saved_posts')
+            ->withTimestamps();
+    }
+
     public function followers(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'follows', 'following_id', 'follower_id')

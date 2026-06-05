@@ -1,14 +1,17 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../data/feed_repository.dart';
 import '../data/like_repository.dart';
+import '../data/saved_post_repository.dart';
 import '../models/post_model.dart';
 
 class FeedProvider extends ChangeNotifier {
   final FeedRepository _feedRepository;
   final LikeRepository _likeRepository;
+  final SavedPostRepository _savedPostRepository;
 
   List<PostModel> _posts = [];
   bool _isLoading = false;
@@ -16,6 +19,7 @@ class FeedProvider extends ChangeNotifier {
   bool _isRefreshing = false;
   bool _isCreating = false;
   final Set<int> _likingPostIds = {};
+  final Set<int> _savingPostIds = {};
   bool _hasMore = true;
   int _currentPage = 1;
   int _lastPage = 1;
@@ -24,9 +28,13 @@ class FeedProvider extends ChangeNotifier {
   String? _searchQuery;
   String? _errorMessage;
 
-  FeedProvider({FeedRepository? feedRepository, LikeRepository? likeRepository})
-    : _feedRepository = feedRepository ?? FeedRepository(),
-      _likeRepository = likeRepository ?? LikeRepository();
+  FeedProvider({
+    FeedRepository? feedRepository,
+    LikeRepository? likeRepository,
+    SavedPostRepository? savedPostRepository,
+  }) : _feedRepository = feedRepository ?? FeedRepository(),
+       _likeRepository = likeRepository ?? LikeRepository(),
+       _savedPostRepository = savedPostRepository ?? SavedPostRepository();
 
   List<PostModel> get posts => List.unmodifiable(_posts);
   bool get isLoading => _isLoading;
@@ -41,6 +49,7 @@ class FeedProvider extends ChangeNotifier {
   String? get searchQuery => _searchQuery;
   String? get errorMessage => _errorMessage;
   bool isLikeUpdating(int postId) => _likingPostIds.contains(postId);
+  bool isSaveUpdating(int postId) => _savingPostIds.contains(postId);
 
   Future<void> fetchPosts({bool refresh = false}) async {
     if (_isLoading || _isLoadingMore || _isRefreshing) {
@@ -233,6 +242,42 @@ class FeedProvider extends ChangeNotifier {
     return post.likedByMe ? unlikePost(postId) : likePost(postId);
   }
 
+  Future<bool> savePost(int postId) async {
+    if (_savingPostIds.contains(postId)) {
+      return false;
+    }
+
+    return _setSaveState(postId, shouldSave: true);
+  }
+
+  Future<bool> unsavePost(int postId) async {
+    if (_savingPostIds.contains(postId)) {
+      return false;
+    }
+
+    return _setSaveState(postId, shouldSave: false);
+  }
+
+  Future<bool> toggleSave(int postId) async {
+    final post = _findPost(postId);
+    if (post == null) {
+      return false;
+    }
+
+    return post.savedByMe ? unsavePost(postId) : savePost(postId);
+  }
+
+  Future<void> sharePost(PostModel post) {
+    final content = post.content?.trim();
+    final text = content == null || content.isEmpty
+        ? 'Check out this post on SnapCircle.'
+        : 'Check out this post on SnapCircle: $content';
+
+    return SharePlus.instance.share(
+      ShareParams(text: '$text\n\nPost link: snapcircle://posts/${post.id}'),
+    );
+  }
+
   void incrementCommentCount(int postId) {
     _updatePost(
       postId,
@@ -316,6 +361,58 @@ class FeedProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> _setSaveState(int postId, {required bool shouldSave}) async {
+    final originalPost = _findPost(postId);
+    if (originalPost == null) {
+      return false;
+    }
+
+    _savingPostIds.add(postId);
+    _errorMessage = null;
+    _updatePost(
+      postId,
+      (post) => post.copyWith(
+        savedByMe: shouldSave,
+        savesCount: _optimisticSavesCount(post, shouldSave: shouldSave),
+      ),
+      shouldNotify: false,
+    );
+    notifyListeners();
+
+    try {
+      final response = shouldSave
+          ? await _savedPostRepository.savePost(postId)
+          : await _savedPostRepository.unsavePost(postId);
+
+      _updatePost(
+        postId,
+        (post) => post.copyWith(
+          savesCount: response['saves_count'] is int
+              ? response['saves_count'] as int
+              : post.savesCount,
+          savedByMe: response['saved_by_me'] is bool
+              ? response['saved_by_me'] as bool
+              : shouldSave,
+        ),
+        shouldNotify: false,
+      );
+      return true;
+    } on SavedPostException catch (error) {
+      _errorMessage = error.message;
+      _replacePost(originalPost, shouldNotify: false);
+      return false;
+    } catch (_) {
+      _errorMessage = shouldSave
+          ? 'Unable to save this post. Please try again.'
+          : 'Unable to remove this saved post. Please try again.';
+      _replacePost(originalPost, shouldNotify: false);
+      return false;
+    } finally {
+      _savingPostIds.remove(postId);
+      notifyListeners();
+    }
+  }
+
   PostModel? _findPost(int postId) {
     for (final post in _posts) {
       if (post.id == postId) {
@@ -336,6 +433,18 @@ class FeedProvider extends ChangeNotifier {
     }
 
     return post.likesCount;
+  }
+
+  int _optimisticSavesCount(PostModel post, {required bool shouldSave}) {
+    if (shouldSave && !post.savedByMe) {
+      return post.savesCount + 1;
+    }
+
+    if (!shouldSave && post.savedByMe) {
+      return post.savesCount > 0 ? post.savesCount - 1 : 0;
+    }
+
+    return post.savesCount;
   }
 
   void _replacePost(PostModel post, {bool shouldNotify = true}) {

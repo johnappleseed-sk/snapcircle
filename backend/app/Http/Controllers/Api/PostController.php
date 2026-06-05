@@ -29,9 +29,10 @@ class PostController extends Controller
 
         $posts = Post::query()
             ->with('user')
-            ->withCount(['likes', 'comments'])
+            ->withCount(['likes', 'comments', 'savedPosts'])
             ->withExists([
                 'likes as liked_by_me' => fn ($query) => $query->where('user_id', $authUser->id),
+                'savedPosts as saved_by_me' => fn ($query) => $query->where('user_id', $authUser->id),
             ])
             ->when($mode === 'following', function ($query) use ($authUser): void {
                 $followingIds = $authUser->following()->pluck('users.id')->push($authUser->id);
@@ -72,8 +73,9 @@ class PostController extends Controller
             'image_path' => $request->file('image')?->store('posts', 'public'),
         ]);
 
-        $post->load('user')->loadCount(['likes', 'comments']);
+        $post->load('user')->loadCount(['likes', 'comments', 'savedPosts']);
         $post->liked_by_me = false;
+        $post->saved_by_me = false;
 
         return ApiResponse::success('Post created', [
             'post' => PostResource::make($post),
@@ -82,8 +84,11 @@ class PostController extends Controller
 
     public function show(Request $request, Post $post): JsonResponse
     {
-        $post->load('user')->loadCount(['likes', 'comments']);
+        $post->load('user')->loadCount(['likes', 'comments', 'savedPosts']);
         $post->liked_by_me = $post->likes()
+            ->where('user_id', $request->user()->id)
+            ->exists();
+        $post->saved_by_me = $post->savedPosts()
             ->where('user_id', $request->user()->id)
             ->exists();
 
@@ -114,8 +119,11 @@ class PostController extends Controller
             'image_path' => $imagePath,
         ]);
 
-        $post->load('user')->loadCount(['likes', 'comments']);
+        $post->load('user')->loadCount(['likes', 'comments', 'savedPosts']);
         $post->liked_by_me = $post->likes()
+            ->where('user_id', $request->user()->id)
+            ->exists();
+        $post->saved_by_me = $post->savedPosts()
             ->where('user_id', $request->user()->id)
             ->exists();
 

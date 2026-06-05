@@ -9,6 +9,7 @@ class ApiEndpoints {
   static const String users = '/users';
   static const String posts = '/posts';
   static const String createPost = '/posts';
+  static const String savedPosts = '/saved-posts';
 
   static String postById(int id) => '/posts/$id';
   static String userById(int id) => '/users/$id';
@@ -16,6 +17,8 @@ class ApiEndpoints {
   static String unfollowUser(int id) => '/users/$id/follow';
   static String likePost(int postId) => '/posts/$postId/like';
   static String unlikePost(int postId) => '/posts/$postId/like';
+  static String savePost(int postId) => '/posts/$postId/save';
+  static String unsavePost(int postId) => '/posts/$postId/save';
   static String postComments(int postId) => '/posts/$postId/comments';
   static String commentById(int commentId) => '/comments/$commentId';
   static String comments(int postId) => '/posts/$postId/comments';

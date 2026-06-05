@@ -244,7 +244,9 @@ Response:
         "user": {},
         "likes_count": 3,
         "comments_count": 2,
+        "saves_count": 1,
         "liked_by_me": false,
+        "saved_by_me": true,
         "is_owner": true,
         "can_update": true,
         "can_delete": true
@@ -277,7 +279,7 @@ At least `content` or `image` is required.
 
 Authentication: Yes
 
-Returns one post with owner, counts, `liked_by_me`, `is_owner`, `can_update`, and `can_delete`.
+Returns one post with owner, counts, `liked_by_me`, `saved_by_me`, `saves_count`, `is_owner`, `can_update`, and `can_delete`.
 
 Flutter route:
 
@@ -310,6 +312,79 @@ Likes a post. Duplicate likes return a clean already-liked message.
 Authentication: Yes
 
 Unlikes a post. If the post was not liked, returns a clean not-liked message.
+
+## Saved Posts
+
+### POST /api/posts/{post}/save
+
+Authentication: Yes
+
+Saves a post for the authenticated user. Duplicate saves return a clean already-saved message.
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Post saved successfully",
+  "data": {
+    "post_id": 1,
+    "saved_by_me": true,
+    "saves_count": 12
+  }
+}
+```
+
+### DELETE /api/posts/{post}/save
+
+Authentication: Yes
+
+Removes a post from the authenticated user's saved posts. If the post was not saved, the API still returns a successful response with `saved_by_me` set to `false`.
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Post removed from saved posts",
+  "data": {
+    "post_id": 1,
+    "saved_by_me": false,
+    "saves_count": 11
+  }
+}
+```
+
+### GET /api/saved-posts
+
+Authentication: Yes
+
+Query parameters:
+
+```txt
+page     optional integer min:1
+per_page optional integer min:1 max:50
+```
+
+Returns paginated saved posts, latest saved first.
+
+Response shape:
+
+```json
+{
+  "success": true,
+  "message": "Saved posts fetched successfully",
+  "data": {
+    "data": [],
+    "current_page": 1,
+    "last_page": 1,
+    "per_page": 10,
+    "total": 0
+  }
+}
+```
+
+Post resources include `saves_count` and `saved_by_me`.
 
 ## Comments
 

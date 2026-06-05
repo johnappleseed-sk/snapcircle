@@ -140,6 +140,11 @@ class _FeedTabState extends State<_FeedTab> {
         ),
         actions: [
           IconButton(
+            onPressed: () => context.push('/saved-posts'),
+            icon: const Icon(Icons.bookmark_border_outlined),
+            tooltip: 'Saved posts',
+          ),
+          IconButton(
             onPressed: () => feedProvider.fetchPosts(refresh: true),
             icon: const Icon(Icons.refresh),
             tooltip: 'Refresh feed',

@@ -142,6 +142,48 @@ class _ProfileBody extends StatelessWidget {
             ),
           ],
         ),
+        const SizedBox(height: AppSizes.paddingMedium),
+        AppCard(
+          onTap: () => context.push('/saved-posts'),
+          child: Row(
+            children: [
+              Container(
+                height: 44,
+                width: 44,
+                decoration: BoxDecoration(
+                  color: AppColors.primary.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+                ),
+                child: const Icon(
+                  Icons.bookmark_border_outlined,
+                  color: AppColors.primary,
+                ),
+              ),
+              const SizedBox(width: AppSizes.paddingMedium),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Saved Posts',
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                    const SizedBox(height: AppSizes.paddingXS),
+                    Text(
+                      'Revisit posts you saved for later.',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: AppColors.textSecondary,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right),
+            ],
+          ),
+        ),
         const SizedBox(height: 20),
         const _PostsPlaceholder(),
       ],
