@@ -7,6 +7,7 @@ use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -37,8 +38,13 @@ class User extends Authenticatable
         'date_of_birth',
         'is_private',
         'last_active_at',
+        'account_status',
         'provider',
         'provider_id',
+    ];
+
+    protected $attributes = [
+        'account_status' => 'active',
     ];
 
     public function posts(): HasMany
@@ -96,6 +102,11 @@ class User extends Authenticatable
     public function storyViews(): HasMany
     {
         return $this->hasMany(StoryView::class);
+    }
+
+    public function setting(): HasOne
+    {
+        return $this->hasOne(UserSetting::class);
     }
 
     public function followers(): BelongsToMany

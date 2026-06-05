@@ -10,6 +10,9 @@ class ApiEndpoints {
   static const String posts = '/posts';
   static const String createPost = '/posts';
   static const String savedPosts = '/saved-posts';
+  static const String settings = '/settings';
+  static const String deactivateAccount = '/account/deactivate';
+  static const String deleteAccount = '/account';
   static const String feedStatus = '/feed/status';
   static const String notifications = '/notifications';
   static const String notificationUnreadCount = '/notifications/unread-count';

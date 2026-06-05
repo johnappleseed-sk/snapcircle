@@ -55,6 +55,19 @@ For iOS simulator, use:
 http://127.0.0.1:8000/api
 ```
 
+## Settings and Account Management
+
+Settings screens are available at:
+
+```text
+/settings
+/settings/privacy
+/settings/notifications
+/settings/account
+```
+
+Users can manage privacy controls, notification preferences, logout, deactivate their account, or request safe account deletion. Delete currently uses backend deactivation behavior to protect posts, messages, and relationships during the MVP.
+
 The Laravel backend must be running before social login can complete:
 
 ```bash

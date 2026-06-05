@@ -12,6 +12,7 @@ use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\SavedPostController;
+use App\Http\Controllers\Api\SettingsController;
 use App\Http\Controllers\Api\StoryController;
 use Illuminate\Support\Facades\Route;
 
@@ -37,6 +38,11 @@ Route::post('/auth/demo', [AuthController::class, 'demo']);
 Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/user', [AuthController::class, 'user']);
     Route::post('/logout', [AuthController::class, 'logout']);
+
+    Route::get('/settings', [SettingsController::class, 'show']);
+    Route::put('/settings', [SettingsController::class, 'update']);
+    Route::put('/account/deactivate', [SettingsController::class, 'deactivate']);
+    Route::delete('/account', [SettingsController::class, 'destroy']);
 
     Route::get('/profile', [ProfileController::class, 'profile']);
     Route::put('/profile', [ProfileController::class, 'update']);

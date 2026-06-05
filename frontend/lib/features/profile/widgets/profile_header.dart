@@ -74,9 +74,11 @@ class ProfileHeader extends StatelessWidget {
                         Row(
                           children: [
                             OutlinedButton.icon(
-                              onPressed: onMessage,
+                              onPressed: user.allowMessages ? onMessage : null,
                               icon: const Icon(Icons.chat_bubble_outline),
-                              label: const Text('Message'),
+                              label: Text(
+                                user.allowMessages ? 'Message' : 'Messages off',
+                              ),
                             ),
                             const SizedBox(width: 8),
                             user.isFollowedByMe

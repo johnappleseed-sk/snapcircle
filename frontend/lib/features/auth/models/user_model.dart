@@ -11,6 +11,9 @@ class UserModel {
   final String? location;
   final String? website;
   final bool isPrivate;
+  final bool allowMessages;
+  final bool showEmail;
+  final String accountStatus;
   final DateTime? joinedAt;
   final DateTime? lastActiveAt;
   final int profileCompletion;
@@ -33,6 +36,9 @@ class UserModel {
     this.location,
     this.website,
     this.isPrivate = false,
+    this.allowMessages = true,
+    this.showEmail = false,
+    this.accountStatus = 'active',
     this.joinedAt,
     this.lastActiveAt,
     this.profileCompletion = 0,
@@ -57,6 +63,9 @@ class UserModel {
       location: _parseString(json['location']),
       website: _parseString(json['website']),
       isPrivate: _parseBool(json['is_private']),
+      allowMessages: _parseBool(json['allow_messages'], fallback: true),
+      showEmail: _parseBool(json['show_email']),
+      accountStatus: _parseString(json['account_status']) ?? 'active',
       joinedAt: _parseDate(json['joined_at'] ?? json['created_at']),
       lastActiveAt: _parseDate(json['last_active_at']),
       profileCompletion: _parseInt(json['profile_completion']),
@@ -82,6 +91,9 @@ class UserModel {
       'location': location,
       'website': website,
       'is_private': isPrivate,
+      'allow_messages': allowMessages,
+      'show_email': showEmail,
+      'account_status': accountStatus,
       'joined_at': joinedAt?.toIso8601String(),
       'last_active_at': lastActiveAt?.toIso8601String(),
       'profile_completion': profileCompletion,
@@ -106,6 +118,9 @@ class UserModel {
     String? location,
     String? website,
     bool? isPrivate,
+    bool? allowMessages,
+    bool? showEmail,
+    String? accountStatus,
     DateTime? joinedAt,
     DateTime? lastActiveAt,
     int? profileCompletion,
@@ -128,6 +143,9 @@ class UserModel {
       location: location ?? this.location,
       website: website ?? this.website,
       isPrivate: isPrivate ?? this.isPrivate,
+      allowMessages: allowMessages ?? this.allowMessages,
+      showEmail: showEmail ?? this.showEmail,
+      accountStatus: accountStatus ?? this.accountStatus,
       joinedAt: joinedAt ?? this.joinedAt,
       lastActiveAt: lastActiveAt ?? this.lastActiveAt,
       profileCompletion: profileCompletion ?? this.profileCompletion,
@@ -174,7 +192,7 @@ class UserModel {
     return 0;
   }
 
-  static bool _parseBool(dynamic value) {
+  static bool _parseBool(dynamic value, {bool fallback = false}) {
     if (value is bool) {
       return value;
     }
@@ -187,7 +205,7 @@ class UserModel {
       return value == '1' || value.toLowerCase() == 'true';
     }
 
-    return false;
+    return fallback;
   }
 
   static DateTime? _parseDate(dynamic value) {

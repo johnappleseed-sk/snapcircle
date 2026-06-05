@@ -18,6 +18,10 @@ import '../features/profile/screens/edit_profile_screen.dart';
 import '../features/profile/screens/follow_list_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
 import '../features/profile/screens/user_profile_screen.dart';
+import '../features/settings/screens/account_settings_screen.dart';
+import '../features/settings/screens/notification_settings_screen.dart';
+import '../features/settings/screens/privacy_settings_screen.dart';
+import '../features/settings/screens/settings_screen.dart';
 import '../features/stories/models/story_model.dart';
 import '../features/stories/screens/create_story_screen.dart';
 import '../features/stories/screens/story_viewer_screen.dart';
@@ -102,6 +106,22 @@ class AppRouter {
         GoRoute(
           path: '/notifications',
           builder: (context, state) => const NotificationsScreen(),
+        ),
+        GoRoute(
+          path: '/settings',
+          builder: (context, state) => const SettingsScreen(),
+        ),
+        GoRoute(
+          path: '/settings/privacy',
+          builder: (context, state) => const PrivacySettingsScreen(),
+        ),
+        GoRoute(
+          path: '/settings/notifications',
+          builder: (context, state) => const NotificationSettingsScreen(),
+        ),
+        GoRoute(
+          path: '/settings/account',
+          builder: (context, state) => const AccountSettingsScreen(),
         ),
         GoRoute(
           path: '/messages',

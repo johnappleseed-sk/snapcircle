@@ -58,9 +58,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             tooltip: 'Refresh profile',
           ),
           IconButton(
-            onPressed: () {},
+            onPressed: () => context.push('/settings'),
             icon: const Icon(Icons.settings_outlined),
-            tooltip: 'Settings coming soon',
+            tooltip: 'Settings',
           ),
         ],
       ),

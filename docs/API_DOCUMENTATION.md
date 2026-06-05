@@ -799,3 +799,39 @@ sort     optional string: latest, popular
 ```
 
 Profile responses include `username`, `avatar_url`, `cover_image_url`, `location`, `website`, `is_private`, `joined_at`, `last_active_at`, `profile_completion`, profile counts, `is_me`, and `is_followed_by_me`.
+
+## Settings and Account Management
+
+### GET /api/settings
+
+Authentication: Yes
+
+Returns the authenticated user's settings. If a settings row does not exist, default settings are created.
+
+### PUT /api/settings
+
+Authentication: Yes
+
+Updates settings with partial boolean fields:
+
+```json
+{
+  "allow_messages": true,
+  "show_email": false,
+  "push_notifications_enabled": true,
+  "email_notifications_enabled": false,
+  "marketing_emails_enabled": false
+}
+```
+
+### PUT /api/account/deactivate
+
+Authentication: Yes
+
+Sets `account_status` to `deactivated`, revokes tokens, and keeps user data intact.
+
+### DELETE /api/account
+
+Authentication: Yes
+
+MVP-safe deletion behavior: deactivates the account and revokes tokens. Full deletion is documented as future work to avoid breaking posts, messages, follows, and other relationships.

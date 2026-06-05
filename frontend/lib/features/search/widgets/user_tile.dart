@@ -17,7 +17,8 @@ class UserTile extends StatelessWidget {
     final handle = user.username == null ? null : '@${user.username}';
     final subtitle = user.bio != null && user.bio!.trim().isNotEmpty
         ? user.bio!
-        : user.location ?? (handle ?? user.email);
+        : user.location ??
+              (handle ?? (user.showEmail ? user.email : 'SnapCircle user'));
     final secondaryText = handle == null || subtitle == handle
         ? subtitle
         : '$handle · $subtitle';

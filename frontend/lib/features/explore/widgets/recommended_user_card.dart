@@ -23,6 +23,12 @@ class RecommendedUserCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final subtitle = user.bio?.trim().isNotEmpty == true
+        ? user.bio!
+        : user.username != null
+        ? '@${user.username}'
+        : user.location ?? (user.showEmail ? user.email : 'SnapCircle user');
+
     return SizedBox(
       width: 178,
       child: AppCard(
@@ -47,7 +53,7 @@ class RecommendedUserCard extends StatelessWidget {
             ),
             const SizedBox(height: 4),
             Text(
-              user.bio?.trim().isNotEmpty == true ? user.bio! : user.email,
+              subtitle,
               maxLines: 2,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,

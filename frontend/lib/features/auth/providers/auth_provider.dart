@@ -67,6 +67,7 @@ class AuthProvider extends ChangeNotifier {
       await _authRepository.logout();
     } on AuthException catch (error) {
       _errorMessage = error.message;
+      await _authRepository.clearToken();
     } catch (_) {
       _errorMessage = 'Logout failed. Local session was cleared.';
       await _authRepository.clearToken();

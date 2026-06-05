@@ -331,3 +331,16 @@ GET /api/users/{user}/posts
 ```
 
 Run `php artisan storage:link` so uploaded avatars and cover images are publicly reachable from `/storage/...`.
+
+## Settings and Account Management
+
+Settings are stored in `user_settings`; account status is stored on `users.account_status`.
+
+```http
+GET /api/settings
+PUT /api/settings
+PUT /api/account/deactivate
+DELETE /api/account
+```
+
+Deactivation sets `account_status=deactivated` and revokes tokens. The delete endpoint is intentionally safe for the MVP and deactivates instead of hard deleting user data.

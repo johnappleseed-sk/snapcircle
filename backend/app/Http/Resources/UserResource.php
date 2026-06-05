@@ -16,6 +16,11 @@ class UserResource extends JsonResource
     {
         $authUser = $request->user();
         $isFollowedByMe = $this->is_followed_by_me;
+        $settings = $this->relationLoaded('setting')
+            ? $this->setting
+            : $this->setting()->first();
+        $showEmail = (bool) ($settings?->show_email ?? false);
+        $isMe = $authUser?->id === $this->id;
 
         if ($isFollowedByMe === null && $authUser && $authUser->id !== $this->id) {
             $isFollowedByMe = $this->followers()
@@ -27,7 +32,7 @@ class UserResource extends JsonResource
             'id' => $this->id,
             'name' => $this->name,
             'username' => $this->username,
-            'email' => $this->email,
+            'email' => $isMe || $showEmail ? $this->email : null,
             'avatar' => $this->avatar,
             'avatar_url' => $this->avatar && ! str_starts_with($this->avatar, 'http')
                 ? asset('storage/'.$this->avatar)
@@ -40,11 +45,14 @@ class UserResource extends JsonResource
             'location' => $this->location,
             'website' => $this->website,
             'is_private' => (bool) $this->is_private,
+            'allow_messages' => (bool) ($settings?->allow_messages ?? true),
+            'show_email' => $showEmail,
+            'account_status' => $this->account_status ?? 'active',
             'provider' => $this->provider,
             'posts_count' => $this->posts_count ?? $this->posts()->count(),
             'followers_count' => $this->followers_count ?? $this->followers()->count(),
             'following_count' => $this->following_count ?? $this->following()->count(),
-            'is_me' => $authUser?->id === $this->id,
+            'is_me' => $isMe,
             'is_followed_by_me' => (bool) $isFollowedByMe,
             'profile_completion' => $this->profileCompletion(),
             'joined_at' => $this->created_at?->toISOString(),

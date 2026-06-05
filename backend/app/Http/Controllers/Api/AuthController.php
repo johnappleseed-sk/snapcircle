@@ -36,6 +36,10 @@ class AuthController extends Controller
             return ApiResponse::error('No demo user is available. Run database seeders first.', [], 404);
         }
 
+        if ($user->account_status !== 'active') {
+            return ApiResponse::error('This account is not active.', [], 403);
+        }
+
         $token = $user->createToken('snapcircle-demo-token')->plainTextToken;
 
         return ApiResponse::success('Demo login successful', [
@@ -47,6 +51,10 @@ class AuthController extends Controller
 
     public function user(Request $request): JsonResponse
     {
+        if ($request->user()?->account_status !== 'active') {
+            return ApiResponse::error('This account is not active.', [], 403);
+        }
+
         return ApiResponse::success('Authenticated user retrieved', [
             'user' => $request->user(),
         ]);
@@ -90,6 +98,10 @@ class AuthController extends Controller
                 ->first();
 
             if ($user) {
+                if ($user->account_status !== 'active') {
+                    return ApiResponse::error('This account is not active.', [], 403);
+                }
+
                 $user->update([
                     'name' => $socialUser->getName() ?: $user->name,
                     'email' => $email,

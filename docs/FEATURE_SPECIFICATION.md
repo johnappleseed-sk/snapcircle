@@ -404,3 +404,25 @@ Make user profiles feel complete and professional with usernames, cover images, 
 - Profile screens show cover image, avatar, username, bio, location, website, joined date, profile completion, stats, follow actions, and profile posts.
 - Edit Profile supports username, cover image, avatar image, location, website, bio, and private profile placeholder.
 - `/u/:username` opens a username-based profile route.
+
+## Settings and Account Management
+
+### Purpose
+
+Give users control over privacy, notification preferences, and safe account status changes.
+
+### Backend Additions
+
+- `user_settings` stores message, email visibility, push notification, email notification, and marketing email preferences.
+- `users.account_status` tracks `active`, `deactivated`, or `banned`.
+- `GET /api/settings` fetches or creates default settings.
+- `PUT /api/settings` supports partial settings updates.
+- `PUT /api/account/deactivate` safely deactivates accounts and revokes tokens.
+- `DELETE /api/account` uses the same safe deactivation behavior for MVP.
+
+### Flutter UI
+
+- `/settings` provides Account, Privacy, Notifications, and About sections.
+- `/settings/privacy` manages message availability and profile email visibility.
+- `/settings/notifications` manages push, email, and product email preferences.
+- `/settings/account` shows account status, logout, deactivation, and safe deletion request actions.
