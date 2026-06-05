@@ -7,11 +7,14 @@ use App\Helpers\ApiResponse;
 use App\Http\Resources\UserResource;
 use App\Models\Follow;
 use App\Models\User;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class FollowController extends Controller
 {
+    public function __construct(private readonly NotificationService $notifications) {}
+
     public function store(Request $request, User $user): JsonResponse
     {
         if ($request->user()->id === $user->id) {
@@ -26,6 +29,10 @@ class FollowController extends Controller
         $message = $follow->wasRecentlyCreated
             ? 'User followed successfully'
             : 'User already followed';
+
+        if ($follow->wasRecentlyCreated) {
+            $this->notifications->createUserFollowedNotification($request->user(), $user);
+        }
 
         return ApiResponse::success($message, $this->followStatus($request, $user));
     }

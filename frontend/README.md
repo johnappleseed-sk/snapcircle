@@ -201,6 +201,28 @@ Sharing is client-side through `share_plus`. The shared text includes the post c
 
 Saved posts can be opened from the feed app bar or the Profile screen.
 
+## Notifications
+
+Notifications are connected through:
+
+```http
+GET http://10.0.2.2:8000/api/notifications
+GET http://10.0.2.2:8000/api/notifications/unread-count
+PUT http://10.0.2.2:8000/api/notifications/{notification}/read
+PUT http://10.0.2.2:8000/api/notifications/read-all
+DELETE http://10.0.2.2:8000/api/notifications/{notification}
+```
+
+Flutter files:
+
+- `NotificationModel` parses notification data from Laravel.
+- `NotificationRepository` handles notification API calls.
+- `NotificationsProvider` owns notification list state, filters, unread count, read actions, and delete actions.
+- `NotificationsScreen` displays notifications with filters, pull to refresh, mark-all-read, and load more.
+- `NotificationTile` renders actor avatar, message, time, unread indicator, preview, and delete menu.
+
+The feed app bar shows a notification icon with an unread badge. Tapping a notification marks it as read and opens the related post or user profile when available.
+
 ## Comments Integration
 
 Comments are connected through:

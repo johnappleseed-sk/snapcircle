@@ -8,6 +8,7 @@ import '../features/feed/models/post_model.dart';
 import '../features/feed/screens/home_screen.dart';
 import '../features/feed/screens/post_detail_screen.dart';
 import '../features/feed/screens/saved_posts_screen.dart';
+import '../features/notifications/screens/notifications_screen.dart';
 import '../features/post/screens/create_post_screen.dart';
 import '../features/profile/screens/edit_profile_screen.dart';
 import '../features/profile/screens/follow_list_screen.dart';
@@ -69,6 +70,10 @@ class AppRouter {
         GoRoute(
           path: '/saved-posts',
           builder: (context, state) => const SavedPostsScreen(),
+        ),
+        GoRoute(
+          path: '/notifications',
+          builder: (context, state) => const NotificationsScreen(),
         ),
         GoRoute(
           path: '/posts/:postId/comments',

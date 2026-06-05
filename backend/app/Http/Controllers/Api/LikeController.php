@@ -6,11 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Helpers\ApiResponse;
 use App\Models\Like;
 use App\Models\Post;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class LikeController extends Controller
 {
+    public function __construct(private readonly NotificationService $notifications) {}
+
     public function store(Request $request, Post $post): JsonResponse
     {
         $like = Like::query()->firstOrCreate([
@@ -21,6 +24,10 @@ class LikeController extends Controller
         $message = $like->wasRecentlyCreated
             ? 'Post liked successfully'
             : 'Post already liked';
+
+        if ($like->wasRecentlyCreated) {
+            $this->notifications->createPostLikedNotification($request->user(), $post);
+        }
 
         return ApiResponse::success($message, [
             'likes_count' => $post->likes()->count(),

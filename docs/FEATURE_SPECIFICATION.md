@@ -151,3 +151,68 @@ Check out this post on SnapCircle.
 - Open Saved Posts and confirm the saved post appears.
 - Unsave from Saved Posts and confirm it is removed from the list.
 - Share a post and confirm the platform share sheet opens.
+
+## Notifications System
+
+### Purpose
+
+Notify users when other people interact with their SnapCircle content or follow them.
+
+### Notification Types
+
+| Type | Trigger | Receiver |
+|---|---|---|
+| `post_liked` | Another user likes a post | Post owner |
+| `post_commented` | Another user comments on a post | Post owner |
+| `user_followed` | Another user follows a profile | Followed user |
+
+### Backend Database Design
+
+The `notifications` table stores:
+
+- receiver user id
+- actor user id
+- notification type
+- optional post id
+- optional comment id
+- data JSON for previews
+- read timestamp
+- timestamps
+
+### Backend Triggers
+
+Notifications are created through `NotificationService` from:
+
+- `LikeController`
+- `CommentController`
+- `FollowController`
+
+The service prevents self-notifications and avoids duplicate unread like/follow notifications where useful.
+
+### Frontend Screen
+
+The Flutter app includes a Notifications screen with:
+
+- All, Unread, and Read filters
+- pull to refresh
+- load more
+- mark all as read
+- delete notification
+- tap-to-open related post or user profile
+
+### Unread Badge
+
+The home feed app bar displays a notification icon with an unread badge count from:
+
+```http
+GET /api/notifications/unread-count
+```
+
+### Testing Notes
+
+- Like another user's post and confirm they receive a notification.
+- Comment on another user's post and confirm they receive a notification.
+- Follow another user and confirm they receive a notification.
+- Open the notification list and mark one notification as read.
+- Mark all notifications as read and confirm the badge clears.
+- Delete a notification and confirm it disappears from the list.

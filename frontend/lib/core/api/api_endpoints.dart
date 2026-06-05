@@ -10,6 +10,9 @@ class ApiEndpoints {
   static const String posts = '/posts';
   static const String createPost = '/posts';
   static const String savedPosts = '/saved-posts';
+  static const String notifications = '/notifications';
+  static const String notificationUnreadCount = '/notifications/unread-count';
+  static const String markAllNotificationsRead = '/notifications/read-all';
 
   static String postById(int id) => '/posts/$id';
   static String userById(int id) => '/users/$id';
@@ -27,4 +30,6 @@ class ApiEndpoints {
   static String follow(int userId) => '/users/$userId/follow';
   static String followers(int userId) => '/users/$userId/followers';
   static String following(int userId) => '/users/$userId/following';
+  static String markNotificationRead(int id) => '/notifications/$id/read';
+  static String deleteNotification(int id) => '/notifications/$id';
 }

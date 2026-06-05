@@ -7,6 +7,7 @@ import 'features/auth/providers/auth_provider.dart';
 import 'features/comments/providers/comments_provider.dart';
 import 'features/feed/providers/feed_provider.dart';
 import 'features/feed/providers/saved_posts_provider.dart';
+import 'features/notifications/providers/notifications_provider.dart';
 import 'features/profile/providers/profile_provider.dart';
 import 'features/search/providers/users_provider.dart';
 import 'routes/app_router.dart';
@@ -21,6 +22,7 @@ class SnapCircleApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => FeedProvider()),
         ChangeNotifierProvider(create: (_) => SavedPostsProvider()),
+        ChangeNotifierProvider(create: (_) => NotificationsProvider()),
         ChangeNotifierProvider(create: (_) => CommentsProvider()),
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
         ChangeNotifierProvider(create: (_) => UsersProvider()),

@@ -11,6 +11,7 @@ import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../core/utils/snackbar_helper.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../notifications/providers/notifications_provider.dart';
 import '../../profile/screens/profile_screen.dart';
 import '../../search/screens/search_screen.dart';
 import '../providers/feed_provider.dart';
@@ -102,6 +103,7 @@ class _FeedTabState extends State<_FeedTab> {
       if (feedProvider.posts.isEmpty) {
         feedProvider.fetchPosts(refresh: true);
       }
+      context.read<NotificationsProvider>().fetchUnreadCount();
     });
   }
 
@@ -123,6 +125,7 @@ class _FeedTabState extends State<_FeedTab> {
   Widget build(BuildContext context) {
     final feedProvider = context.watch<FeedProvider>();
     final authProvider = context.watch<AuthProvider>();
+    final notificationsProvider = context.watch<NotificationsProvider>();
 
     return Scaffold(
       appBar: AppBar(
@@ -139,6 +142,15 @@ class _FeedTabState extends State<_FeedTab> {
           ],
         ),
         actions: [
+          _NotificationIconButton(
+            unreadCount: notificationsProvider.unreadCount,
+            onPressed: () async {
+              await context.push('/notifications');
+              if (context.mounted) {
+                context.read<NotificationsProvider>().fetchUnreadCount();
+              }
+            },
+          ),
           IconButton(
             onPressed: () => context.push('/saved-posts'),
             icon: const Icon(Icons.bookmark_border_outlined),
@@ -159,6 +171,29 @@ class _FeedTabState extends State<_FeedTab> {
           searchController: _searchController,
           onSearchChanged: _onSearchChanged,
         ),
+      ),
+    );
+  }
+}
+
+class _NotificationIconButton extends StatelessWidget {
+  final int unreadCount;
+  final VoidCallback onPressed;
+
+  const _NotificationIconButton({
+    required this.unreadCount,
+    required this.onPressed,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      onPressed: onPressed,
+      tooltip: 'Notifications',
+      icon: Badge(
+        isLabelVisible: unreadCount > 0,
+        label: Text(unreadCount > 99 ? '99+' : unreadCount.toString()),
+        child: const Icon(Icons.notifications_none_outlined),
       ),
     );
   }

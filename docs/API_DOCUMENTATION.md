@@ -386,6 +386,70 @@ Response shape:
 
 Post resources include `saves_count` and `saved_by_me`.
 
+## Notifications
+
+Notifications are created when another user likes your post, comments on your post, or follows you.
+
+### GET /api/notifications
+
+Authentication: Yes
+
+Query parameters:
+
+```txt
+page     optional integer min:1
+per_page optional integer min:1 max:50
+filter   optional string: all, unread, read
+```
+
+Returns authenticated user's notifications, latest first.
+
+### GET /api/notifications/unread-count
+
+Authentication: Yes
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Unread notification count fetched successfully",
+  "data": {
+    "unread_count": 5
+  }
+}
+```
+
+### PUT /api/notifications/{notification}/read
+
+Authentication: Yes
+
+Marks one owned notification as read and returns the updated notification.
+
+### PUT /api/notifications/read-all
+
+Authentication: Yes
+
+Marks all authenticated user's unread notifications as read.
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "All notifications marked as read",
+  "data": {
+    "updated_count": 5
+  }
+}
+```
+
+### DELETE /api/notifications/{notification}
+
+Authentication: Yes
+
+Deletes one owned notification.
+
 ## Comments
 
 ### GET /api/posts/{post}/comments

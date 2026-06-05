@@ -196,6 +196,28 @@ saves_count
 
 The saved-posts list is paginated and returns full post resources.
 
+## Notifications
+
+Notifications are generated for social actions:
+
+```txt
+post_liked
+post_commented
+user_followed
+```
+
+Protected notification endpoints:
+
+```http
+GET /api/notifications
+GET /api/notifications/unread-count
+PUT /api/notifications/{notification}/read
+PUT /api/notifications/read-all
+DELETE /api/notifications/{notification}
+```
+
+Notification creation is handled by `NotificationService` so likes, comments, and follows can trigger reusable notification logic without duplicating code in controllers.
+
 ## Response Format
 
 Success:

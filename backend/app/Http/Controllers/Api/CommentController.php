@@ -9,11 +9,14 @@ use App\Http\Requests\UpdateCommentRequest;
 use App\Http\Resources\CommentResource;
 use App\Models\Comment;
 use App\Models\Post;
+use App\Services\NotificationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class CommentController extends Controller
 {
+    public function __construct(private readonly NotificationService $notifications) {}
+
     public function index(Post $post): JsonResponse
     {
         $comments = $post->comments()
@@ -37,6 +40,8 @@ class CommentController extends Controller
         ]);
 
         $comment->load('user');
+
+        $this->notifications->createPostCommentedNotification($request->user(), $post, $comment);
 
         return ApiResponse::success('Comment created successfully', [
             'comment' => CommentResource::make($comment),

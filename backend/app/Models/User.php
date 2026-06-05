@@ -60,6 +60,16 @@ class User extends Authenticatable
             ->withTimestamps();
     }
 
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    public function actedNotifications(): HasMany
+    {
+        return $this->hasMany(Notification::class, 'actor_id');
+    }
+
     public function followers(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'follows', 'following_id', 'follower_id')
