@@ -16,25 +16,52 @@ class PostController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
+        $validated = $request->validate([
+            'mode' => ['sometimes', 'string', 'in:all,following,popular,mine'],
+            'search' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'page' => ['sometimes', 'integer', 'min:1'],
+            'per_page' => ['sometimes', 'integer', 'min:1', 'max:50'],
+        ]);
+
+        $mode = $validated['mode'] ?? 'all';
+        $perPage = (int) ($validated['per_page'] ?? 10);
+        $authUser = $request->user();
+
         $posts = Post::query()
             ->with('user')
             ->withCount(['likes', 'comments'])
             ->withExists([
-                'likes as liked_by_me' => fn ($query) => $query->where('user_id', $request->user()->id),
+                'likes as liked_by_me' => fn ($query) => $query->where('user_id', $authUser->id),
             ])
+            ->when($mode === 'following', function ($query) use ($authUser): void {
+                $followingIds = $authUser->following()->pluck('users.id')->push($authUser->id);
+
+                $query->whereIn('user_id', $followingIds);
+            })
+            ->when($mode === 'mine', function ($query) use ($authUser): void {
+                $query->where('user_id', $authUser->id);
+            })
             ->when($request->filled('search'), function ($query) use ($request): void {
                 $query->where('content', 'like', '%'.$request->string('search')->toString().'%');
             })
-            ->latest()
-            ->paginate(10)
+            ->when(
+                $mode === 'popular',
+                fn ($query) => $query
+                    ->orderByDesc('likes_count')
+                    ->orderByDesc('comments_count')
+                    ->latest(),
+                fn ($query) => $query->latest()
+            )
+            ->paginate($perPage)
             ->withQueryString();
 
-        return ApiResponse::paginated(
-            'Posts retrieved',
-            'posts',
-            $posts,
-            PostResource::collection($posts->items())
-        );
+        return ApiResponse::success('Posts fetched successfully', [
+            'data' => PostResource::collection($posts->items()),
+            'current_page' => $posts->currentPage(),
+            'last_page' => $posts->lastPage(),
+            'per_page' => $posts->perPage(),
+            'total' => $posts->total(),
+        ]);
     }
 
     public function store(StorePostRequest $request): JsonResponse
@@ -60,7 +87,7 @@ class PostController extends Controller
             ->where('user_id', $request->user()->id)
             ->exists();
 
-        return ApiResponse::success('Post retrieved', [
+        return ApiResponse::success('Post fetched successfully', [
             'post' => PostResource::make($post),
         ]);
     }

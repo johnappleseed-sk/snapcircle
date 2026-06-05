@@ -15,6 +15,7 @@ class PostResource extends JsonResource
     public function toArray(Request $request): array
     {
         $likedByMe = $this->liked_by_me;
+        $isOwner = $request->user()?->id === $this->user_id;
 
         if ($likedByMe === null && $request->user()) {
             $likedByMe = $this->likes()
@@ -30,6 +31,9 @@ class PostResource extends JsonResource
             'likes_count' => $this->likes_count ?? $this->likes()->count(),
             'comments_count' => $this->comments_count ?? $this->comments()->count(),
             'liked_by_me' => (bool) $likedByMe,
+            'is_owner' => $isOwner,
+            'can_update' => $isOwner,
+            'can_delete' => $isOwner,
             'user' => UserResource::make($this->whenLoaded('user')),
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),

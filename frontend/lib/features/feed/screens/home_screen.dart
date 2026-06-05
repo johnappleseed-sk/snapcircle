@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -7,13 +9,13 @@ import '../../../core/constants/app_sizes.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
-import '../../../core/widgets/loading_view.dart';
 import '../../../core/utils/snackbar_helper.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../profile/screens/profile_screen.dart';
 import '../../search/screens/search_screen.dart';
 import '../providers/feed_provider.dart';
 import '../widgets/post_card.dart';
+import '../widgets/post_skeleton_card.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -89,6 +91,9 @@ class _FeedTab extends StatefulWidget {
 }
 
 class _FeedTabState extends State<_FeedTab> {
+  final _searchController = TextEditingController();
+  Timer? _searchDebounce;
+
   @override
   void initState() {
     super.initState();
@@ -97,6 +102,20 @@ class _FeedTabState extends State<_FeedTab> {
       if (feedProvider.posts.isEmpty) {
         feedProvider.fetchPosts(refresh: true);
       }
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchDebounce?.cancel();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  void _onSearchChanged(String value) {
+    _searchDebounce?.cancel();
+    _searchDebounce = Timer(const Duration(milliseconds: 450), () {
+      context.read<FeedProvider>().searchPosts(value);
     });
   }
 
@@ -132,6 +151,8 @@ class _FeedTabState extends State<_FeedTab> {
         child: _FeedBody(
           feedProvider: feedProvider,
           currentUserId: authProvider.user?.id,
+          searchController: _searchController,
+          onSearchChanged: _onSearchChanged,
         ),
       ),
     );
@@ -141,36 +162,18 @@ class _FeedTabState extends State<_FeedTab> {
 class _FeedBody extends StatelessWidget {
   final FeedProvider feedProvider;
   final int? currentUserId;
+  final TextEditingController searchController;
+  final ValueChanged<String> onSearchChanged;
 
-  const _FeedBody({required this.feedProvider, required this.currentUserId});
+  const _FeedBody({
+    required this.feedProvider,
+    required this.currentUserId,
+    required this.searchController,
+    required this.onSearchChanged,
+  });
 
   @override
   Widget build(BuildContext context) {
-    if (feedProvider.isLoading) {
-      return const LoadingView(message: 'Loading your feed...');
-    }
-
-    if (feedProvider.errorMessage != null && feedProvider.posts.isEmpty) {
-      return _ScrollableState(
-        child: ErrorView(
-          message: feedProvider.errorMessage!,
-          onRetry: () => feedProvider.fetchPosts(refresh: true),
-        ),
-      );
-    }
-
-    if (feedProvider.posts.isEmpty) {
-      return _ScrollableState(
-        child: EmptyView(
-          icon: Icons.dynamic_feed_outlined,
-          title: 'No posts yet',
-          subtitle: 'Create the first SnapCircle post to start the feed.',
-          actionLabel: 'Create post',
-          onAction: () => context.push('/create-post'),
-        ),
-      );
-    }
-
     return ListView.separated(
       padding: const EdgeInsets.fromLTRB(
         AppSizes.paddingMedium,
@@ -178,17 +181,57 @@ class _FeedBody extends StatelessWidget {
         AppSizes.paddingMedium,
         96,
       ),
-      itemCount: feedProvider.posts.length + 1,
+      itemCount: _itemCount,
       separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
-        if (index == feedProvider.posts.length) {
+        if (index == 0) {
+          return _FeedControls(
+            selectedMode: feedProvider.currentMode,
+            searchController: searchController,
+            onModeChanged: feedProvider.changeMode,
+            onSearchChanged: onSearchChanged,
+            onClearSearch: feedProvider.clearSearch,
+          );
+        }
+
+        if (feedProvider.isLoading && feedProvider.posts.isEmpty) {
+          return const PostSkeletonCard();
+        }
+
+        if (feedProvider.errorMessage != null && feedProvider.posts.isEmpty) {
+          return ErrorView(
+            message: feedProvider.errorMessage!,
+            onRetry: () => feedProvider.fetchPosts(refresh: true),
+          );
+        }
+
+        if (feedProvider.posts.isEmpty) {
+          return EmptyView(
+            icon: _emptyIcon,
+            title: _emptyTitle,
+            subtitle: _emptySubtitle,
+            actionLabel: feedProvider.currentMode == 'mine'
+                ? 'Create post'
+                : null,
+            onAction: feedProvider.currentMode == 'mine'
+                ? () => context.push('/create-post')
+                : null,
+          );
+        }
+
+        final postIndex = index - 1;
+
+        if (postIndex == feedProvider.posts.length) {
           return _LoadMoreSection(feedProvider: feedProvider);
         }
 
-        final post = feedProvider.posts[index];
+        final post = feedProvider.posts[postIndex];
         return PostCard(
           post: post,
-          canDelete: currentUserId != null && post.user.id == currentUserId,
+          canDelete:
+              post.canDelete ||
+              (currentUserId != null && post.user.id == currentUserId),
+          onTap: () => context.push('/posts/${post.id}', extra: post),
           onCommentsTap: () {
             context.push('/posts/${post.id}/comments', extra: post);
           },
@@ -196,6 +239,57 @@ class _FeedBody extends StatelessWidget {
         );
       },
     );
+  }
+
+  int get _itemCount {
+    if (feedProvider.isLoading && feedProvider.posts.isEmpty) {
+      return 5;
+    }
+
+    if (feedProvider.posts.isEmpty) {
+      return 2;
+    }
+
+    return feedProvider.posts.length + 2;
+  }
+
+  IconData get _emptyIcon {
+    if (feedProvider.searchQuery != null) {
+      return Icons.search_off_outlined;
+    }
+
+    return switch (feedProvider.currentMode) {
+      'following' => Icons.people_outline,
+      'popular' => Icons.trending_up,
+      'mine' => Icons.person_outline,
+      _ => Icons.dynamic_feed_outlined,
+    };
+  }
+
+  String get _emptyTitle {
+    if (feedProvider.searchQuery != null) {
+      return 'No posts found.';
+    }
+
+    return switch (feedProvider.currentMode) {
+      'following' => 'No posts from people you follow.',
+      'popular' => 'No popular posts yet.',
+      'mine' => 'You have not posted yet.',
+      _ => 'No posts yet.',
+    };
+  }
+
+  String get _emptySubtitle {
+    if (feedProvider.searchQuery != null) {
+      return 'Try a different keyword.';
+    }
+
+    return switch (feedProvider.currentMode) {
+      'following' => 'Find users to follow and build your circle.',
+      'popular' => 'Like and comment on posts to make them trend.',
+      'mine' => 'Share your first SnapCircle moment.',
+      _ => 'Follow people or create your first post.',
+    };
   }
 
   Future<void> _confirmDelete(BuildContext context, int postId) async {
@@ -239,6 +333,74 @@ class _FeedBody extends StatelessWidget {
   }
 }
 
+class _FeedControls extends StatelessWidget {
+  final String selectedMode;
+  final TextEditingController searchController;
+  final ValueChanged<String> onModeChanged;
+  final ValueChanged<String> onSearchChanged;
+  final VoidCallback onClearSearch;
+
+  const _FeedControls({
+    required this.selectedMode,
+    required this.searchController,
+    required this.onModeChanged,
+    required this.onSearchChanged,
+    required this.onClearSearch,
+  });
+
+  static const _modes = [
+    ('all', 'For You'),
+    ('following', 'Following'),
+    ('popular', 'Popular'),
+    ('mine', 'Mine'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        SizedBox(
+          height: 42,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: _modes.length,
+            separatorBuilder: (context, index) =>
+                const SizedBox(width: AppSizes.paddingSmall),
+            itemBuilder: (context, index) {
+              final mode = _modes[index];
+              return ChoiceChip(
+                label: Text(mode.$2),
+                selected: selectedMode == mode.$1,
+                onSelected: (_) => onModeChanged(mode.$1),
+              );
+            },
+          ),
+        ),
+        const SizedBox(height: AppSizes.paddingMedium),
+        TextField(
+          controller: searchController,
+          onChanged: onSearchChanged,
+          decoration: InputDecoration(
+            labelText: 'Search posts',
+            hintText: 'Find moments by keyword',
+            prefixIcon: const Icon(Icons.search_outlined),
+            suffixIcon: searchController.text.isEmpty
+                ? null
+                : IconButton(
+                    onPressed: () {
+                      searchController.clear();
+                      onClearSearch();
+                    },
+                    icon: const Icon(Icons.close),
+                    tooltip: 'Clear search',
+                  ),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _LoadMoreSection extends StatelessWidget {
   final FeedProvider feedProvider;
 
@@ -269,23 +431,6 @@ class _LoadMoreSection extends StatelessWidget {
             : feedProvider.loadMorePosts,
         isLoading: feedProvider.isLoadingMore,
       ),
-    );
-  }
-}
-
-class _ScrollableState extends StatelessWidget {
-  final Widget child;
-
-  const _ScrollableState({required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(AppSizes.paddingLarge),
-      children: [
-        SizedBox(height: MediaQuery.sizeOf(context).height * 0.18),
-        child,
-      ],
     );
   }
 }

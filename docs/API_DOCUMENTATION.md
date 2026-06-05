@@ -205,10 +205,58 @@ Authentication: Yes
 Query parameters:
 
 ```txt
-search optional string
+mode     optional string: all, following, popular, mine
+search   optional string max:255
+page     optional integer min:1
+per_page optional integer min:1 max:50
 ```
 
-Returns paginated posts, latest first, with user, counts, and `liked_by_me`.
+Examples:
+
+```http
+GET /api/posts?mode=all&page=1&per_page=10
+GET /api/posts?mode=following&page=1&per_page=10
+GET /api/posts?mode=popular&page=1&per_page=10
+GET /api/posts?mode=mine&page=1&per_page=10
+GET /api/posts?mode=all&search=hello&page=1&per_page=10
+```
+
+Feed modes:
+
+- `all`: latest posts from everyone.
+- `following`: posts from followed users plus the authenticated user's own posts.
+- `popular`: posts ordered by likes count, comments count, then latest.
+- `mine`: posts created by the authenticated user.
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Posts fetched successfully",
+  "data": {
+    "data": [
+      {
+        "id": 1,
+        "content": "Hello SnapCircle",
+        "image_url": null,
+        "created_at": "2026-06-05T00:00:00.000000Z",
+        "user": {},
+        "likes_count": 3,
+        "comments_count": 2,
+        "liked_by_me": false,
+        "is_owner": true,
+        "can_update": true,
+        "can_delete": true
+      }
+    ],
+    "current_page": 1,
+    "last_page": 1,
+    "per_page": 10,
+    "total": 1
+  }
+}
+```
 
 ### POST /api/posts
 
@@ -229,7 +277,13 @@ At least `content` or `image` is required.
 
 Authentication: Yes
 
-Returns one post with owner, counts, and `liked_by_me`.
+Returns one post with owner, counts, `liked_by_me`, `is_owner`, `can_update`, and `can_delete`.
+
+Flutter route:
+
+```txt
+/posts/{postId}
+```
 
 ### PUT /api/posts/{post}
 

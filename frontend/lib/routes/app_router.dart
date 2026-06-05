@@ -6,6 +6,7 @@ import '../features/auth/screens/splash_screen.dart';
 import '../features/comments/screens/comments_screen.dart';
 import '../features/feed/models/post_model.dart';
 import '../features/feed/screens/home_screen.dart';
+import '../features/feed/screens/post_detail_screen.dart';
 import '../features/post/screens/create_post_screen.dart';
 import '../features/profile/screens/edit_profile_screen.dart';
 import '../features/profile/screens/follow_list_screen.dart';
@@ -52,6 +53,17 @@ class AppRouter {
         GoRoute(
           path: createPost,
           builder: (context, state) => const CreatePostScreen(),
+        ),
+        GoRoute(
+          path: '/posts/:postId',
+          builder: (context, state) {
+            final postId = int.tryParse(state.pathParameters['postId'] ?? '');
+            final post = state.extra is PostModel
+                ? state.extra as PostModel
+                : null;
+
+            return PostDetailScreen(postId: postId ?? 0, initialPost: post);
+          },
         ),
         GoRoute(
           path: '/posts/:postId/comments',

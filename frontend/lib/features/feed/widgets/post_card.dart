@@ -16,6 +16,7 @@ class PostCard extends StatelessWidget {
   final bool canDelete;
   final VoidCallback? onDelete;
   final VoidCallback? onCommentsTap;
+  final VoidCallback? onTap;
 
   const PostCard({
     super.key,
@@ -23,6 +24,7 @@ class PostCard extends StatelessWidget {
     this.canDelete = false,
     this.onDelete,
     this.onCommentsTap,
+    this.onTap,
   });
 
   @override
@@ -33,6 +35,7 @@ class PostCard extends StatelessWidget {
     final isLikeUpdating = feedProvider.isLikeUpdating(post.id);
 
     return AppCard(
+      onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [

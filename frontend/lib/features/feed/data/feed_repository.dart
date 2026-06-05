@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 
 import '../../../core/api/api_client.dart';
 import '../../../core/api/api_endpoints.dart';
+import '../../../core/models/paginated_response.dart';
 import '../models/post_model.dart';
 
 class FeedException implements Exception {
@@ -21,8 +22,17 @@ class FeedRepository {
   FeedRepository({ApiClient? apiClient})
     : _apiClient = apiClient ?? ApiClient();
 
-  Future<List<PostModel>> getPosts({int page = 1, String? search}) async {
-    final queryParameters = <String, dynamic>{'page': page};
+  Future<PaginatedResponse<PostModel>> getPosts({
+    int page = 1,
+    String mode = 'all',
+    String? search,
+    int perPage = 10,
+  }) async {
+    final queryParameters = <String, dynamic>{
+      'page': page,
+      'mode': mode,
+      'per_page': perPage,
+    };
     if (search != null && search.trim().isNotEmpty) {
       queryParameters['search'] = search.trim();
     }
@@ -34,7 +44,13 @@ class FeedRepository {
 
     final response = _readResponse(result.data?.data, result.error);
     final postsJson = _extractPostsList(response);
-    return postsJson.map(PostModel.fromJson).toList();
+    return PaginatedResponse<PostModel>(
+      items: postsJson.map(PostModel.fromJson).toList(),
+      currentPage: _parseInt(response['current_page'], fallback: page),
+      lastPage: _parseInt(response['last_page'], fallback: page),
+      perPage: _parseInt(response['per_page'], fallback: perPage),
+      total: _parseInt(response['total'], fallback: postsJson.length),
+    );
   }
 
   Future<PostModel> createPost({String? content, File? image}) async {
@@ -114,14 +130,35 @@ class FeedRepository {
 
   List<Map<String, dynamic>> _extractPostsList(Map<String, dynamic> response) {
     final data = response['data'];
-    final nestedData = data is Map<String, dynamic> ? data['data'] : null;
-    final posts = nestedData is List ? nestedData : data;
+    final posts = data is List
+        ? data
+        : response['posts'] is List
+        ? response['posts']
+        : data is Map<String, dynamic> && data['data'] is List
+        ? data['data']
+        : null;
 
     if (posts is! List) {
       throw const FeedException('Invalid posts response from API.');
     }
 
     return posts.whereType<Map<String, dynamic>>().toList();
+  }
+
+  int _parseInt(dynamic value, {required int fallback}) {
+    if (value is int) {
+      return value;
+    }
+
+    if (value is num) {
+      return value.toInt();
+    }
+
+    if (value is String) {
+      return int.tryParse(value) ?? fallback;
+    }
+
+    return fallback;
   }
 
   Map<String, dynamic>? _extractPostJson(Map<String, dynamic> response) {

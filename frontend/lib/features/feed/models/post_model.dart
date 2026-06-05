@@ -7,6 +7,9 @@ class PostModel {
   final int likesCount;
   final int commentsCount;
   final bool likedByMe;
+  final bool isOwner;
+  final bool canDelete;
+  final bool canUpdate;
   final DateTime? createdAt;
   final UserModel user;
 
@@ -18,6 +21,9 @@ class PostModel {
     this.likesCount = 0,
     this.commentsCount = 0,
     this.likedByMe = false,
+    this.isOwner = false,
+    this.canDelete = false,
+    this.canUpdate = false,
     this.createdAt,
   });
 
@@ -31,6 +37,9 @@ class PostModel {
       likesCount: _parseInt(json['likes_count']),
       commentsCount: _parseInt(json['comments_count']),
       likedByMe: _parseBool(json['liked_by_me']),
+      isOwner: _parseBool(json['is_owner']),
+      canDelete: _parseBool(json['can_delete']),
+      canUpdate: _parseBool(json['can_update']),
       createdAt: _parseDate(json['created_at']),
       user: userJson is Map<String, dynamic>
           ? UserModel.fromJson(userJson)
@@ -46,6 +55,9 @@ class PostModel {
       'likes_count': likesCount,
       'comments_count': commentsCount,
       'liked_by_me': likedByMe,
+      'is_owner': isOwner,
+      'can_delete': canDelete,
+      'can_update': canUpdate,
       'created_at': createdAt?.toIso8601String(),
       'user': user.toJson(),
     };
@@ -58,6 +70,9 @@ class PostModel {
     int? likesCount,
     int? commentsCount,
     bool? likedByMe,
+    bool? isOwner,
+    bool? canDelete,
+    bool? canUpdate,
     DateTime? createdAt,
     UserModel? user,
   }) {
@@ -68,6 +83,9 @@ class PostModel {
       likesCount: likesCount ?? this.likesCount,
       commentsCount: commentsCount ?? this.commentsCount,
       likedByMe: likedByMe ?? this.likedByMe,
+      isOwner: isOwner ?? this.isOwner,
+      canDelete: canDelete ?? this.canDelete,
+      canUpdate: canUpdate ?? this.canUpdate,
       createdAt: createdAt ?? this.createdAt,
       user: user ?? this.user,
     );

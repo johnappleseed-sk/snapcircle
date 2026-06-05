@@ -132,6 +132,35 @@ Authorization: Bearer laravel_sanctum_token_here
 
 The feed supports initial loading, pull to refresh, empty state, readable error state, a "Load more" button, and owner-only post deletion.
 
+### Better Feed Experience
+
+The feed supports four modes from the same API endpoint:
+
+| UI label | API mode | Purpose |
+| --- | --- | --- |
+| For You | `all` | Latest posts from everyone |
+| Following | `following` | Posts from followed users plus your own posts |
+| Popular | `popular` | Posts ordered by likes and comments |
+| Mine | `mine` | Authenticated user's posts |
+
+Example request:
+
+```http
+GET http://10.0.2.2:8000/api/posts?mode=following&page=1&per_page=10
+```
+
+The feed screen now includes horizontal mode chips, post search, skeleton loading cards, mode-specific empty states, and a post detail route:
+
+```txt
+/posts/{postId}
+```
+
+Tapping a post card opens the post detail screen. Tapping the comments action still opens:
+
+```txt
+/posts/{postId}/comments
+```
+
 ## Likes Integration
 
 Post likes are connected through the Laravel likes endpoints:

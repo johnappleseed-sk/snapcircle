@@ -142,6 +142,41 @@ Postman collection:
 ../docs/postman/SnapCircle.postman_collection.json
 ```
 
+## Feed Modes
+
+The protected posts endpoint supports multiple feed modes:
+
+```http
+GET /api/posts?mode=all&page=1&per_page=10
+GET /api/posts?mode=following&page=1&per_page=10
+GET /api/posts?mode=popular&page=1&per_page=10
+GET /api/posts?mode=mine&page=1&per_page=10
+```
+
+Optional query parameters:
+
+```txt
+mode      all | following | popular | mine
+search    optional post content keyword
+page      optional page number
+per_page  optional page size, max 50
+```
+
+Post detail:
+
+```http
+GET /api/posts/{post}
+```
+
+Feed and post detail responses include ownership metadata for Flutter UI actions:
+
+```txt
+liked_by_me
+is_owner
+can_update
+can_delete
+```
+
 ## Response Format
 
 Success:
