@@ -54,21 +54,12 @@ class FollowController extends Controller
             ->latest('follows.created_at')
             ->paginate(10);
 
-        return ApiResponse::success('Followers retrieved successfully', [
-            'users' => UserResource::collection($followers->items()),
-            'meta' => [
-                'current_page' => $followers->currentPage(),
-                'last_page' => $followers->lastPage(),
-                'per_page' => $followers->perPage(),
-                'total' => $followers->total(),
-            ],
-            'links' => [
-                'first' => $followers->url(1),
-                'last' => $followers->url($followers->lastPage()),
-                'prev' => $followers->previousPageUrl(),
-                'next' => $followers->nextPageUrl(),
-            ],
-        ]);
+        return ApiResponse::paginated(
+            'Followers retrieved successfully',
+            'users',
+            $followers,
+            UserResource::collection($followers->items())
+        );
     }
 
     public function following(Request $request, User $user): JsonResponse
@@ -81,21 +72,12 @@ class FollowController extends Controller
             ->latest('follows.created_at')
             ->paginate(10);
 
-        return ApiResponse::success('Following retrieved successfully', [
-            'users' => UserResource::collection($following->items()),
-            'meta' => [
-                'current_page' => $following->currentPage(),
-                'last_page' => $following->lastPage(),
-                'per_page' => $following->perPage(),
-                'total' => $following->total(),
-            ],
-            'links' => [
-                'first' => $following->url(1),
-                'last' => $following->url($following->lastPage()),
-                'prev' => $following->previousPageUrl(),
-                'next' => $following->nextPageUrl(),
-            ],
-        ]);
+        return ApiResponse::paginated(
+            'Following retrieved successfully',
+            'users',
+            $following,
+            UserResource::collection($following->items())
+        );
     }
 
     /**

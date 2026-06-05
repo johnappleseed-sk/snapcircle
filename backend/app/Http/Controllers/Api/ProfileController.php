@@ -71,21 +71,12 @@ class ProfileController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return ApiResponse::success('Users retrieved successfully', [
-            'users' => UserResource::collection($users->items()),
-            'meta' => [
-                'current_page' => $users->currentPage(),
-                'last_page' => $users->lastPage(),
-                'per_page' => $users->perPage(),
-                'total' => $users->total(),
-            ],
-            'links' => [
-                'first' => $users->url(1),
-                'last' => $users->url($users->lastPage()),
-                'prev' => $users->previousPageUrl(),
-                'next' => $users->nextPageUrl(),
-            ],
-        ]);
+        return ApiResponse::paginated(
+            'Users retrieved successfully',
+            'users',
+            $users,
+            UserResource::collection($users->items())
+        );
     }
 
     public function show(Request $request, User $user): JsonResponse

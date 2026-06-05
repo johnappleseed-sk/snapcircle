@@ -29,21 +29,12 @@ class PostController extends Controller
             ->paginate(10)
             ->withQueryString();
 
-        return ApiResponse::success('Posts retrieved', [
-            'posts' => PostResource::collection($posts->items()),
-            'meta' => [
-                'current_page' => $posts->currentPage(),
-                'last_page' => $posts->lastPage(),
-                'per_page' => $posts->perPage(),
-                'total' => $posts->total(),
-            ],
-            'links' => [
-                'first' => $posts->url(1),
-                'last' => $posts->url($posts->lastPage()),
-                'prev' => $posts->previousPageUrl(),
-                'next' => $posts->nextPageUrl(),
-            ],
-        ]);
+        return ApiResponse::paginated(
+            'Posts retrieved',
+            'posts',
+            $posts,
+            PostResource::collection($posts->items())
+        );
     }
 
     public function store(StorePostRequest $request): JsonResponse

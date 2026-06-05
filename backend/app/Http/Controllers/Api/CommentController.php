@@ -21,21 +21,12 @@ class CommentController extends Controller
             ->latest()
             ->paginate(10);
 
-        return ApiResponse::success('Comments retrieved successfully', [
-            'comments' => CommentResource::collection($comments->items()),
-            'meta' => [
-                'current_page' => $comments->currentPage(),
-                'last_page' => $comments->lastPage(),
-                'per_page' => $comments->perPage(),
-                'total' => $comments->total(),
-            ],
-            'links' => [
-                'first' => $comments->url(1),
-                'last' => $comments->url($comments->lastPage()),
-                'prev' => $comments->previousPageUrl(),
-                'next' => $comments->nextPageUrl(),
-            ],
-        ]);
+        return ApiResponse::paginated(
+            'Comments retrieved successfully',
+            'comments',
+            $comments,
+            CommentResource::collection($comments->items())
+        );
     }
 
     public function store(StoreCommentRequest $request, Post $post): JsonResponse
