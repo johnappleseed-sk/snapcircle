@@ -216,3 +216,34 @@ GET /api/notifications/unread-count
 - Open the notification list and mark one notification as read.
 - Mark all notifications as read and confirm the badge clears.
 - Delete a notification and confirm it disappears from the list.
+
+## Near Real-Time Updates
+
+### Purpose
+
+Make SnapCircle feel more alive without introducing a full WebSocket stack yet. Phase 6 uses lightweight polling for feed status, comment status, and notification unread counts.
+
+### Polling Strategy
+
+The app polls small status endpoints instead of repeatedly fetching full feeds or full comment lists.
+
+| Area | Endpoint | Interval | UI Behavior |
+|---|---|---:|---|
+| Feed status | `GET /api/feed/status` | 45 seconds | Shows a "New posts available" banner when newer posts exist. |
+| Notifications | `GET /api/feed/status` | 45 seconds | Updates the unread notification badge from the same lightweight response. |
+| Comments status | `GET /api/posts/{post}/comments/status` | 30 seconds | Shows a "New comments available" banner while the comments screen is open. |
+
+The feed and comments do not auto-refresh while the user is reading. Users choose when to refresh from the banner.
+
+### Backend Status Endpoints
+
+```http
+GET /api/feed/status
+GET /api/posts/{post}/comments/status
+```
+
+Both routes are protected by Laravel Sanctum and return counts plus latest record metadata only.
+
+### Future WebSocket Upgrade Plan
+
+This phase uses lightweight polling instead of WebSockets. In future production versions, Laravel Broadcasting, Laravel Reverb, Pusher, or Firebase Cloud Messaging can be used for real-time updates.

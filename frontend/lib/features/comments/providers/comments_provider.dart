@@ -1,12 +1,21 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 
+import '../../../core/constants/realtime_config.dart';
+import '../../../core/realtime/realtime_repository.dart';
 import '../data/comment_repository.dart';
+import '../models/comments_status_model.dart';
 import '../models/comment_model.dart';
 
 class CommentsProvider extends ChangeNotifier {
   final CommentRepository _commentRepository;
+  final RealtimeRepository _realtimeRepository;
 
   List<CommentModel> _comments = [];
+  Timer? _commentsStatusTimer;
+  CommentsStatusModel? _commentsStatus;
+  bool _hasNewComments = false;
   bool _isLoading = false;
   bool _isLoadingMore = false;
   bool _isSubmitting = false;
@@ -14,10 +23,15 @@ class CommentsProvider extends ChangeNotifier {
   int _currentPage = 1;
   String? _errorMessage;
 
-  CommentsProvider({CommentRepository? commentRepository})
-    : _commentRepository = commentRepository ?? CommentRepository();
+  CommentsProvider({
+    CommentRepository? commentRepository,
+    RealtimeRepository? realtimeRepository,
+  }) : _commentRepository = commentRepository ?? CommentRepository(),
+       _realtimeRepository = realtimeRepository ?? RealtimeRepository();
 
   List<CommentModel> get comments => List.unmodifiable(_comments);
+  CommentsStatusModel? get commentsStatus => _commentsStatus;
+  bool get hasNewComments => _hasNewComments;
   bool get isLoading => _isLoading;
   bool get isLoadingMore => _isLoadingMore;
   bool get isSubmitting => _isSubmitting;
@@ -46,6 +60,7 @@ class CommentsProvider extends ChangeNotifier {
       );
       _comments = fetchedComments;
       _hasMore = fetchedComments.isNotEmpty;
+      markCommentsAsSeen();
     } on CommentException catch (error) {
       _errorMessage = error.message;
     } catch (_) {
@@ -99,6 +114,7 @@ class CommentsProvider extends ChangeNotifier {
         comment,
       );
       _comments = [createdComment, ..._comments];
+      markCommentsAsSeen();
       return true;
     } on CommentException catch (error) {
       _errorMessage = error.message;
@@ -147,6 +163,7 @@ class CommentsProvider extends ChangeNotifier {
       _comments = _comments
           .where((comment) => comment.id != commentId)
           .toList();
+      markCommentsAsSeen();
       return true;
     } on CommentException catch (error) {
       _errorMessage = error.message;
@@ -162,5 +179,44 @@ class CommentsProvider extends ChangeNotifier {
   void clearError() {
     _errorMessage = null;
     notifyListeners();
+  }
+
+  void startCommentsStatusPolling(int postId) {
+    if (_commentsStatusTimer != null) {
+      return;
+    }
+
+    unawaited(checkCommentsStatus(postId));
+    _commentsStatusTimer = Timer.periodic(
+      RealtimeConfig.commentsStatusPollInterval,
+      (_) => unawaited(checkCommentsStatus(postId)),
+    );
+  }
+
+  void stopCommentsStatusPolling() {
+    _commentsStatusTimer?.cancel();
+    _commentsStatusTimer = null;
+  }
+
+  Future<void> checkCommentsStatus(int postId) async {
+    try {
+      final status = await _realtimeRepository.getCommentsStatus(postId);
+      _commentsStatus = status;
+      _hasNewComments = status.commentsCount > _comments.length;
+      notifyListeners();
+    } catch (_) {
+      // Status polling should stay quiet; the full comments request owns errors.
+    }
+  }
+
+  void markCommentsAsSeen() {
+    _hasNewComments = false;
+    notifyListeners();
+  }
+
+  @override
+  void dispose() {
+    _commentsStatusTimer?.cancel();
+    super.dispose();
   }
 }

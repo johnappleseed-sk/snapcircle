@@ -3,6 +3,7 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_sizes.dart';
+import '../../../core/realtime/realtime_provider.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
@@ -23,7 +24,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<NotificationsProvider>().refreshNotifications();
+      context.read<NotificationsProvider>().refreshNotifications().then((_) {
+        if (mounted) {
+          final unreadCount = context.read<NotificationsProvider>().unreadCount;
+          context.read<RealtimeProvider>().updateUnreadNotificationsCount(
+            unreadCount,
+          );
+        }
+      });
     });
   }
 
@@ -38,13 +46,27 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           TextButton(
             onPressed: provider.unreadCount == 0
                 ? null
-                : provider.markAllAsRead,
+                : () async {
+                    await provider.markAllAsRead();
+                    if (context.mounted) {
+                      context
+                          .read<RealtimeProvider>()
+                          .updateUnreadNotificationsCount(0);
+                    }
+                  },
             child: const Text('Mark all read'),
           ),
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: provider.refreshNotifications,
+        onRefresh: () async {
+          await provider.refreshNotifications();
+          if (context.mounted) {
+            context.read<RealtimeProvider>().updateUnreadNotificationsCount(
+              provider.unreadCount,
+            );
+          }
+        },
         child: ListView.separated(
           padding: const EdgeInsets.fromLTRB(
             AppSizes.paddingMedium,
@@ -128,6 +150,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     if (!context.mounted) {
       return;
     }
+    context.read<RealtimeProvider>().updateUnreadNotificationsCount(
+      provider.unreadCount,
+    );
 
     if (notification.postId != null) {
       context.push('/posts/${notification.postId}');

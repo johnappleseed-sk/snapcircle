@@ -10,6 +10,7 @@ class ApiEndpoints {
   static const String posts = '/posts';
   static const String createPost = '/posts';
   static const String savedPosts = '/saved-posts';
+  static const String feedStatus = '/feed/status';
   static const String notifications = '/notifications';
   static const String notificationUnreadCount = '/notifications/unread-count';
   static const String markAllNotificationsRead = '/notifications/read-all';
@@ -23,6 +24,7 @@ class ApiEndpoints {
   static String savePost(int postId) => '/posts/$postId/save';
   static String unsavePost(int postId) => '/posts/$postId/save';
   static String postComments(int postId) => '/posts/$postId/comments';
+  static String commentsStatus(int postId) => '/posts/$postId/comments/status';
   static String commentById(int commentId) => '/comments/$commentId';
   static String comments(int postId) => '/posts/$postId/comments';
   static String comment(int commentId) => '/comments/$commentId';

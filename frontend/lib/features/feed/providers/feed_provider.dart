@@ -6,6 +6,7 @@ import 'package:share_plus/share_plus.dart';
 import '../data/feed_repository.dart';
 import '../data/like_repository.dart';
 import '../data/saved_post_repository.dart';
+import '../models/feed_status_model.dart';
 import '../models/post_model.dart';
 
 class FeedProvider extends ChangeNotifier {
@@ -27,6 +28,8 @@ class FeedProvider extends ChangeNotifier {
   String _currentMode = 'all';
   String? _searchQuery;
   String? _errorMessage;
+  int? _latestLoadedPostId;
+  DateTime? _latestLoadedPostCreatedAt;
 
   FeedProvider({
     FeedRepository? feedRepository,
@@ -48,6 +51,8 @@ class FeedProvider extends ChangeNotifier {
   String get currentMode => _currentMode;
   String? get searchQuery => _searchQuery;
   String? get errorMessage => _errorMessage;
+  int? get latestLoadedPostId => _latestLoadedPostId;
+  DateTime? get latestLoadedPostCreatedAt => _latestLoadedPostCreatedAt;
   bool isLikeUpdating(int postId) => _likingPostIds.contains(postId);
   bool isSaveUpdating(int postId) => _savingPostIds.contains(postId);
 
@@ -77,6 +82,7 @@ class FeedProvider extends ChangeNotifier {
       _currentPage = response.currentPage;
       _lastPage = response.lastPage;
       _hasMore = response.hasMore;
+      _updateLatestLoadedPost();
     } on FeedException catch (error) {
       _errorMessage = error.message;
     } catch (_) {
@@ -114,6 +120,7 @@ class FeedProvider extends ChangeNotifier {
         _hasMore = false;
       } else {
         _posts = [..._posts, ...response.items];
+        _updateLatestLoadedPost();
       }
     } on FeedException catch (error) {
       _errorMessage = error.message;
@@ -185,6 +192,7 @@ class FeedProvider extends ChangeNotifier {
       if (_currentMode == 'all' || _currentMode == 'mine') {
         _posts = [post, ..._posts];
       }
+      _updateLatestLoadedPost();
       return true;
     } on FeedException catch (error) {
       _errorMessage = error.message;
@@ -306,7 +314,28 @@ class FeedProvider extends ChangeNotifier {
               .map((post) => post.id == updatedPost.id ? updatedPost : post)
               .toList()
         : [updatedPost, ..._posts];
+    _updateLatestLoadedPost();
     notifyListeners();
+  }
+
+  bool isNewerThanCurrentFeed(FeedStatusModel status) {
+    final latestPostId = status.latestPostId;
+    if (latestPostId == null || _posts.isEmpty) {
+      return false;
+    }
+
+    final currentLatestId = _latestLoadedPostId;
+    if (currentLatestId != null) {
+      return latestPostId > currentLatestId;
+    }
+
+    final currentLatestCreatedAt = _latestLoadedPostCreatedAt;
+    final statusCreatedAt = status.latestPostCreatedAt;
+    if (currentLatestCreatedAt != null && statusCreatedAt != null) {
+      return statusCreatedAt.isAfter(currentLatestCreatedAt);
+    }
+
+    return false;
   }
 
   Future<bool> _setLikeState(int postId, {required bool shouldLike}) async {
@@ -467,5 +496,23 @@ class FeedProvider extends ChangeNotifier {
     if (shouldNotify) {
       notifyListeners();
     }
+  }
+
+  void _updateLatestLoadedPost() {
+    if (_posts.isEmpty) {
+      _latestLoadedPostId = null;
+      _latestLoadedPostCreatedAt = null;
+      return;
+    }
+
+    final latestPost = _posts.reduce((current, next) {
+      if (next.id > current.id) {
+        return next;
+      }
+
+      return current;
+    });
+    _latestLoadedPostId = latestPost.id;
+    _latestLoadedPostCreatedAt = latestPost.createdAt;
   }
 }

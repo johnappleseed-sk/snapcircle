@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
+import '../../../core/realtime/realtime_provider.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
@@ -103,7 +104,16 @@ class _FeedTabState extends State<_FeedTab> {
       if (feedProvider.posts.isEmpty) {
         feedProvider.fetchPosts(refresh: true);
       }
-      context.read<NotificationsProvider>().fetchUnreadCount();
+      final notificationsProvider = context.read<NotificationsProvider>();
+      final realtimeProvider = context.read<RealtimeProvider>();
+      notificationsProvider.fetchUnreadCount().then((_) {
+        if (mounted) {
+          realtimeProvider.updateUnreadNotificationsCount(
+            notificationsProvider.unreadCount,
+          );
+        }
+      });
+      realtimeProvider.startFeedStatusPolling();
     });
   }
 
@@ -126,6 +136,12 @@ class _FeedTabState extends State<_FeedTab> {
     final feedProvider = context.watch<FeedProvider>();
     final authProvider = context.watch<AuthProvider>();
     final notificationsProvider = context.watch<NotificationsProvider>();
+    final realtimeProvider = context.watch<RealtimeProvider>();
+    final unreadCount =
+        realtimeProvider.unreadNotificationsCount >
+            notificationsProvider.unreadCount
+        ? realtimeProvider.unreadNotificationsCount
+        : notificationsProvider.unreadCount;
 
     return Scaffold(
       appBar: AppBar(
@@ -143,11 +159,17 @@ class _FeedTabState extends State<_FeedTab> {
         ),
         actions: [
           _NotificationIconButton(
-            unreadCount: notificationsProvider.unreadCount,
+            unreadCount: unreadCount,
             onPressed: () async {
               await context.push('/notifications');
               if (context.mounted) {
-                context.read<NotificationsProvider>().fetchUnreadCount();
+                final provider = context.read<NotificationsProvider>();
+                await provider.fetchUnreadCount();
+                if (context.mounted) {
+                  context
+                      .read<RealtimeProvider>()
+                      .updateUnreadNotificationsCount(provider.unreadCount);
+                }
               }
             },
           ),
@@ -157,19 +179,39 @@ class _FeedTabState extends State<_FeedTab> {
             tooltip: 'Saved posts',
           ),
           IconButton(
-            onPressed: () => feedProvider.fetchPosts(refresh: true),
+            onPressed: () async {
+              await feedProvider.fetchPosts(refresh: true);
+              if (context.mounted) {
+                context.read<RealtimeProvider>().markFeedAsSeen();
+                context.read<RealtimeProvider>().checkFeedStatus();
+              }
+            },
             icon: const Icon(Icons.refresh),
             tooltip: 'Refresh feed',
           ),
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () => feedProvider.fetchPosts(refresh: true),
+        onRefresh: () async {
+          await feedProvider.fetchPosts(refresh: true);
+          if (context.mounted) {
+            context.read<RealtimeProvider>().markFeedAsSeen();
+            context.read<RealtimeProvider>().checkFeedStatus();
+          }
+        },
         child: _FeedBody(
           feedProvider: feedProvider,
+          showNewPostsBanner: realtimeProvider.hasNewPosts,
           currentUserId: authProvider.user?.id,
           searchController: _searchController,
           onSearchChanged: _onSearchChanged,
+          onRefreshNewPosts: () async {
+            await feedProvider.refreshPosts();
+            if (context.mounted) {
+              context.read<RealtimeProvider>().markFeedAsSeen();
+              context.read<RealtimeProvider>().checkFeedStatus();
+            }
+          },
         ),
       ),
     );
@@ -201,15 +243,19 @@ class _NotificationIconButton extends StatelessWidget {
 
 class _FeedBody extends StatelessWidget {
   final FeedProvider feedProvider;
+  final bool showNewPostsBanner;
   final int? currentUserId;
   final TextEditingController searchController;
   final ValueChanged<String> onSearchChanged;
+  final Future<void> Function() onRefreshNewPosts;
 
   const _FeedBody({
     required this.feedProvider,
+    required this.showNewPostsBanner,
     required this.currentUserId,
     required this.searchController,
     required this.onSearchChanged,
+    required this.onRefreshNewPosts,
   });
 
   @override
@@ -225,12 +271,20 @@ class _FeedBody extends StatelessWidget {
       separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
         if (index == 0) {
-          return _FeedControls(
-            selectedMode: feedProvider.currentMode,
-            searchController: searchController,
-            onModeChanged: feedProvider.changeMode,
-            onSearchChanged: onSearchChanged,
-            onClearSearch: feedProvider.clearSearch,
+          return Column(
+            children: [
+              if (showNewPostsBanner) ...[
+                _NewPostsBanner(onRefresh: onRefreshNewPosts),
+                const SizedBox(height: AppSizes.paddingMedium),
+              ],
+              _FeedControls(
+                selectedMode: feedProvider.currentMode,
+                searchController: searchController,
+                onModeChanged: feedProvider.changeMode,
+                onSearchChanged: onSearchChanged,
+                onClearSearch: feedProvider.clearSearch,
+              ),
+            ],
           );
         }
 
@@ -370,6 +424,49 @@ class _FeedBody extends StatelessWidget {
     } else {
       SnackbarHelper.showError(context, message);
     }
+  }
+}
+
+class _NewPostsBanner extends StatelessWidget {
+  final Future<void> Function() onRefresh;
+
+  const _NewPostsBanner({required this.onRefresh});
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.08),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.24)),
+        borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSizes.paddingMedium,
+          vertical: AppSizes.paddingSmall,
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.dynamic_feed_outlined, color: AppColors.primary),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'New posts available',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ),
+            TextButton.icon(
+              onPressed: onRefresh,
+              icon: const Icon(Icons.refresh, size: 18),
+              label: const Text('Refresh'),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }
 

@@ -223,6 +223,40 @@ Flutter files:
 
 The feed app bar shows a notification icon with an unread badge. Tapping a notification marks it as read and opens the related post or user profile when available.
 
+## Near Real-Time Updates
+
+Phase 6 adds lightweight polling so the app feels more current without requiring WebSockets.
+
+Polling intervals are centralized in:
+
+```txt
+lib/core/constants/realtime_config.dart
+```
+
+Current intervals:
+
+```txt
+notificationPollInterval: 30 seconds
+feedStatusPollInterval: 45 seconds
+commentsStatusPollInterval: 30 seconds
+```
+
+The app calls:
+
+```http
+GET http://10.0.2.2:8000/api/feed/status
+GET http://10.0.2.2:8000/api/posts/{post}/comments/status
+```
+
+UI behavior:
+
+- The feed shows a "New posts available" banner instead of auto-refreshing.
+- The notification badge uses the lightweight feed status unread count and stays compatible with `NotificationsProvider`.
+- The comments screen starts polling only while open and shows a "New comments available" banner.
+- Polling stops on logout and pauses while the app is inactive or in the background.
+
+This phase uses lightweight polling instead of WebSockets. In future production versions, Laravel Broadcasting, Laravel Reverb, Pusher, or Firebase Cloud Messaging can be used for real-time updates.
+
 ## Comments Integration
 
 Comments are connected through:

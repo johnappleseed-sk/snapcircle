@@ -35,11 +35,15 @@ class _CommentsScreenState extends State<CommentsScreen> {
         widget.postId,
         refresh: true,
       );
+      context.read<CommentsProvider>().startCommentsStatusPolling(
+        widget.postId,
+      );
     });
   }
 
   @override
   void dispose() {
+    context.read<CommentsProvider>().stopCommentsStatusPolling();
     _commentController.dispose();
     super.dispose();
   }
@@ -136,11 +140,24 @@ class _CommentsBody extends StatelessWidget {
     }
 
     if (commentsProvider.comments.isEmpty) {
-      return const _ScrollableState(
-        child: EmptyView(
-          icon: Icons.chat_bubble_outline,
-          title: 'No comments yet',
-          subtitle: 'Start the conversation with the first comment.',
+      return _ScrollableState(
+        child: Column(
+          children: [
+            if (commentsProvider.hasNewComments) ...[
+              _NewCommentsBanner(
+                onRefresh: () async {
+                  await commentsProvider.fetchComments(postId, refresh: true);
+                  commentsProvider.markCommentsAsSeen();
+                },
+              ),
+              const SizedBox(height: AppSizes.paddingMedium),
+            ],
+            const EmptyView(
+              icon: Icons.chat_bubble_outline,
+              title: 'No comments yet',
+              subtitle: 'Start the conversation with the first comment.',
+            ),
+          ],
         ),
       );
     }
@@ -152,14 +169,29 @@ class _CommentsBody extends StatelessWidget {
         AppSizes.paddingMedium,
         AppSizes.paddingLarge,
       ),
-      itemCount: commentsProvider.comments.length + 1,
+      itemCount:
+          commentsProvider.comments.length +
+          1 +
+          (commentsProvider.hasNewComments ? 1 : 0),
       separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {
-        if (index == commentsProvider.comments.length) {
+        if (commentsProvider.hasNewComments && index == 0) {
+          return _NewCommentsBanner(
+            onRefresh: () async {
+              await commentsProvider.fetchComments(postId, refresh: true);
+              commentsProvider.markCommentsAsSeen();
+            },
+          );
+        }
+
+        final offset = commentsProvider.hasNewComments ? 1 : 0;
+        final commentIndex = index - offset;
+
+        if (commentIndex == commentsProvider.comments.length) {
           return _LoadMoreCommentsSection(postId: postId);
         }
 
-        final comment = commentsProvider.comments[index];
+        final comment = commentsProvider.comments[commentIndex];
         return CommentTile(
           comment: comment,
           canManage: currentUserId != null && comment.user.id == currentUserId,
@@ -180,6 +212,49 @@ class _CommentsBody extends StatelessWidget {
           },
         );
       },
+    );
+  }
+}
+
+class _NewCommentsBanner extends StatelessWidget {
+  final Future<void> Function() onRefresh;
+
+  const _NewCommentsBanner({required this.onRefresh});
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.08),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.24)),
+        borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(
+          horizontal: AppSizes.paddingMedium,
+          vertical: AppSizes.paddingSmall,
+        ),
+        child: Row(
+          children: [
+            const Icon(Icons.chat_bubble_outline, color: AppColors.primary),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                'New comments available',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+            ),
+            TextButton.icon(
+              onPressed: onRefresh,
+              icon: const Icon(Icons.refresh, size: 18),
+              label: const Text('Refresh'),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

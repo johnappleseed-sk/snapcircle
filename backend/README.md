@@ -218,6 +218,19 @@ DELETE /api/notifications/{notification}
 
 Notification creation is handled by `NotificationService` so likes, comments, and follows can trigger reusable notification logic without duplicating code in controllers.
 
+## Near Real-Time Status Endpoints
+
+Phase 6 adds lightweight polling endpoints for the Flutter app:
+
+```http
+GET /api/feed/status
+GET /api/posts/{post}/comments/status
+```
+
+These routes are protected by Sanctum and return only latest IDs, timestamps, totals, and unread notification counts. They avoid returning full posts or full comments during polling.
+
+This phase uses lightweight polling instead of WebSockets. In future production versions, Laravel Broadcasting, Laravel Reverb, Pusher, or Firebase Cloud Messaging can be used for real-time updates.
+
 ## Response Format
 
 Success:

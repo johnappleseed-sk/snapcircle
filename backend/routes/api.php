@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CommentController;
+use App\Http\Controllers\Api\FeedStatusController;
 use App\Http\Controllers\Api\FollowController;
 use App\Http\Controllers\Api\LikeController;
 use App\Http\Controllers\Api\NotificationController;
@@ -43,12 +44,15 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::get('/users/{user}/followers', [FollowController::class, 'followers']);
     Route::get('/users/{user}/following', [FollowController::class, 'following']);
 
+    Route::get('/feed/status', [FeedStatusController::class, 'index']);
+
     Route::get('/posts', [PostController::class, 'index']);
     Route::post('/posts', [PostController::class, 'store']);
     Route::get('/posts/{post}', [PostController::class, 'show']);
     Route::put('/posts/{post}', [PostController::class, 'update']);
     Route::delete('/posts/{post}', [PostController::class, 'destroy']);
 
+    Route::get('/posts/{post}/comments/status', [FeedStatusController::class, 'comments']);
     Route::get('/posts/{post}/comments', [CommentController::class, 'index']);
     Route::post('/posts/{post}/comments', [CommentController::class, 'store']);
     Route::put('/comments/{comment}', [CommentController::class, 'update']);

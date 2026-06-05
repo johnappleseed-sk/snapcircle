@@ -198,6 +198,27 @@ Follow status response:
 
 ## Posts
 
+### GET /api/feed/status
+
+Authentication: Yes
+
+Returns lightweight feed status data for polling. This endpoint does not return full posts.
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Feed status fetched successfully",
+  "data": {
+    "latest_post_id": 25,
+    "latest_post_created_at": "2026-06-05T10:00:00.000000Z",
+    "total_posts_count": 120,
+    "unread_notifications_count": 3
+  }
+}
+```
+
 ### GET /api/posts
 
 Authentication: Yes
@@ -451,6 +472,27 @@ Authentication: Yes
 Deletes one owned notification.
 
 ## Comments
+
+### GET /api/posts/{post}/comments/status
+
+Authentication: Yes
+
+Returns lightweight comment status data for polling. This endpoint does not return full comments.
+
+Response:
+
+```json
+{
+  "success": true,
+  "message": "Comments status fetched successfully",
+  "data": {
+    "post_id": 1,
+    "latest_comment_id": 18,
+    "latest_comment_created_at": "2026-06-05T10:05:00.000000Z",
+    "comments_count": 9
+  }
+}
+```
 
 ### GET /api/posts/{post}/comments
 
