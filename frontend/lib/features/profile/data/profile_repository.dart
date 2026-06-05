@@ -1,10 +1,13 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../core/api/api_client.dart';
 import '../../../core/api/api_endpoints.dart';
 import '../../auth/models/user_model.dart';
+import '../../feed/models/post_model.dart';
 
 class ProfileException implements Exception {
   final String message;
@@ -28,12 +31,26 @@ class ProfileRepository {
 
   Future<UserModel> updateProfile({
     required String name,
+    String? username,
     String? bio,
-    File? avatar,
+    String? location,
+    String? website,
+    XFile? avatar,
+    XFile? coverImage,
+    bool isPrivate = false,
   }) async {
     final result = await _apiClient.put(
       ApiEndpoints.profile,
-      data: await _buildProfileData(name: name, bio: bio, avatar: avatar),
+      data: await _buildProfileData(
+        name: name,
+        username: username,
+        bio: bio,
+        location: location,
+        website: website,
+        avatar: avatar,
+        coverImage: coverImage,
+        isPrivate: isPrivate,
+      ),
     );
 
     return _parseUserResponse(result.data?.data, result.error);
@@ -42,6 +59,27 @@ class ProfileRepository {
   Future<UserModel> getUserById(int userId) async {
     final result = await _apiClient.get(ApiEndpoints.userById(userId));
     return _parseUserResponse(result.data?.data, result.error);
+  }
+
+  Future<UserModel> getUserByUsername(String username) async {
+    final result = await _apiClient.get(ApiEndpoints.userByUsername(username));
+    return _parseUserResponse(result.data?.data, result.error);
+  }
+
+  Future<List<PostModel>> getUserPosts(
+    int userId, {
+    int page = 1,
+    int perPage = 10,
+    String sort = 'latest',
+  }) async {
+    final result = await _apiClient.get(
+      ApiEndpoints.userPosts(userId),
+      queryParameters: {'page': page, 'per_page': perPage, 'sort': sort},
+    );
+
+    final response = _readResponse(result.data?.data, result.error);
+    final posts = _extractPostsJson(response);
+    return posts.map(PostModel.fromJson).toList();
   }
 
   Future<List<UserModel>> getUsers({int page = 1, String? search}) async {
@@ -88,19 +126,49 @@ class ProfileRepository {
 
   Future<FormData> _buildProfileData({
     required String name,
+    String? username,
     String? bio,
-    File? avatar,
+    String? location,
+    String? website,
+    XFile? avatar,
+    XFile? coverImage,
+    required bool isPrivate,
   }) async {
     final data = <String, dynamic>{
       'name': name.trim(),
+      'username': username?.trim() ?? '',
       'bio': bio?.trim() ?? '',
+      'location': location?.trim() ?? '',
+      'website': website?.trim() ?? '',
+      'is_private': isPrivate ? '1' : '0',
     };
 
     if (avatar != null) {
-      data['avatar'] = await MultipartFile.fromFile(
-        avatar.path,
-        filename: avatar.path.split(Platform.pathSeparator).last,
-      );
+      data['avatar'] = kIsWeb
+          ? MultipartFile.fromBytes(
+              await avatar.readAsBytes(),
+              filename: avatar.name,
+            )
+          : await MultipartFile.fromFile(
+              avatar.path,
+              filename: avatar.name.isNotEmpty
+                  ? avatar.name
+                  : avatar.path.split(Platform.pathSeparator).last,
+            );
+    }
+
+    if (coverImage != null) {
+      data['cover_image'] = kIsWeb
+          ? MultipartFile.fromBytes(
+              await coverImage.readAsBytes(),
+              filename: coverImage.name,
+            )
+          : await MultipartFile.fromFile(
+              coverImage.path,
+              filename: coverImage.name.isNotEmpty
+                  ? coverImage.name
+                  : coverImage.path.split(Platform.pathSeparator).last,
+            );
     }
 
     return FormData.fromMap(data);
@@ -187,6 +255,19 @@ class ProfileRepository {
     }
 
     throw const ProfileException('Invalid users response from API.');
+  }
+
+  List<Map<String, dynamic>> _extractPostsJson(Map<String, dynamic> response) {
+    final data = response['data'];
+    final posts = data is Map<String, dynamic>
+        ? data['posts'] ?? data['data']
+        : data;
+
+    if (posts is! List) {
+      throw const ProfileException('Invalid user posts response from API.');
+    }
+
+    return posts.whereType<Map<String, dynamic>>().toList();
   }
 
   int _parseInt(dynamic value) {

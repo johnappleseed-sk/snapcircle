@@ -571,3 +571,18 @@ Manual UI verification checklist:
 - Open comments, add a comment, and return to the feed.
 - Open profile, edit profile, and view another user profile.
 - Search users and open followers/following lists.
+## Profile Improvements
+
+The Flutter profile experience supports usernames, cover images, avatars, bio, location, website, joined date, private profile placeholder, profile completion, latest/popular profile posts, and username routes with `/u/{username}`.
+
+The Android emulator should call the Laravel API at:
+
+```text
+http://10.0.2.2:8000/api
+```
+
+Chrome, macOS, and iOS simulator can use:
+
+```text
+http://127.0.0.1:8000/api
+```

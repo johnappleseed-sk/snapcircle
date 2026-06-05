@@ -318,3 +318,16 @@ Error:
   "errors": {}
 }
 ```
+## Profile Improvements
+
+Profiles include username, cover image, bio, location, website, private profile placeholder, joined date, last active date, profile completion, and user posts.
+
+Key endpoints:
+
+```http
+PUT /api/profile
+GET /api/users/username/{username}
+GET /api/users/{user}/posts
+```
+
+Run `php artisan storage:link` so uploaded avatars and cover images are publicly reachable from `/storage/...`.

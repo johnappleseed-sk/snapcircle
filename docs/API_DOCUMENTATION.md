@@ -756,3 +756,46 @@ Request:
 Authentication: Yes
 
 Only the comment owner can soft delete.
+
+## Profile Improvements
+
+### PUT /api/profile
+
+Authentication: Yes
+
+Updates the authenticated user's profile. Supports `multipart/form-data`.
+
+Fields:
+
+```text
+name          required string max:255
+username      nullable string max:50 unique, letters/numbers/underscore/dot
+bio           nullable string max:500
+location      nullable string max:100
+website       nullable url max:255
+avatar        nullable image jpg,jpeg,png,webp max:2MB
+cover_image   nullable image jpg,jpeg,png,webp max:4MB
+is_private    nullable boolean
+```
+
+### GET /api/users/username/{username}
+
+Authentication: Yes
+
+Returns a public user profile by username. The response uses the same `user` resource shape as `GET /api/users/{user}` and does not expose sensitive fields.
+
+### GET /api/users/{user}/posts
+
+Authentication: Yes
+
+Returns paginated posts for the selected user.
+
+Query parameters:
+
+```text
+page     optional integer min:1
+per_page optional integer min:1 max:30
+sort     optional string: latest, popular
+```
+
+Profile responses include `username`, `avatar_url`, `cover_image_url`, `location`, `website`, `is_private`, `joined_at`, `last_active_at`, `profile_completion`, profile counts, `is_me`, and `is_followed_by_me`.

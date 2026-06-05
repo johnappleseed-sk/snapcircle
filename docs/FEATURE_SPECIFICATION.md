@@ -384,3 +384,23 @@ Explore includes:
 - Toggle Latest and Popular sorting.
 - Follow a recommended user and confirm the card state updates.
 - Open a post and a user from Explore.
+
+## Profile Improvements
+
+### Purpose
+
+Make user profiles feel complete and professional with usernames, cover images, richer metadata, and profile-specific posts.
+
+### Backend Additions
+
+- Users support `username`, `cover_image`, `location`, `website`, `date_of_birth`, `is_private`, and `last_active_at`.
+- `UserResource` returns full profile metadata, profile counts, ownership/follow flags, and computed `profile_completion`.
+- `PUT /api/profile` accepts avatar and cover image uploads.
+- `GET /api/users/username/{username}` opens profiles by handle.
+- `GET /api/users/{user}/posts` returns latest or popular paginated profile posts.
+
+### Flutter UI
+
+- Profile screens show cover image, avatar, username, bio, location, website, joined date, profile completion, stats, follow actions, and profile posts.
+- Edit Profile supports username, cover image, avatar image, location, website, bio, and private profile placeholder.
+- `/u/:username` opens a username-based profile route.

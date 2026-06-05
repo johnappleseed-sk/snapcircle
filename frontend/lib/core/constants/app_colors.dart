@@ -10,6 +10,7 @@ class AppColors {
   static const Color surface = Colors.white;
   static const Color card = Colors.white;
   static const Color surfaceMuted = Color(0xFFF1F5F9);
+  static const Color surfaceSoft = surfaceMuted;
   static const Color textPrimary = Color(0xFF0F172A);
   static const Color textSecondary = Color(0xFF64748B);
   static const Color textMuted = Color(0xFF94A3B8);

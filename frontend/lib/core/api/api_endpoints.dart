@@ -24,6 +24,8 @@ class ApiEndpoints {
 
   static String postById(int id) => '/posts/$id';
   static String userById(int id) => '/users/$id';
+  static String userByUsername(String username) => '/users/username/$username';
+  static String userPosts(int userId) => '/users/$userId/posts';
   static String followUser(int id) => '/users/$id/follow';
   static String unfollowUser(int id) => '/users/$id/follow';
   static String likePost(int postId) => '/posts/$postId/like';

@@ -150,6 +150,14 @@ class AppRouter {
           },
         ),
         GoRoute(
+          path: '/u/:username',
+          builder: (context, state) {
+            return UserProfileScreen(
+              username: state.pathParameters['username'],
+            );
+          },
+        ),
+        GoRoute(
           path: '/users/:userId/followers',
           builder: (context, state) {
             final userId = int.tryParse(state.pathParameters['userId'] ?? '');

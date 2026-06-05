@@ -26,20 +26,50 @@ class UserResource extends JsonResource
         return [
             'id' => $this->id,
             'name' => $this->name,
+            'username' => $this->username,
             'email' => $this->email,
             'avatar' => $this->avatar,
             'avatar_url' => $this->avatar && ! str_starts_with($this->avatar, 'http')
                 ? asset('storage/'.$this->avatar)
                 : $this->avatar,
+            'cover_image' => $this->cover_image,
+            'cover_image_url' => $this->cover_image && ! str_starts_with($this->cover_image, 'http')
+                ? asset('storage/'.$this->cover_image)
+                : $this->cover_image,
             'bio' => $this->bio,
+            'location' => $this->location,
+            'website' => $this->website,
+            'is_private' => (bool) $this->is_private,
             'provider' => $this->provider,
             'posts_count' => $this->posts_count ?? $this->posts()->count(),
             'followers_count' => $this->followers_count ?? $this->followers()->count(),
             'following_count' => $this->following_count ?? $this->following()->count(),
             'is_me' => $authUser?->id === $this->id,
             'is_followed_by_me' => (bool) $isFollowedByMe,
+            'profile_completion' => $this->profileCompletion(),
+            'joined_at' => $this->created_at?->toISOString(),
+            'last_active_at' => $this->last_active_at?->toISOString(),
             'created_at' => $this->created_at?->toISOString(),
             'updated_at' => $this->updated_at?->toISOString(),
         ];
+    }
+
+    private function profileCompletion(): int
+    {
+        $fields = [
+            $this->name,
+            $this->username,
+            $this->avatar,
+            $this->bio,
+            $this->cover_image,
+            $this->location,
+            $this->website,
+        ];
+
+        $completed = collect($fields)
+            ->filter(fn ($value) => filled($value))
+            ->count();
+
+        return (int) round(($completed / count($fields)) * 100);
     }
 }
