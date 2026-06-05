@@ -5,6 +5,7 @@ class AppButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final bool isLoading;
   final IconData? icon;
+  final bool isOutlined;
 
   const AppButton({
     super.key,
@@ -12,6 +13,7 @@ class AppButton extends StatelessWidget {
     this.onPressed,
     this.isLoading = false,
     this.icon,
+    this.isOutlined = false,
   });
 
   @override
@@ -34,9 +36,10 @@ class AppButton extends StatelessWidget {
             ],
           );
 
-    return ElevatedButton(
-      onPressed: isLoading ? null : onPressed,
-      child: child,
-    );
+    final effectiveOnPressed = isLoading ? null : onPressed;
+
+    return isOutlined
+        ? OutlinedButton(onPressed: effectiveOnPressed, child: child)
+        : ElevatedButton(onPressed: effectiveOnPressed, child: child);
   }
 }
