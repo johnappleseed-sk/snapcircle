@@ -296,6 +296,44 @@ iOS setup is project-specific and should be completed before testing on iPhone o
 - Likes and comments connected to Laravel API with local feed count updates
 - Profile, edit profile, user search, user profiles, follow/unfollow, followers, and following screens connected to Laravel API
 
+## App Screens
+
+- Splash screen
+- Login screen
+- Home feed
+- Create post
+- Comments
+- Profile
+- Edit profile
+- Search users
+- User profile
+- Followers and following lists
+
+## Package Usage
+
+| Package | Usage |
+| --- | --- |
+| `provider` | State management for auth, feed, comments, profile, and search |
+| `dio` | REST API requests to Laravel |
+| `flutter_secure_storage` | Stores Laravel Sanctum token securely |
+| `go_router` | App routing |
+| `google_sign_in` | Google login flow |
+| `flutter_facebook_auth` | Facebook login flow |
+| `image_picker` | Avatar and post image selection |
+| `cached_network_image` | Remote image loading and caching |
+| `intl` | Date/time formatting helpers |
+
+## Assignment Documentation
+
+See the root documentation folder:
+
+```txt
+../docs/SETUP_GUIDE.md
+../docs/TESTING_CHECKLIST.md
+../docs/API_DOCUMENTATION.md
+../docs/ASSIGNMENT_REPORT.md
+```
+
 ## Analyze
 
 ```bash

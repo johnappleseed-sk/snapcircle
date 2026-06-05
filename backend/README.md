@@ -124,6 +124,18 @@ Full endpoint documentation is available at:
 ../docs/API_DOCUMENTATION.md
 ```
 
+Setup guide:
+
+```txt
+../docs/SETUP_GUIDE.md
+```
+
+Testing checklist:
+
+```txt
+../docs/TESTING_CHECKLIST.md
+```
+
 Postman collection:
 
 ```txt
