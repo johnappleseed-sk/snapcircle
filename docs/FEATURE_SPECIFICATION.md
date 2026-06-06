@@ -462,3 +462,26 @@ Make SnapCircle faster and safer to scale without rewriting the project architec
 - Upload images are compressed for avatars, covers, posts, and stories with fallback to originals.
 - Initial loading skeletons improve perceived speed for common lists.
 - Provider fetches stay out of `build()` and load-more calls remain guarded.
+
+## Admin and Moderation System
+
+### Purpose
+
+Prepare SnapCircle for real users with reporting, review queues, role-based admin access, user banning, and content moderation.
+
+### Backend Additions
+
+- Users support `role`, `banned_at`, and `ban_reason` in addition to existing account status.
+- Reports use a polymorphic table for posts, comments, and users.
+- Normal users can report posts, comments, and users.
+- Admin and moderator users can access dashboard statistics, report queues, user management, and moderation content lists.
+- Admin middleware protects `/api/admin/*` routes.
+- Banning a user sets status to `banned` and revokes tokens.
+- Posts and comments are soft-deleted by moderation actions.
+
+### Flutter UI
+
+- Post, comment, and profile menus include report actions.
+- Report dialog supports reason selection and optional details.
+- Admin/moderator users see an Admin Panel link in Settings.
+- Admin screens show dashboard stats, report status actions, and basic user ban/unban controls.

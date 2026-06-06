@@ -176,6 +176,41 @@ per_page  optional page size, max 50
 - API resources keep fallback counts for single-record safety, while list endpoints preload counts with `withCount()` and user-specific flags with `withExists()`.
 - Future scaling work should add Redis, queues, object storage/CDN, thumbnails, WebSockets, and production query monitoring.
 
+## Admin and Moderation
+
+SnapCircle includes basic moderation APIs for local/admin review:
+
+```http
+POST /api/posts/{post}/report
+POST /api/comments/{comment}/report
+POST /api/users/{user}/report
+GET /api/admin/dashboard
+GET /api/admin/reports
+PUT /api/admin/reports/{report}/status
+GET /api/admin/users
+PUT /api/admin/users/{user}/ban
+PUT /api/admin/users/{user}/unban
+GET /api/admin/posts
+DELETE /api/admin/posts/{post}
+GET /api/admin/comments
+DELETE /api/admin/comments/{comment}
+```
+
+The seeder creates a local placeholder admin:
+
+```text
+admin@snapcircle.test
+password
+```
+
+Password login is not part of the production social-login flow; this admin account is documented for local development and assignment review only.
+
+Full guide:
+
+```txt
+../docs/MODERATION_GUIDE.md
+```
+
 Post detail:
 
 ```http

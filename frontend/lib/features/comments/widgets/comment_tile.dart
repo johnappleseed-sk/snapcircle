@@ -6,6 +6,7 @@ import '../../../core/widgets/app_avatar.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/utils/date_formatter.dart';
 import '../../../core/utils/snackbar_helper.dart';
+import '../../reports/widgets/report_dialog.dart';
 import '../models/comment_model.dart';
 
 class CommentTile extends StatelessWidget {
@@ -64,7 +65,7 @@ class CommentTile extends StatelessWidget {
                         ],
                       ),
                     ),
-                    if (canManage)
+                    if (canManage || !comment.user.isMe)
                       PopupMenuButton<String>(
                         tooltip: 'Comment options',
                         icon: const Icon(Icons.more_horiz),
@@ -75,31 +76,51 @@ class CommentTile extends StatelessWidget {
                           if (value == 'delete') {
                             _confirmDelete(context);
                           }
+                          if (value == 'report') {
+                            ReportDialog.show(
+                              context,
+                              targetType: ReportTargetType.comment,
+                              targetId: comment.id,
+                            );
+                          }
                         },
-                        itemBuilder: (context) => const [
-                          PopupMenuItem(
-                            value: 'edit',
-                            child: Row(
-                              children: [
-                                Icon(Icons.edit_outlined),
-                                SizedBox(width: 8),
-                                Text('Edit'),
-                              ],
+                        itemBuilder: (context) => [
+                          if (canManage)
+                            const PopupMenuItem(
+                              value: 'edit',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.edit_outlined),
+                                  SizedBox(width: 8),
+                                  Text('Edit'),
+                                ],
+                              ),
                             ),
-                          ),
-                          PopupMenuItem(
-                            value: 'delete',
-                            child: Row(
-                              children: [
-                                Icon(
-                                  Icons.delete_outline,
-                                  color: AppColors.danger,
-                                ),
-                                SizedBox(width: 8),
-                                Text('Delete'),
-                              ],
+                          if (canManage)
+                            const PopupMenuItem(
+                              value: 'delete',
+                              child: Row(
+                                children: [
+                                  Icon(
+                                    Icons.delete_outline,
+                                    color: AppColors.danger,
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text('Delete'),
+                                ],
+                              ),
                             ),
-                          ),
+                          if (!comment.user.isMe)
+                            const PopupMenuItem(
+                              value: 'report',
+                              child: Row(
+                                children: [
+                                  Icon(Icons.flag_outlined),
+                                  SizedBox(width: 8),
+                                  Text('Report'),
+                                ],
+                              ),
+                            ),
                         ],
                       ),
                   ],

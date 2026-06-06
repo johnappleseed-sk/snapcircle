@@ -20,6 +20,17 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        User::query()->firstOrCreate(
+            ['email' => 'admin@snapcircle.test'],
+            [
+                'name' => 'SnapCircle Admin',
+                'password' => Hash::make('password'),
+                'role' => 'admin',
+                'account_status' => 'active',
+                'email_verified_at' => now(),
+            ]
+        );
+
         $users = collect([
             [
                 'name' => 'Maya Sok',

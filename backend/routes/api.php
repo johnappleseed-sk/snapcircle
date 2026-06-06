@@ -1,5 +1,9 @@
 <?php
 
+use App\Http\Controllers\Api\Admin\AdminContentController;
+use App\Http\Controllers\Api\Admin\AdminDashboardController;
+use App\Http\Controllers\Api\Admin\AdminReportController;
+use App\Http\Controllers\Api\Admin\AdminUserController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\ConversationController;
@@ -11,6 +15,7 @@ use App\Http\Controllers\Api\MessageController;
 use App\Http\Controllers\Api\NotificationController;
 use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\ProfileController;
+use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\SavedPostController;
 use App\Http\Controllers\Api\SettingsController;
 use App\Http\Controllers\Api\StoryController;
@@ -52,6 +57,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::get('/users/{user}', [ProfileController::class, 'show']);
         Route::get('/users/{user}/posts', [ProfileController::class, 'posts']);
         Route::get('/users/{user}/stories', [StoryController::class, 'userStories']);
+        Route::post('/users/{user}/report', [ReportController::class, 'reportUser']);
 
         Route::get('/explore/posts', [ExploreController::class, 'posts']);
         Route::get('/explore/users', [ExploreController::class, 'users']);
@@ -71,12 +77,14 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::get('/posts/{post}', [PostController::class, 'show']);
         Route::put('/posts/{post}', [PostController::class, 'update']);
         Route::delete('/posts/{post}', [PostController::class, 'destroy']);
+        Route::post('/posts/{post}/report', [ReportController::class, 'reportPost']);
 
         Route::get('/posts/{post}/comments/status', [FeedStatusController::class, 'comments']);
         Route::get('/posts/{post}/comments', [CommentController::class, 'index']);
         Route::post('/posts/{post}/comments', [CommentController::class, 'store'])->middleware('throttle:30,1');
         Route::put('/comments/{comment}', [CommentController::class, 'update']);
         Route::delete('/comments/{comment}', [CommentController::class, 'destroy']);
+        Route::post('/comments/{comment}/report', [ReportController::class, 'reportComment']);
 
         Route::post('/posts/{post}/like', [LikeController::class, 'store'])->middleware('throttle:60,1');
         Route::delete('/posts/{post}/like', [LikeController::class, 'destroy']);
@@ -104,5 +112,24 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::get('/conversations/{conversation}/messages', [MessageController::class, 'index']);
         Route::post('/conversations/{conversation}/messages', [MessageController::class, 'store'])->middleware('throttle:60,1');
         Route::put('/messages/{message}/read', [MessageController::class, 'markAsRead']);
+    });
+
+    Route::middleware('admin')->prefix('admin')->group(function (): void {
+        Route::get('/dashboard', [AdminDashboardController::class, 'index']);
+
+        Route::get('/reports', [AdminReportController::class, 'index']);
+        Route::get('/reports/{report}', [AdminReportController::class, 'show']);
+        Route::put('/reports/{report}/status', [AdminReportController::class, 'updateStatus']);
+
+        Route::get('/users', [AdminUserController::class, 'index']);
+        Route::get('/users/{user}', [AdminUserController::class, 'show']);
+        Route::put('/users/{user}/ban', [AdminUserController::class, 'ban']);
+        Route::put('/users/{user}/unban', [AdminUserController::class, 'unban']);
+        Route::put('/users/{user}/role', [AdminUserController::class, 'updateRole']);
+
+        Route::get('/posts', [AdminContentController::class, 'posts']);
+        Route::delete('/posts/{post}', [AdminContentController::class, 'deletePost']);
+        Route::get('/comments', [AdminContentController::class, 'comments']);
+        Route::delete('/comments/{comment}', [AdminContentController::class, 'deleteComment']);
     });
 });

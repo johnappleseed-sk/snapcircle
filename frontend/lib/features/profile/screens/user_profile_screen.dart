@@ -8,6 +8,7 @@ import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../chat/providers/conversations_provider.dart';
+import '../../reports/widgets/report_dialog.dart';
 import '../providers/profile_provider.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/profile_posts_section.dart';
@@ -53,7 +54,21 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     final isCurrentUser = currentUserId != null && currentUserId == user?.id;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('User Profile')),
+      appBar: AppBar(
+        title: const Text('User Profile'),
+        actions: [
+          if (user != null && !isCurrentUser)
+            IconButton(
+              onPressed: () => ReportDialog.show(
+                context,
+                targetType: ReportTargetType.user,
+                targetId: user.id,
+              ),
+              icon: const Icon(Icons.flag_outlined),
+              tooltip: 'Report user',
+            ),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: _refresh,
         child: profileProvider.isLoading && user == null

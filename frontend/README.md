@@ -168,6 +168,26 @@ More detail:
 ../docs/FRONTEND_PERFORMANCE_AUDIT.md
 ```
 
+## Reporting and Admin Moderation
+
+Users can report posts, comments, and profiles from the app. Reports are sent to:
+
+```http
+POST http://10.0.2.2:8000/api/posts/{post}/report
+POST http://10.0.2.2:8000/api/comments/{comment}/report
+POST http://10.0.2.2:8000/api/users/{user}/report
+```
+
+Admin and moderator users see an Admin Panel link in Settings. The admin area includes:
+
+```text
+/admin
+/admin/reports
+/admin/users
+```
+
+Normal users do not see the admin link, and route protection sends non-admin users back to `/home`.
+
 ### Better Feed Experience
 
 The feed supports four modes from the same API endpoint:

@@ -53,4 +53,15 @@ class ApiEndpoints {
   static String storyById(int id) => '/stories/$id';
   static String storyView(int id) => '/stories/$id/view';
   static String userStories(int userId) => '/users/$userId/stories';
+  static String reportPost(int postId) => '/posts/$postId/report';
+  static String reportComment(int commentId) => '/comments/$commentId/report';
+  static String reportUser(int userId) => '/users/$userId/report';
+
+  static const String adminDashboard = '/admin/dashboard';
+  static const String adminReports = '/admin/reports';
+  static const String adminUsers = '/admin/users';
+  static String adminReportStatus(int reportId) =>
+      '/admin/reports/$reportId/status';
+  static String adminUserBan(int userId) => '/admin/users/$userId/ban';
+  static String adminUserUnban(int userId) => '/admin/users/$userId/unban';
 }

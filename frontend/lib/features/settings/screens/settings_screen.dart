@@ -6,6 +6,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/loading_view.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../providers/settings_provider.dart';
 import '../widgets/settings_tile.dart';
 
@@ -31,6 +32,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<SettingsProvider>();
+    final userRole = context.watch<AuthProvider>().user?.role;
+    final canAccessAdmin = userRole == 'admin' || userRole == 'moderator';
 
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
@@ -59,6 +62,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     subtitle: 'Status, logout, and account actions',
                     onTap: () => context.push('/settings/account'),
                   ),
+                  if (canAccessAdmin) ...[
+                    const SizedBox(height: AppSizes.paddingSmall),
+                    SettingsTile(
+                      icon: Icons.admin_panel_settings_outlined,
+                      title: 'Admin Panel',
+                      subtitle: 'Reports, users, and moderation tools',
+                      onTap: () => context.push('/admin'),
+                    ),
+                  ],
                   const SizedBox(height: AppSizes.paddingMedium),
                   _SectionLabel('Privacy'),
                   SettingsTile(

@@ -8,6 +8,7 @@ import '../../../core/widgets/app_avatar.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/utils/snackbar_helper.dart';
 import '../../../core/utils/date_formatter.dart';
+import '../../reports/widgets/report_dialog.dart';
 import '../models/post_model.dart';
 import '../providers/feed_provider.dart';
 
@@ -77,7 +78,7 @@ class PostCard extends StatelessWidget {
                   ],
                 ),
               ),
-              if (canDelete)
+              if (canDelete || !post.isOwner)
                 PopupMenuButton<String>(
                   tooltip: 'Post options',
                   icon: const Icon(Icons.more_horiz),
@@ -85,18 +86,40 @@ class PostCard extends StatelessWidget {
                     if (value == 'delete') {
                       onDelete?.call();
                     }
+                    if (value == 'report') {
+                      ReportDialog.show(
+                        context,
+                        targetType: ReportTargetType.post,
+                        targetId: post.id,
+                      );
+                    }
                   },
-                  itemBuilder: (context) => const [
-                    PopupMenuItem(
-                      value: 'delete',
-                      child: Row(
-                        children: [
-                          Icon(Icons.delete_outline, color: AppColors.danger),
-                          SizedBox(width: 8),
-                          Text('Delete'),
-                        ],
+                  itemBuilder: (context) => [
+                    if (canDelete)
+                      const PopupMenuItem(
+                        value: 'delete',
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.delete_outline,
+                              color: AppColors.danger,
+                            ),
+                            SizedBox(width: 8),
+                            Text('Delete'),
+                          ],
+                        ),
                       ),
-                    ),
+                    if (!post.isOwner)
+                      const PopupMenuItem(
+                        value: 'report',
+                        child: Row(
+                          children: [
+                            Icon(Icons.flag_outlined),
+                            SizedBox(width: 8),
+                            Text('Report'),
+                          ],
+                        ),
+                      ),
                   ],
                 ),
             ],

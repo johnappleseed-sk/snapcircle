@@ -1,5 +1,8 @@
 import 'package:go_router/go_router.dart';
 
+import '../features/admin/screens/admin_dashboard_screen.dart';
+import '../features/admin/screens/admin_reports_screen.dart';
+import '../features/admin/screens/admin_users_screen.dart';
 import '../features/auth/providers/auth_provider.dart';
 import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/splash_screen.dart';
@@ -40,6 +43,9 @@ class AppRouter {
         final location = state.uri.path;
         final isSplash = location == splash;
         final isLogin = location == login;
+        final isAdminRoute = location.startsWith('/admin');
+        final userRole = authProvider.user?.role;
+        final canAccessAdmin = userRole == 'admin' || userRole == 'moderator';
 
         if (isSplash) {
           return null;
@@ -50,6 +56,10 @@ class AppRouter {
         }
 
         if (authProvider.isAuthenticated && isLogin) {
+          return home;
+        }
+
+        if (authProvider.isAuthenticated && isAdminRoute && !canAccessAdmin) {
           return home;
         }
 
@@ -122,6 +132,18 @@ class AppRouter {
         GoRoute(
           path: '/settings/account',
           builder: (context, state) => const AccountSettingsScreen(),
+        ),
+        GoRoute(
+          path: '/admin',
+          builder: (context, state) => const AdminDashboardScreen(),
+        ),
+        GoRoute(
+          path: '/admin/reports',
+          builder: (context, state) => const AdminReportsScreen(),
+        ),
+        GoRoute(
+          path: '/admin/users',
+          builder: (context, state) => const AdminUsersScreen(),
         ),
         GoRoute(
           path: '/messages',

@@ -913,3 +913,106 @@ stories: user, views_count, viewed_by_me
 ### Indexing
 
 A performance migration adds indexes for common feed, profile, notification, story, conversation, and message query patterns. Existing unique constraints and foreign keys are not renamed or removed.
+
+## Admin And Moderation
+
+### User Report Endpoints
+
+Authentication: Yes
+
+```http
+POST /api/posts/{post}/report
+POST /api/comments/{comment}/report
+POST /api/users/{user}/report
+```
+
+Body:
+
+```json
+{
+  "reason": "spam",
+  "description": "Optional report details"
+}
+```
+
+Allowed reasons: `spam`, `harassment`, `inappropriate_content`, `fake_account`, `violence`, `other`.
+
+Duplicate pending reports by the same user for the same item return `422`.
+
+### Admin Dashboard
+
+Authentication: Admin or moderator
+
+```http
+GET /api/admin/dashboard
+```
+
+Returns platform counts for users, posts, comments, reports, stories, messages, and daily activity.
+
+### Admin Reports
+
+Authentication: Admin or moderator
+
+```http
+GET /api/admin/reports
+GET /api/admin/reports/{report}
+PUT /api/admin/reports/{report}/status
+```
+
+Supported filters:
+
+```text
+status=pending|reviewed|dismissed|action_taken
+type=post|comment|user
+reason=spam|harassment|inappropriate_content|fake_account|violence|other
+```
+
+Update status body:
+
+```json
+{
+  "status": "reviewed",
+  "action_taken": "Optional moderation note"
+}
+```
+
+### Admin Users
+
+Authentication: Admin or moderator
+
+```http
+GET /api/admin/users
+GET /api/admin/users/{user}
+PUT /api/admin/users/{user}/ban
+PUT /api/admin/users/{user}/unban
+PUT /api/admin/users/{user}/role
+```
+
+Ban body:
+
+```json
+{
+  "reason": "Violation of community guidelines"
+}
+```
+
+Role body:
+
+```json
+{
+  "role": "moderator"
+}
+```
+
+### Admin Content Moderation
+
+Authentication: Admin or moderator
+
+```http
+GET /api/admin/posts
+DELETE /api/admin/posts/{post}
+GET /api/admin/comments
+DELETE /api/admin/comments/{comment}
+```
+
+Moderation deletes use existing soft-delete behavior for posts and comments.

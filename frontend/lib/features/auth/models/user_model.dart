@@ -14,6 +14,7 @@ class UserModel {
   final bool allowMessages;
   final bool showEmail;
   final String accountStatus;
+  final String role;
   final DateTime? joinedAt;
   final DateTime? lastActiveAt;
   final int profileCompletion;
@@ -39,6 +40,7 @@ class UserModel {
     this.allowMessages = true,
     this.showEmail = false,
     this.accountStatus = 'active',
+    this.role = 'user',
     this.joinedAt,
     this.lastActiveAt,
     this.profileCompletion = 0,
@@ -66,6 +68,7 @@ class UserModel {
       allowMessages: _parseBool(json['allow_messages'], fallback: true),
       showEmail: _parseBool(json['show_email']),
       accountStatus: _parseString(json['account_status']) ?? 'active',
+      role: _parseString(json['role']) ?? 'user',
       joinedAt: _parseDate(json['joined_at'] ?? json['created_at']),
       lastActiveAt: _parseDate(json['last_active_at']),
       profileCompletion: _parseInt(json['profile_completion']),
@@ -94,6 +97,7 @@ class UserModel {
       'allow_messages': allowMessages,
       'show_email': showEmail,
       'account_status': accountStatus,
+      'role': role,
       'joined_at': joinedAt?.toIso8601String(),
       'last_active_at': lastActiveAt?.toIso8601String(),
       'profile_completion': profileCompletion,
@@ -121,6 +125,7 @@ class UserModel {
     bool? allowMessages,
     bool? showEmail,
     String? accountStatus,
+    String? role,
     DateTime? joinedAt,
     DateTime? lastActiveAt,
     int? profileCompletion,
@@ -146,6 +151,7 @@ class UserModel {
       allowMessages: allowMessages ?? this.allowMessages,
       showEmail: showEmail ?? this.showEmail,
       accountStatus: accountStatus ?? this.accountStatus,
+      role: role ?? this.role,
       joinedAt: joinedAt ?? this.joinedAt,
       lastActiveAt: lastActiveAt ?? this.lastActiveAt,
       profileCompletion: profileCompletion ?? this.profileCompletion,

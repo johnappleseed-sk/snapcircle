@@ -5,6 +5,7 @@ import 'core/constants/app_strings.dart';
 import 'core/realtime/app_lifecycle_observer.dart';
 import 'core/realtime/realtime_provider.dart';
 import 'core/theme/app_theme.dart';
+import 'features/admin/providers/admin_provider.dart';
 import 'features/auth/providers/auth_provider.dart';
 import 'features/chat/providers/conversations_provider.dart';
 import 'features/chat/providers/messages_provider.dart';
@@ -14,6 +15,7 @@ import 'features/feed/providers/feed_provider.dart';
 import 'features/feed/providers/saved_posts_provider.dart';
 import 'features/notifications/providers/notifications_provider.dart';
 import 'features/profile/providers/profile_provider.dart';
+import 'features/reports/providers/report_provider.dart';
 import 'features/search/providers/users_provider.dart';
 import 'features/settings/providers/settings_provider.dart';
 import 'features/stories/providers/stories_provider.dart';
@@ -27,6 +29,7 @@ class SnapCircleApp extends StatelessWidget {
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
+        ChangeNotifierProvider(create: (_) => AdminProvider()),
         ChangeNotifierProvider(create: (_) => FeedProvider()),
         ChangeNotifierProxyProvider2<
           AuthProvider,
@@ -55,6 +58,7 @@ class SnapCircleApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => ExploreProvider()),
         ChangeNotifierProvider(create: (_) => CommentsProvider()),
         ChangeNotifierProvider(create: (_) => ProfileProvider()),
+        ChangeNotifierProvider(create: (_) => ReportProvider()),
         ChangeNotifierProvider(create: (_) => UsersProvider()),
         ChangeNotifierProvider(create: (_) => SettingsProvider()),
       ],

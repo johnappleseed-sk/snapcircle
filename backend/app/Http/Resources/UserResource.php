@@ -49,6 +49,7 @@ class UserResource extends JsonResource
             'allow_messages' => (bool) ($settings?->allow_messages ?? true),
             'show_email' => $showEmail,
             'account_status' => $this->account_status ?? 'active',
+            'role' => $this->role ?? 'user',
             'provider' => $this->provider,
             'posts_count' => array_key_exists('posts_count', $this->resource->getAttributes())
                 ? (int) $this->posts_count
