@@ -61,7 +61,10 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
             }
 
             if (provider.errorMessage != null && provider.reports.isEmpty) {
-              return ErrorView(message: provider.errorMessage!, onRetry: _fetch);
+              return ErrorView(
+                message: provider.errorMessage!,
+                onRetry: _fetch,
+              );
             }
 
             if (provider.reports.isEmpty) {
@@ -104,12 +107,18 @@ class _StatusFilter extends StatelessWidget {
 
   const _StatusFilter({required this.value, required this.onChanged});
 
-  static const statuses = ['all', 'pending', 'reviewed', 'dismissed', 'action_taken'];
+  static const statuses = [
+    'all',
+    'pending',
+    'reviewed',
+    'dismissed',
+    'action_taken',
+  ];
 
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
-      value: value,
+      initialValue: value,
       decoration: const InputDecoration(labelText: 'Status'),
       items: statuses
           .map((status) => DropdownMenuItem(value: status, child: Text(status)))

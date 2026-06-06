@@ -16,7 +16,9 @@ import '../features/feed/screens/home_screen.dart';
 import '../features/feed/screens/post_detail_screen.dart';
 import '../features/feed/screens/saved_posts_screen.dart';
 import '../features/notifications/screens/notifications_screen.dart';
+import '../core/widgets/app_shell.dart';
 import '../features/post/screens/create_post_screen.dart';
+import '../features/post/screens/create_hub_screen.dart';
 import '../features/profile/screens/edit_profile_screen.dart';
 import '../features/profile/screens/follow_list_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
@@ -71,10 +73,20 @@ class AppRouter {
           builder: (context, state) => const SplashScreen(),
         ),
         GoRoute(path: login, builder: (context, state) => const LoginScreen()),
-        GoRoute(path: home, builder: (context, state) => const HomeScreen()),
+        GoRoute(
+          path: home,
+          builder: (context, state) =>
+              const AppShell(currentIndex: 0, child: HomeScreen()),
+        ),
         GoRoute(
           path: '/explore',
-          builder: (context, state) => const ExploreScreen(),
+          builder: (context, state) =>
+              const AppShell(currentIndex: 1, child: ExploreScreen()),
+        ),
+        GoRoute(
+          path: '/create',
+          builder: (context, state) =>
+              const AppShell(currentIndex: 2, child: CreateHubScreen()),
         ),
         GoRoute(
           path: createPost,
@@ -147,7 +159,8 @@ class AppRouter {
         ),
         GoRoute(
           path: '/messages',
-          builder: (context, state) => const ConversationsScreen(),
+          builder: (context, state) =>
+              const AppShell(currentIndex: 3, child: ConversationsScreen()),
         ),
         GoRoute(
           path: '/messages/:conversationId',
@@ -178,7 +191,8 @@ class AppRouter {
         ),
         GoRoute(
           path: '/profile',
-          builder: (context, state) => const ProfileScreen(),
+          builder: (context, state) =>
+              const AppShell(currentIndex: 4, child: ProfileScreen()),
         ),
         GoRoute(
           path: '/profile/edit',
@@ -223,7 +237,7 @@ class AppRouter {
         ),
         GoRoute(
           path: '/search',
-          builder: (context, state) => const ExploreScreen(),
+          redirect: (context, state) => '/explore',
         ),
       ],
     );

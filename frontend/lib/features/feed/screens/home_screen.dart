@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -10,11 +8,10 @@ import '../../../core/realtime/realtime_provider.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
+import '../../../core/widgets/section_header.dart';
 import '../../../core/utils/snackbar_helper.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../notifications/providers/notifications_provider.dart';
-import '../../profile/screens/profile_screen.dart';
-import '../../explore/screens/explore_screen.dart';
 import '../../stories/providers/stories_provider.dart';
 import '../../stories/widgets/stories_row.dart';
 import '../providers/feed_provider.dart';
@@ -29,75 +26,6 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _currentIndex = 0;
-
-  static const List<Widget> _tabs = [
-    _FeedTab(),
-    ExploreScreen(),
-    ProfileScreen(),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: _tabs[_currentIndex],
-      floatingActionButton: _currentIndex == 0
-          ? FloatingActionButton(
-              onPressed: () => context.push('/create-post'),
-              tooltip: 'Create post',
-              child: const Icon(Icons.add),
-            )
-          : null,
-      bottomNavigationBar: NavigationBar(
-        height: 72,
-        selectedIndex: _currentIndex == 2 ? 3 : _currentIndex,
-        onDestinationSelected: (index) {
-          if (index == 2) {
-            context.push('/create-post');
-            return;
-          }
-
-          final mappedIndex = index > 2 ? index - 1 : index;
-          setState(() => _currentIndex = mappedIndex);
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.dynamic_feed_outlined),
-            selectedIcon: Icon(Icons.dynamic_feed),
-            label: 'Feed',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.travel_explore_outlined),
-            selectedIcon: Icon(Icons.travel_explore),
-            label: 'Explore',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.add_box_outlined),
-            selectedIcon: Icon(Icons.add_box),
-            label: 'Create',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person),
-            label: 'Profile',
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _FeedTab extends StatefulWidget {
-  const _FeedTab();
-
-  @override
-  State<_FeedTab> createState() => _FeedTabState();
-}
-
-class _FeedTabState extends State<_FeedTab> {
-  final _searchController = TextEditingController();
-  Timer? _searchDebounce;
-
   @override
   void initState() {
     super.initState();
@@ -117,20 +45,6 @@ class _FeedTabState extends State<_FeedTab> {
         }
       });
       realtimeProvider.startFeedStatusPolling();
-    });
-  }
-
-  @override
-  void dispose() {
-    _searchDebounce?.cancel();
-    _searchController.dispose();
-    super.dispose();
-  }
-
-  void _onSearchChanged(String value) {
-    _searchDebounce?.cancel();
-    _searchDebounce = Timer(const Duration(milliseconds: 450), () {
-      context.read<FeedProvider>().searchPosts(value);
     });
   }
 
@@ -219,8 +133,6 @@ class _FeedTabState extends State<_FeedTab> {
           feedProvider: feedProvider,
           showNewPostsBanner: realtimeProvider.hasNewPosts,
           currentUserId: authProvider.user?.id,
-          searchController: _searchController,
-          onSearchChanged: _onSearchChanged,
           onRefreshNewPosts: () async {
             await feedProvider.refreshPosts();
             if (context.mounted) {
@@ -261,16 +173,12 @@ class _FeedBody extends StatelessWidget {
   final FeedProvider feedProvider;
   final bool showNewPostsBanner;
   final int? currentUserId;
-  final TextEditingController searchController;
-  final ValueChanged<String> onSearchChanged;
   final Future<void> Function() onRefreshNewPosts;
 
   const _FeedBody({
     required this.feedProvider,
     required this.showNewPostsBanner,
     required this.currentUserId,
-    required this.searchController,
-    required this.onSearchChanged,
     required this.onRefreshNewPosts,
   });
 
@@ -293,14 +201,17 @@ class _FeedBody extends StatelessWidget {
                 _NewPostsBanner(onRefresh: onRefreshNewPosts),
                 const SizedBox(height: AppSizes.paddingMedium),
               ],
+              SectionHeader(
+                title: 'Stories',
+                actionLabel: 'Create',
+                onAction: () => context.push('/stories/create'),
+              ),
+              const SizedBox(height: AppSizes.paddingSmall),
               const StoriesRow(),
               const SizedBox(height: AppSizes.paddingMedium),
               _FeedControls(
                 selectedMode: feedProvider.currentMode,
-                searchController: searchController,
                 onModeChanged: feedProvider.changeMode,
-                onSearchChanged: onSearchChanged,
-                onClearSearch: feedProvider.clearSearch,
               ),
             ],
           );
@@ -366,10 +277,6 @@ class _FeedBody extends StatelessWidget {
   }
 
   IconData get _emptyIcon {
-    if (feedProvider.searchQuery != null) {
-      return Icons.search_off_outlined;
-    }
-
     return switch (feedProvider.currentMode) {
       'following' => Icons.people_outline,
       'popular' => Icons.trending_up,
@@ -379,10 +286,6 @@ class _FeedBody extends StatelessWidget {
   }
 
   String get _emptyTitle {
-    if (feedProvider.searchQuery != null) {
-      return 'No posts found.';
-    }
-
     return switch (feedProvider.currentMode) {
       'following' => 'No posts from people you follow.',
       'popular' => 'No popular posts yet.',
@@ -392,10 +295,6 @@ class _FeedBody extends StatelessWidget {
   }
 
   String get _emptySubtitle {
-    if (feedProvider.searchQuery != null) {
-      return 'Try a different keyword.';
-    }
-
     return switch (feedProvider.currentMode) {
       'following' => 'Find users to follow and build your circle.',
       'popular' => 'Like and comment on posts to make them trend.',
@@ -490,17 +389,11 @@ class _NewPostsBanner extends StatelessWidget {
 
 class _FeedControls extends StatelessWidget {
   final String selectedMode;
-  final TextEditingController searchController;
   final ValueChanged<String> onModeChanged;
-  final ValueChanged<String> onSearchChanged;
-  final VoidCallback onClearSearch;
 
   const _FeedControls({
     required this.selectedMode,
-    required this.searchController,
     required this.onModeChanged,
-    required this.onSearchChanged,
-    required this.onClearSearch,
   });
 
   static const _modes = [
@@ -513,7 +406,10 @@ class _FeedControls extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
+        const SectionHeader(title: 'Feed'),
+        const SizedBox(height: AppSizes.paddingSmall),
         SizedBox(
           height: 42,
           child: ListView.separated(
@@ -529,26 +425,6 @@ class _FeedControls extends StatelessWidget {
                 onSelected: (_) => onModeChanged(mode.$1),
               );
             },
-          ),
-        ),
-        const SizedBox(height: AppSizes.paddingMedium),
-        TextField(
-          controller: searchController,
-          onChanged: onSearchChanged,
-          decoration: InputDecoration(
-            labelText: 'Search posts',
-            hintText: 'Find moments by keyword',
-            prefixIcon: const Icon(Icons.search_outlined),
-            suffixIcon: searchController.text.isEmpty
-                ? null
-                : IconButton(
-                    onPressed: () {
-                      searchController.clear();
-                      onClearSearch();
-                    },
-                    icon: const Icon(Icons.close),
-                    tooltip: 'Clear search',
-                  ),
           ),
         ),
       ],

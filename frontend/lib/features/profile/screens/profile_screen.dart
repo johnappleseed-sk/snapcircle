@@ -96,7 +96,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: () {},
+                          onPressed: () => context.push('/saved-posts'),
                           icon: const Icon(Icons.bookmark_outline),
                           label: const Text('Saved Posts'),
                         ),

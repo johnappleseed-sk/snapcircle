@@ -77,7 +77,10 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
             }
 
             if (provider.errorMessage != null && provider.users.isEmpty) {
-              return ErrorView(message: provider.errorMessage!, onRetry: _fetch);
+              return ErrorView(
+                message: provider.errorMessage!,
+                onRetry: _fetch,
+              );
             }
 
             if (provider.users.isEmpty) {
@@ -121,9 +124,9 @@ class _AdminUserTile extends StatelessWidget {
               children: [
                 Text(
                   user.name,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
                 ),
                 Text('${user.role} • ${user.accountStatus}'),
               ],
@@ -131,9 +134,14 @@ class _AdminUserTile extends StatelessWidget {
           ),
           TextButton(
             onPressed: () async {
-              final success = isBanned
-                  ? await provider.unbanUser(user.id)
-                  : await _confirmBan(context, user);
+              final bool success;
+              if (isBanned) {
+                success = await provider.unbanUser(user.id);
+              } else {
+                final reason = await _askBanReason(context, user);
+                if (!context.mounted || reason == null) return;
+                success = await provider.banUser(user.id, reason);
+              }
               if (!context.mounted) return;
               if (success) {
                 SnackbarHelper.showSuccess(
@@ -154,7 +162,7 @@ class _AdminUserTile extends StatelessWidget {
     );
   }
 
-  Future<bool> _confirmBan(BuildContext context, UserModel user) async {
+  Future<String?> _askBanReason(BuildContext context, UserModel user) async {
     final controller = TextEditingController(
       text: 'Violation of community guidelines',
     );
@@ -182,10 +190,10 @@ class _AdminUserTile extends StatelessWidget {
     final reason = controller.text.trim();
     controller.dispose();
 
-    if (confirmed != true || !context.mounted || reason.isEmpty) {
-      return false;
+    if (confirmed != true || reason.isEmpty) {
+      return null;
     }
 
-    return context.read<AdminProvider>().banUser(user.id, reason);
+    return reason;
   }
 }

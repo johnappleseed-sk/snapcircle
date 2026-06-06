@@ -463,7 +463,7 @@ GET http://127.0.0.1:8000/api/users/{user}/following
 
 ## Create Post Flow
 
-Users can create a post from the bottom navigation Create item, the feed floating action button, or the `/create-post` route.
+Users can create a post from the bottom navigation Create tab or the `/create-post` route.
 
 Create post sends text and an optional image to Laravel:
 
@@ -572,13 +572,27 @@ The redesign adds consistent spacing, rounded cards, clearer buttons, improved a
 - Splash screen
 - Login screen
 - Home feed
+- Explore
+- Create hub
+- Messages
 - Create post
+- Create story
 - Comments
 - Profile
 - Edit profile
 - Search users
 - User profile
 - Followers and following lists
+
+## Main App Flow
+
+The primary signed-in navigation is:
+
+```text
+Home -> Explore -> Create -> Messages -> Profile
+```
+
+Home owns feed, stories, notifications, and feed modes. Create opens post/story choices. Settings, saved posts, and admin tools are reachable from Profile and Settings where appropriate.
 
 ## Package Usage
 
@@ -603,6 +617,8 @@ See the root documentation folder:
 ../docs/TESTING_CHECKLIST.md
 ../docs/API_DOCUMENTATION.md
 ../docs/ASSIGNMENT_REPORT.md
+../docs/FRONTEND_UI_FLOW_AUDIT.md
+../docs/FRONTEND_BACKEND_API_COVERAGE.md
 ```
 
 ## Analyze

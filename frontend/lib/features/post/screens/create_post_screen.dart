@@ -21,6 +21,8 @@ class CreatePostScreen extends StatefulWidget {
 }
 
 class _CreatePostScreenState extends State<CreatePostScreen> {
+  static const _maxPostLength = 1000;
+
   final _contentController = TextEditingController();
   final _imagePicker = ImagePicker();
 
@@ -59,6 +61,13 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       return;
     }
 
+    if (content.length > _maxPostLength) {
+      setState(() {
+        _localError = 'Posts can be up to $_maxPostLength characters.';
+      });
+      return;
+    }
+
     final feedProvider = context.read<FeedProvider>();
     final created = await feedProvider.createPost(
       content: content,
@@ -83,13 +92,18 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   @override
   Widget build(BuildContext context) {
     final feedProvider = context.watch<FeedProvider>();
+    final contentLength = _contentController.text.trim().length;
+    final canSubmit =
+        !feedProvider.isCreating &&
+        (_selectedImage != null || contentLength > 0) &&
+        contentLength <= _maxPostLength;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create post'),
         actions: [
           TextButton(
-            onPressed: feedProvider.isCreating ? null : _submitPost,
+            onPressed: canSubmit ? _submitPost : null,
             child: const Text('Post'),
           ),
         ],
@@ -106,8 +120,29 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     label: 'What is happening?',
                     hint: 'Share something with your circle...',
                     controller: _contentController,
+                    enabled: !feedProvider.isCreating,
                     maxLines: 6,
                     prefixIcon: const Icon(Icons.edit_outlined),
+                    onChanged: (_) {
+                      if (_localError != null) {
+                        setState(() => _localError = null);
+                        return;
+                      }
+                      setState(() {});
+                    },
+                  ),
+                  const SizedBox(height: AppSizes.paddingSmall),
+                  Align(
+                    alignment: Alignment.centerRight,
+                    child: Text(
+                      '$contentLength / $_maxPostLength',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: contentLength > _maxPostLength
+                            ? AppColors.error
+                            : AppColors.textSecondary,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
                   ),
                   const SizedBox(height: AppSizes.paddingMedium),
                   if (_selectedImage == null)
@@ -136,7 +171,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               label: 'Share post',
               icon: Icons.send_outlined,
               isLoading: feedProvider.isCreating,
-              onPressed: _submitPost,
+              onPressed: canSubmit ? _submitPost : null,
             ),
           ],
         ),

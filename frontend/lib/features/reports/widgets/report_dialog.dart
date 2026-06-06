@@ -101,7 +101,7 @@ class _ReportDialogState extends State<ReportDialog> {
             const Text('Choose the reason that best matches this report.'),
             const SizedBox(height: AppSizes.paddingMedium),
             DropdownButtonFormField<String>(
-              value: _reason,
+              initialValue: _reason,
               decoration: const InputDecoration(labelText: 'Reason'),
               items: _reasons
                   .map(

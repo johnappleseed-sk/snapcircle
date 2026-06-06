@@ -100,10 +100,7 @@ class PostCard extends StatelessWidget {
                         value: 'delete',
                         child: Row(
                           children: [
-                            Icon(
-                              Icons.delete_outline,
-                              color: AppColors.danger,
-                            ),
+                            Icon(Icons.delete_outline, color: AppColors.danger),
                             SizedBox(width: 8),
                             Text('Delete'),
                           ],
@@ -201,7 +198,6 @@ class PostCard extends StatelessWidget {
                         ),
                 ),
               ),
-              const SizedBox(width: AppSizes.paddingLarge),
               InkWell(
                 borderRadius: BorderRadius.circular(8),
                 onTap: onCommentsTap,
