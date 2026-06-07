@@ -84,6 +84,47 @@ Last updated: 2026-06-07
 - `flutter pub get`, `flutter analyze`, and `flutter test`: blocked by missing Flutter SDK/PATH access.
 - Manual checks performed: endpoint usage search, placeholder/mojibake search, changed-file review, and dependency call-site search after return-type changes.
 
+## QA and Release Readiness Pass
+
+Date: 2026-06-07
+
+QA checks performed:
+
+- Confirmed Git state was clean before QA on branch `main`.
+- Reviewed recent commit history.
+- Reran `flutter pub get`, `flutter analyze`, `flutter test`, and `flutter build apk --debug`.
+- Reviewed main routes and navigation targets in `AppRouter`.
+- Reviewed key app flows in source: splash/auth redirect, social/demo login, logout, home feed, refresh/pagination, create/edit/delete post, like/unlike, comments, saves, explore/search, profile, edit profile, profile stories, notifications, chat, settings, and admin report/user screens.
+- Compared Flutter API calls with Laravel `routes/api.php`, related controllers, and request validation classes.
+- Ran placeholder/fake data searches and staged-file safety checks.
+
+Bugs/issues found:
+
+- Flutter tooling is not available on PATH, blocking analyzer/test/build in this shell.
+- Dark theme polish was incomplete in custom widgets because `AppCard`, `SkeletonBox`, and post text used fixed light-theme colors.
+
+Bugs/issues fixed:
+
+- `AppCard` now uses active theme card and divider colors.
+- `SkeletonBox` now uses a dark-mode-aware placeholder color.
+- Post content now follows the current text theme instead of forcing `AppColors.text`.
+
+Commands run and results:
+
+- `git status`: clean before QA.
+- `git branch --show-current`: `main`.
+- `git log --oneline -5`: latest commit was `16f04e9 Improve SnapCircle frontend API integration and UI`.
+- `flutter pub get`: failed, `flutter` command not found.
+- `flutter analyze`: failed, `flutter` command not found.
+- `flutter test`: failed, `flutter` command not found.
+- `flutter build apk --debug`: failed, `flutter` command not found.
+- `where.exe flutter`: no Flutter executable found.
+
+Remaining warnings:
+
+- Flutter verification must be rerun in a shell where Flutter is installed and available on PATH.
+- Git may show LF/CRLF warnings on Windows; `git diff --check` passed previously with only line-ending warnings.
+
 ## Next Steps
 
 - Run `flutter pub get`, `flutter analyze`, and `flutter test` on a machine or shell where Flutter is on PATH.

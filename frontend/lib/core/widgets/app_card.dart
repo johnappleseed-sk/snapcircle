@@ -19,18 +19,20 @@ class AppCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final isDark = theme.brightness == Brightness.dark;
     final card = Container(
       width: double.infinity,
       padding: padding ?? const EdgeInsets.all(AppSizes.paddingMedium),
       decoration: BoxDecoration(
-        color: color ?? AppColors.card,
+        color: color ?? theme.cardTheme.color ?? AppColors.card,
         borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
-        border: Border.all(color: AppColors.border),
+        border: Border.all(color: theme.dividerColor),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
+            color: Colors.black.withValues(alpha: isDark ? 0.18 : 0.03),
+            blurRadius: isDark ? 8 : 18,
+            offset: Offset(0, isDark ? 3 : 8),
           ),
         ],
       ),

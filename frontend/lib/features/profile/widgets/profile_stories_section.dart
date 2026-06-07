@@ -85,7 +85,8 @@ class ProfileStoriesSection extends StatelessWidget {
                   label: story.user.name,
                   imageUrl: story.mediaUrl ?? story.user.avatarUrl,
                   isViewed: story.viewedByMe,
-                  onTap: () => context.push('/stories/${story.id}', extra: story),
+                  onTap: () =>
+                      context.push('/stories/${story.id}', extra: story),
                 );
               },
             ),

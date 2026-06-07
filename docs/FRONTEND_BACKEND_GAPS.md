@@ -37,3 +37,24 @@ This file records feature gaps and mismatches found while connecting the Flutter
 - Add email/password auth routes if non-social login/register/forgot password are required.
 - Implement conversation deletion or remove the route from product expectations.
 - Add refresh-token/session introspection if long-lived mobile sessions need token refresh instead of forced re-login.
+
+## QA and Release Readiness Pass
+
+Date: 2026-06-07
+
+Bugs or gaps found during QA:
+
+- Flutter SDK is not available on PATH in this environment, so analyzer, tests, formatter, and APK build remain environment-blocked.
+- Custom cards and skeleton loaders were still hard-coded to light surfaces, which weakened dark theme contrast.
+
+Bugs fixed during QA:
+
+- Made `AppCard` use `Theme.cardTheme.color` and `Theme.dividerColor`.
+- Made `SkeletonBox` use a darker-mode-aware shimmer placeholder color.
+- Removed a hard-coded dark text override from post content so post text follows the active theme.
+
+Remaining backend/frontend gaps:
+
+- Email/password login, registration, and forgot password still require backend routes before UI can be added.
+- Conversation deletion remains backend-not-implemented for MVP.
+- Admin report detail, admin user detail, and admin post/comment moderation screens are still future UI work.

@@ -143,7 +143,6 @@ class PostCard extends StatelessWidget {
               post.content!,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                 height: 1.35,
-                color: AppColors.text,
               ),
             ),
           ],

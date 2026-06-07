@@ -133,3 +133,22 @@ Status legend:
 | DELETE | `/admin/posts/{post}` | Not used | No admin content delete flow found. |
 | GET | `/admin/comments` | Not used | No admin content repository/screen call found. |
 | DELETE | `/admin/comments/{comment}` | Not used | No admin content delete flow found. |
+
+## QA and Release Readiness Pass
+
+Date: 2026-06-07
+
+Reviewed Flutter repository calls against `backend/routes/api.php` and targeted controllers/requests for posts, comments, saved posts, notifications, stories, profile, chat, settings, reports, and admin users.
+
+Findings:
+
+- Endpoint paths and HTTP methods used by Flutter match Laravel routes for the reviewed user-facing flows.
+- Multipart field names match backend requests: post `image`, profile `avatar` and `cover_image`, story `media`.
+- Social auth uses the backend-supported `access_token` payload. Email/password auth remains backend-missing and is not surfaced.
+- Pagination response parsing now supports both direct Laravel list payloads and `ApiResponse::paginated` named-list payloads.
+- Conversation deletion remains intentionally not surfaced because the backend MVP route returns a not-implemented message.
+
+Verification notes:
+
+- `flutter pub get`, `flutter analyze`, `flutter test`, and `flutter build apk --debug` could not run because `flutter` is not available on PATH in the current shell.
+- Static API contract review found no new frontend/backend route mismatch.
