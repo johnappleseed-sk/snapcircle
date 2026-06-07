@@ -53,6 +53,11 @@ class _ExploreScreenState extends State<ExploreScreen> {
               onSearch: provider.searchExplore,
               onClear: provider.clearSearch,
             ),
+            if (provider.searchQuery.isEmpty &&
+                provider.recentSearches.isNotEmpty) ...[
+              const SizedBox(height: AppSizes.paddingSmall),
+              _RecentSearchesSection(provider: provider),
+            ],
             const SizedBox(height: AppSizes.paddingMedium),
             if (provider.isLoading && provider.explorePosts.isEmpty)
               const Padding(
@@ -82,6 +87,40 @@ class _ExploreScreenState extends State<ExploreScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _RecentSearchesSection extends StatelessWidget {
+  final ExploreProvider provider;
+
+  const _RecentSearchesSection({required this.provider});
+
+  @override
+  Widget build(BuildContext context) {
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      crossAxisAlignment: WrapCrossAlignment.center,
+      children: [
+        Text(
+          'Recent',
+          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        for (final query in provider.recentSearches)
+          ActionChip(
+            avatar: const Icon(Icons.history, size: 16),
+            label: Text(query),
+            onPressed: () => provider.searchExplore(query),
+          ),
+        TextButton(
+          onPressed: provider.clearRecentSearches,
+          child: const Text('Clear'),
+        ),
+      ],
     );
   }
 }

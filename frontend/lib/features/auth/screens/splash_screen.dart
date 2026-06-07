@@ -6,6 +6,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_config.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/constants/app_text_styles.dart';
+import '../../../core/storage/app_preferences.dart';
 import '../providers/auth_provider.dart';
 
 class SplashScreen extends StatefulWidget {
@@ -16,6 +17,8 @@ class SplashScreen extends StatefulWidget {
 }
 
 class _SplashScreenState extends State<SplashScreen> {
+  final _preferences = const AppPreferences();
+
   @override
   void initState() {
     super.initState();
@@ -27,8 +30,14 @@ class _SplashScreenState extends State<SplashScreen> {
   Future<void> _checkAuthStatus() async {
     final authProvider = context.read<AuthProvider>();
     await authProvider.checkAuthStatus();
+    final hasSeenOnboarding = await _preferences.isOnboardingCompleted();
 
     if (!mounted) {
+      return;
+    }
+
+    if (!hasSeenOnboarding) {
+      context.go('/onboarding');
       return;
     }
 

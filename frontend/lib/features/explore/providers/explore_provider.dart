@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../core/storage/app_preferences.dart';
 import '../../auth/models/user_model.dart';
 import '../../feed/models/post_model.dart';
 import '../../profile/data/profile_repository.dart';
@@ -8,6 +9,7 @@ import '../data/explore_repository.dart';
 class ExploreProvider extends ChangeNotifier {
   final ExploreRepository _exploreRepository;
   final ProfileRepository _profileRepository;
+  final AppPreferences _preferences;
 
   List<PostModel> _explorePosts = [];
   List<PostModel> _trendingPosts = [];
@@ -23,12 +25,17 @@ class ExploreProvider extends ChangeNotifier {
   String _searchQuery = '';
   String? _errorMessage;
   final Set<int> _followingUserIds = {};
+  List<String> _recentSearches = [];
 
   ExploreProvider({
     ExploreRepository? exploreRepository,
     ProfileRepository? profileRepository,
+    AppPreferences? preferences,
   }) : _exploreRepository = exploreRepository ?? ExploreRepository(),
-       _profileRepository = profileRepository ?? ProfileRepository();
+       _profileRepository = profileRepository ?? ProfileRepository(),
+       _preferences = preferences ?? const AppPreferences() {
+    loadRecentSearches();
+  }
 
   List<PostModel> get explorePosts => List.unmodifiable(_explorePosts);
   List<PostModel> get trendingPosts => List.unmodifiable(_trendingPosts);
@@ -42,7 +49,13 @@ class ExploreProvider extends ChangeNotifier {
   String get currentSort => _currentSort;
   String get searchQuery => _searchQuery;
   String? get errorMessage => _errorMessage;
+  List<String> get recentSearches => List.unmodifiable(_recentSearches);
   bool isFollowingUser(int userId) => _followingUserIds.contains(userId);
+
+  Future<void> loadRecentSearches() async {
+    _recentSearches = await _preferences.getRecentSearches();
+    notifyListeners();
+  }
 
   Future<void> fetchExploreData({bool refresh = false}) async {
     if (_isLoading) {
@@ -135,6 +148,7 @@ class ExploreProvider extends ChangeNotifier {
       _exploreUsers = results['users'] is List<UserModel>
           ? results['users'] as List<UserModel>
           : [];
+      _recentSearches = await _preferences.addRecentSearch(trimmed);
       _hasMorePosts = false;
     } on ExploreException catch (error) {
       _errorMessage = error.message;
@@ -193,6 +207,12 @@ class ExploreProvider extends ChangeNotifier {
     _searchQuery = '';
     _exploreUsers = [];
     await fetchExplorePosts(refresh: true);
+  }
+
+  Future<void> clearRecentSearches() async {
+    await _preferences.clearRecentSearches();
+    _recentSearches = [];
+    notifyListeners();
   }
 
   Future<void> toggleFollow(UserModel user) async {

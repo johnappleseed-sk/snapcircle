@@ -7,6 +7,7 @@ import '../../../core/constants/app_sizes.dart';
 import '../../../core/utils/snackbar_helper.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/confirmation_dialog.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
@@ -32,6 +33,17 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   }
 
   Future<void> _logout() async {
+    final confirmed = await showConfirmationDialog(
+      context: context,
+      title: 'Log out?',
+      message: 'Your local session will be cleared on this device.',
+      confirmLabel: 'Log out',
+      isDestructive: true,
+    );
+    if (!confirmed || !mounted) {
+      return;
+    }
+
     await context.read<AuthProvider>().logout();
     if (mounted) {
       context.go('/login');
@@ -95,25 +107,13 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
     required String message,
     required String action,
   }) async {
-    return await showDialog<bool>(
-          context: context,
-          builder: (context) => AlertDialog(
-            title: Text(title),
-            content: Text(message),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.of(context).pop(false),
-                child: const Text('Cancel'),
-              ),
-              FilledButton(
-                style: FilledButton.styleFrom(backgroundColor: AppColors.error),
-                onPressed: () => Navigator.of(context).pop(true),
-                child: Text(action),
-              ),
-            ],
-          ),
-        ) ??
-        false;
+    return showConfirmationDialog(
+      context: context,
+      title: title,
+      message: message,
+      confirmLabel: action,
+      isDestructive: true,
+    );
   }
 
   @override

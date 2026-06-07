@@ -120,7 +120,7 @@ class MessagesProvider extends ChangeNotifier {
         currentConversationId,
         trimmed,
       );
-      _messages = [sent, ..._messages];
+      _messages = _mergeMessages([sent], _messages);
       return sent;
     } on MessageException catch (error) {
       _errorMessage = error.message;

@@ -34,11 +34,13 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   final _conversationRepository = ConversationRepository();
   ConversationModel? _conversation;
   bool _isLoadingConversation = false;
+  bool _canSendMessage = false;
 
   @override
   void initState() {
     super.initState();
     _conversation = widget.initialConversation;
+    _messageController.addListener(_handleComposerChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<MessagesProvider>().fetchMessages(
         widget.conversationId,
@@ -51,8 +53,18 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
   @override
   void dispose() {
     context.read<MessagesProvider>().clearConversation();
+    _messageController.removeListener(_handleComposerChanged);
     _messageController.dispose();
     super.dispose();
+  }
+
+  void _handleComposerChanged() {
+    final canSend = _messageController.text.trim().isNotEmpty;
+    if (canSend == _canSendMessage) {
+      return;
+    }
+
+    setState(() => _canSendMessage = canSend);
   }
 
   Future<void> _fetchConversation() async {
@@ -146,6 +158,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             _MessageComposer(
               controller: _messageController,
               isSending: messagesProvider.isSending,
+              canSend: _canSendMessage,
               onSend: _sendMessage,
               errorMessage: messagesProvider.errorMessage,
             ),
@@ -241,12 +254,14 @@ class _ScrollableEmptyChat extends StatelessWidget {
 class _MessageComposer extends StatelessWidget {
   final TextEditingController controller;
   final bool isSending;
+  final bool canSend;
   final VoidCallback onSend;
   final String? errorMessage;
 
   const _MessageComposer({
     required this.controller,
     required this.isSending,
+    required this.canSend,
     required this.onSend,
     required this.errorMessage,
   });
@@ -254,9 +269,9 @@ class _MessageComposer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.border)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(top: BorderSide(color: Theme.of(context).dividerColor)),
       ),
       child: Padding(
         padding: EdgeInsets.fromLTRB(
@@ -295,7 +310,7 @@ class _MessageComposer extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 IconButton.filled(
-                  onPressed: isSending ? null : onSend,
+                  onPressed: isSending || !canSend ? null : onSend,
                   icon: isSending
                       ? const SizedBox(
                           height: 18,

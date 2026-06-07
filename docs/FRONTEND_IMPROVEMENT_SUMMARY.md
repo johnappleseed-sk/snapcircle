@@ -130,3 +130,51 @@ Remaining warnings:
 - Run `flutter pub get`, `flutter analyze`, and `flutter test` on a machine or shell where Flutter is on PATH.
 - Add admin report/user detail and admin content moderation screens if those workflows are required for submission.
 - Consider implementing backend email/password auth routes before adding register/forgot-password UI.
+
+## Startup Product Polish Pass
+
+Date: 2026-06-07
+
+Product checks performed:
+
+- Confirmed Git state was clean on `main` before editing.
+- Re-reviewed `backend/routes/api.php` before adding polish so no frontend route assumptions were invented.
+- Reviewed auth/splash routing, feed, post detail, profile, explore, chat, settings, and account settings flows.
+- Searched for fake/mock/unfinished UI text in Flutter source and docs.
+
+Bugs or polish issues found:
+
+- First-run onboarding did not exist, so new users landed directly on login without product context.
+- Explore search did not retain recent searches locally.
+- Profile completion existed only as a small progress bar inside profile header.
+- Profile logout and post detail delete actions could be triggered without confirmation.
+- Chat send button stayed active for empty messages.
+- Sent messages could duplicate if a refreshed page returned the same message ID.
+- Settings still used "Coming soon" copy for Terms & Privacy.
+
+Bugs and polish fixed:
+
+- Added a local first-launch onboarding flow backed by `flutter_secure_storage`.
+- Added reusable app preference storage for onboarding and recent explore searches.
+- Added recent search chips and clear action on Explore.
+- Added a reusable destructive/non-destructive confirmation dialog and applied it to logout/delete flows.
+- Added a reusable profile completion prompt for own profile.
+- Disabled chat send until the composer has non-empty text.
+- Deduplicated sent chat messages using existing message merge logic.
+- Replaced unfinished settings copy with backend-aligned account/privacy wording.
+
+Commands run and results:
+
+- `git status`: clean before the pass.
+- `git branch --show-current`: `main`.
+- `git log --oneline -5`: latest commit was `70ded61 Stabilize SnapCircle frontend release readiness`.
+- Flutter verification is still blocked in this shell because `flutter` is not available on PATH.
+
+Known limitations:
+
+- Onboarding and recent search history are local-only product polish features and do not call backend APIs.
+- Email/password auth, registration, forgot password, conversation deletion, and deeper admin detail screens remain backend/UI follow-ups already documented in the gaps file.
+
+Recommended next step:
+
+- Re-run Flutter formatter, analyzer, tests, and debug APK build from a shell where Flutter is installed, then perform device smoke testing against a seeded Laravel backend.

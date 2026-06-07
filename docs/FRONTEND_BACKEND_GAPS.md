@@ -58,3 +58,19 @@ Remaining backend/frontend gaps:
 - Email/password login, registration, and forgot password still require backend routes before UI can be added.
 - Conversation deletion remains backend-not-implemented for MVP.
 - Admin report detail, admin user detail, and admin post/comment moderation screens are still future UI work.
+
+## Startup Product Polish Pass
+
+Date: 2026-06-07
+
+New findings:
+
+- No new backend gaps were introduced by the product-polish pass.
+- First-launch onboarding and Explore recent searches are intentionally local-only and do not require Laravel routes.
+- Profile completion prompts use the existing `profile_completion` and user profile fields already returned by backend user/profile responses.
+
+Remaining limitations:
+
+- Email/password login, registration, and forgot password still require backend implementation before corresponding Flutter screens should be added.
+- Conversation deletion remains unavailable because the existing backend route reports the MVP limitation.
+- Admin report detail, admin user detail, and admin post/comment moderation UI are still not exposed in Flutter.

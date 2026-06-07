@@ -6,9 +6,11 @@ import '../../../core/constants/app_sizes.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/loading_view.dart';
+import '../../../core/widgets/confirmation_dialog.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/profile_provider.dart';
 import '../widgets/profile_header.dart';
+import '../widgets/profile_completion_card.dart';
 import '../widgets/profile_posts_section.dart';
 import '../widgets/profile_stories_section.dart';
 
@@ -39,6 +41,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Future<void> _logout() async {
+    final confirmed = await showConfirmationDialog(
+      context: context,
+      title: 'Log out?',
+      message: 'You can sign back in any time.',
+      confirmLabel: 'Log out',
+      isDestructive: true,
+    );
+    if (!confirmed || !mounted) {
+      return;
+    }
+
     await context.read<AuthProvider>().logout();
     if (mounted) {
       context.go('/login');
@@ -91,9 +104,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     onFollowersTap: () =>
                         context.push('/users/${profile.id}/followers'),
                     onFollowingTap: () =>
-                        context.push('/users/${profile.id}/following'),
+                      context.push('/users/${profile.id}/following'),
                   ),
                   const SizedBox(height: AppSizes.paddingMedium),
+                  ProfileCompletionCard(
+                    user: profile,
+                    onEditProfile: () => context.push('/profile/edit'),
+                  ),
+                  if (profile.profileCompletion < 90)
+                    const SizedBox(height: AppSizes.paddingMedium),
                   Row(
                     children: [
                       Expanded(

@@ -92,7 +92,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   const SettingsTile(
                     icon: Icons.privacy_tip_outlined,
                     title: 'Terms & Privacy',
-                    subtitle: 'Coming soon',
+                    subtitle: 'Managed by the backend account settings',
                     iconColor: AppColors.textSecondary,
                   ),
                   const SizedBox(height: AppSizes.paddingSmall),

@@ -5,6 +5,7 @@ import '../features/admin/screens/admin_reports_screen.dart';
 import '../features/admin/screens/admin_users_screen.dart';
 import '../features/auth/providers/auth_provider.dart';
 import '../features/auth/screens/login_screen.dart';
+import '../features/auth/screens/onboarding_screen.dart';
 import '../features/auth/screens/splash_screen.dart';
 import '../features/chat/models/conversation_model.dart';
 import '../features/chat/screens/chat_detail_screen.dart';
@@ -33,6 +34,7 @@ import '../features/stories/screens/story_viewer_screen.dart';
 
 class AppRouter {
   static const String splash = '/';
+  static const String onboarding = '/onboarding';
   static const String login = '/login';
   static const String home = '/home';
   static const String createPost = '/create-post';
@@ -44,12 +46,13 @@ class AppRouter {
       redirect: (context, state) {
         final location = state.uri.path;
         final isSplash = location == splash;
+        final isOnboarding = location == onboarding;
         final isLogin = location == login;
         final isAdminRoute = location.startsWith('/admin');
         final userRole = authProvider.user?.role;
         final canAccessAdmin = userRole == 'admin' || userRole == 'moderator';
 
-        if (isSplash) {
+        if (isSplash || isOnboarding) {
           return null;
         }
 
@@ -71,6 +74,10 @@ class AppRouter {
         GoRoute(
           path: splash,
           builder: (context, state) => const SplashScreen(),
+        ),
+        GoRoute(
+          path: onboarding,
+          builder: (context, state) => const OnboardingScreen(),
         ),
         GoRoute(path: login, builder: (context, state) => const LoginScreen()),
         GoRoute(

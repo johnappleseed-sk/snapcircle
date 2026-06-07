@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/utils/snackbar_helper.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/confirmation_dialog.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/loading_view.dart';
@@ -80,6 +81,17 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
   }
 
   Future<void> _deletePost(BuildContext context, int postId) async {
+    final confirmed = await showConfirmationDialog(
+      context: context,
+      title: 'Delete post?',
+      message: 'This post will be permanently removed from SnapCircle.',
+      confirmLabel: 'Delete',
+      isDestructive: true,
+    );
+    if (!confirmed || !context.mounted) {
+      return;
+    }
+
     final deleted = await context.read<FeedProvider>().deletePost(postId);
     if (!context.mounted) {
       return;
