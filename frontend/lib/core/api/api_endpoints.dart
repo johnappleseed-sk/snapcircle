@@ -60,8 +60,15 @@ class ApiEndpoints {
   static const String adminDashboard = '/admin/dashboard';
   static const String adminReports = '/admin/reports';
   static const String adminUsers = '/admin/users';
+  static const String adminPosts = '/admin/posts';
+  static const String adminComments = '/admin/comments';
+  static String adminReportById(int reportId) => '/admin/reports/$reportId';
   static String adminReportStatus(int reportId) =>
       '/admin/reports/$reportId/status';
+  static String adminUserById(int userId) => '/admin/users/$userId';
   static String adminUserBan(int userId) => '/admin/users/$userId/ban';
   static String adminUserUnban(int userId) => '/admin/users/$userId/unban';
+  static String adminUserRole(int userId) => '/admin/users/$userId/role';
+  static String adminPostById(int postId) => '/admin/posts/$postId';
+  static String adminCommentById(int commentId) => '/admin/comments/$commentId';
 }

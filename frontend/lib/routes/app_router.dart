@@ -93,6 +93,19 @@ class AppRouter {
           builder: (context, state) => const CreatePostScreen(),
         ),
         GoRoute(
+          path: '/posts/:postId/edit',
+          builder: (context, state) {
+            final postId = int.tryParse(state.pathParameters['postId'] ?? '');
+            final post = state.extra is PostModel
+                ? state.extra as PostModel
+                : null;
+            if (post == null) {
+              return PostDetailScreen(postId: postId ?? 0);
+            }
+            return CreatePostScreen(initialPost: post);
+          },
+        ),
+        GoRoute(
           path: '/posts/:postId',
           builder: (context, state) {
             final postId = int.tryParse(state.pathParameters['postId'] ?? '');
@@ -127,7 +140,8 @@ class AppRouter {
         ),
         GoRoute(
           path: '/notifications',
-          builder: (context, state) => const NotificationsScreen(),
+          builder: (context, state) =>
+              const AppShell(currentIndex: 3, child: NotificationsScreen()),
         ),
         GoRoute(
           path: '/settings',
@@ -159,8 +173,7 @@ class AppRouter {
         ),
         GoRoute(
           path: '/messages',
-          builder: (context, state) =>
-              const AppShell(currentIndex: 3, child: ConversationsScreen()),
+          builder: (context, state) => const ConversationsScreen(),
         ),
         GoRoute(
           path: '/messages/:conversationId',

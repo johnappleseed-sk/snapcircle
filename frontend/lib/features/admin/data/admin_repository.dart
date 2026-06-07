@@ -1,5 +1,6 @@
 import '../../../core/api/api_client.dart';
 import '../../../core/api/api_endpoints.dart';
+import '../../../core/models/paginated_response.dart';
 import '../../auth/models/user_model.dart';
 import '../models/admin_dashboard_model.dart';
 import '../models/report_model.dart';
@@ -36,8 +37,13 @@ class AdminRepository {
       },
     );
     final response = _read(result.data?.data, result.error);
-    final reports = _list(response, 'reports');
-    return reports.map(ReportModel.fromJson).toList();
+    return PaginatedResponse<ReportModel>.fromApi(
+      response: response,
+      itemBuilder: ReportModel.fromJson,
+      dataKey: 'reports',
+      fallbackPage: page,
+      fallbackPerPage: 15,
+    ).items;
   }
 
   Future<void> updateReportStatus(
@@ -75,8 +81,13 @@ class AdminRepository {
       },
     );
     final response = _read(result.data?.data, result.error);
-    final users = _list(response, 'users');
-    return users.map(UserModel.fromJson).toList();
+    return PaginatedResponse<UserModel>.fromApi(
+      response: response,
+      itemBuilder: UserModel.fromJson,
+      dataKey: 'users',
+      fallbackPage: page,
+      fallbackPerPage: 15,
+    ).items;
   }
 
   Future<void> banUser(int userId, String reason) async {
@@ -96,6 +107,16 @@ class AdminRepository {
     }
   }
 
+  Future<void> updateUserRole(int userId, String role) async {
+    final result = await _apiClient.put(
+      ApiEndpoints.adminUserRole(userId),
+      data: {'role': role},
+    );
+    if (!result.isSuccess) {
+      throw AdminException(result.error ?? 'Unable to update user role.');
+    }
+  }
+
   Map<String, dynamic> _read(dynamic responseData, String? error) {
     if (error != null) throw AdminException(error);
     if (responseData is! Map<String, dynamic>) {
@@ -104,18 +125,4 @@ class AdminRepository {
     return responseData;
   }
 
-  List<Map<String, dynamic>> _list(Map<String, dynamic> response, String key) {
-    final data = response['data'];
-    final list = data is Map<String, dynamic> && data[key] is List
-        ? data[key]
-        : response[key] is List
-        ? response[key]
-        : null;
-
-    if (list is! List) {
-      throw const AdminException('Invalid admin list response.');
-    }
-
-    return list.whereType<Map<String, dynamic>>().toList();
-  }
 }

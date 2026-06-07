@@ -21,6 +21,7 @@ class CommentsProvider extends ChangeNotifier {
   bool _isSubmitting = false;
   bool _hasMore = true;
   int _currentPage = 1;
+  final int _perPage = 15;
   String? _errorMessage;
 
   CommentsProvider({
@@ -54,12 +55,14 @@ class CommentsProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final fetchedComments = await _commentRepository.getComments(
+      final response = await _commentRepository.getComments(
         postId,
         page: _currentPage,
+        perPage: _perPage,
       );
-      _comments = fetchedComments;
-      _hasMore = fetchedComments.isNotEmpty;
+      _comments = response.items;
+      _currentPage = response.currentPage;
+      _hasMore = response.hasMore;
       markCommentsAsSeen();
     } on CommentException catch (error) {
       _errorMessage = error.message;
@@ -82,16 +85,18 @@ class CommentsProvider extends ChangeNotifier {
 
     try {
       final nextPage = _currentPage + 1;
-      final fetchedComments = await _commentRepository.getComments(
+      final response = await _commentRepository.getComments(
         postId,
         page: nextPage,
+        perPage: _perPage,
       );
 
-      if (fetchedComments.isEmpty) {
+      if (response.items.isEmpty) {
         _hasMore = false;
       } else {
-        _currentPage = nextPage;
-        _comments = [..._comments, ...fetchedComments];
+        _currentPage = response.currentPage;
+        _comments = _mergeComments(_comments, response.items);
+        _hasMore = response.hasMore;
       }
     } on CommentException catch (error) {
       _errorMessage = error.message;
@@ -212,6 +217,14 @@ class CommentsProvider extends ChangeNotifier {
   void markCommentsAsSeen() {
     _hasNewComments = false;
     notifyListeners();
+  }
+
+  List<CommentModel> _mergeComments(
+    List<CommentModel> current,
+    List<CommentModel> next,
+  ) {
+    final seenIds = current.map((comment) => comment.id).toSet();
+    return [...current, ...next.where((comment) => seenIds.add(comment.id))];
   }
 
   @override

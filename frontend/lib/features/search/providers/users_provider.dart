@@ -13,6 +13,7 @@ class UsersProvider extends ChangeNotifier {
   bool _isLoadingMore = false;
   bool _hasMore = true;
   int _currentPage = 1;
+  final int _perPage = 15;
   String? _searchQuery;
   String? _errorMessage;
 
@@ -45,12 +46,14 @@ class UsersProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final fetchedUsers = await _profileRepository.getUsers(
+      final response = await _profileRepository.getUsers(
         page: _currentPage,
+        perPage: _perPage,
         search: _searchQuery,
       );
-      _users = fetchedUsers;
-      _hasMore = fetchedUsers.isNotEmpty;
+      _users = response.items;
+      _currentPage = response.currentPage;
+      _hasMore = response.hasMore;
     } on ProfileException catch (error) {
       _errorMessage = error.message;
     } catch (_) {
@@ -72,16 +75,18 @@ class UsersProvider extends ChangeNotifier {
 
     try {
       final nextPage = _currentPage + 1;
-      final fetchedUsers = await _profileRepository.getUsers(
+      final response = await _profileRepository.getUsers(
         page: nextPage,
+        perPage: _perPage,
         search: _searchQuery,
       );
 
-      if (fetchedUsers.isEmpty) {
+      if (response.items.isEmpty) {
         _hasMore = false;
       } else {
-        _currentPage = nextPage;
-        _users = [..._users, ...fetchedUsers];
+        _currentPage = response.currentPage;
+        _users = _mergeUsers(_users, response.items);
+        _hasMore = response.hasMore;
       }
     } on ProfileException catch (error) {
       _errorMessage = error.message;
@@ -134,16 +139,25 @@ class UsersProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final fetchedUsers = isFollowers
-          ? await _profileRepository.getFollowers(userId, page: _currentPage)
-          : await _profileRepository.getFollowing(userId, page: _currentPage);
+      final response = isFollowers
+          ? await _profileRepository.getFollowers(
+              userId,
+              page: _currentPage,
+              perPage: _perPage,
+            )
+          : await _profileRepository.getFollowing(
+              userId,
+              page: _currentPage,
+              perPage: _perPage,
+            );
 
       if (isFollowers) {
-        _followers = fetchedUsers;
+        _followers = response.items;
       } else {
-        _following = fetchedUsers;
+        _following = response.items;
       }
-      _hasMore = fetchedUsers.isNotEmpty;
+      _currentPage = response.currentPage;
+      _hasMore = response.hasMore;
     } on ProfileException catch (error) {
       _errorMessage = error.message;
     } catch (_) {
@@ -168,19 +182,28 @@ class UsersProvider extends ChangeNotifier {
 
     try {
       final nextPage = _currentPage + 1;
-      final fetchedUsers = isFollowers
-          ? await _profileRepository.getFollowers(userId, page: nextPage)
-          : await _profileRepository.getFollowing(userId, page: nextPage);
+      final response = isFollowers
+          ? await _profileRepository.getFollowers(
+              userId,
+              page: nextPage,
+              perPage: _perPage,
+            )
+          : await _profileRepository.getFollowing(
+              userId,
+              page: nextPage,
+              perPage: _perPage,
+            );
 
-      if (fetchedUsers.isEmpty) {
+      if (response.items.isEmpty) {
         _hasMore = false;
       } else {
-        _currentPage = nextPage;
+        _currentPage = response.currentPage;
         if (isFollowers) {
-          _followers = [..._followers, ...fetchedUsers];
+          _followers = _mergeUsers(_followers, response.items);
         } else {
-          _following = [..._following, ...fetchedUsers];
+          _following = _mergeUsers(_following, response.items);
         }
+        _hasMore = response.hasMore;
       }
     } on ProfileException catch (error) {
       _errorMessage = error.message;
@@ -190,5 +213,10 @@ class UsersProvider extends ChangeNotifier {
       _isLoadingMore = false;
       notifyListeners();
     }
+  }
+
+  List<UserModel> _mergeUsers(List<UserModel> current, List<UserModel> next) {
+    final seenIds = current.map((user) => user.id).toSet();
+    return [...current, ...next.where((user) => seenIds.add(user.id))];
   }
 }

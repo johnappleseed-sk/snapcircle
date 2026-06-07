@@ -47,13 +47,14 @@ class MessagesProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final items = await _repository.getMessages(
+      final response = await _repository.getMessages(
         conversationId,
         page: _currentPage,
         perPage: _perPage,
       );
-      _messages = items;
-      _hasMore = items.length >= _perPage;
+      _messages = response.items;
+      _currentPage = response.currentPage;
+      _hasMore = response.hasMore;
       await _markReceivedMessagesAsRead();
     } on MessageException catch (error) {
       _errorMessage = error.message;
@@ -80,17 +81,17 @@ class MessagesProvider extends ChangeNotifier {
 
     try {
       final nextPage = _currentPage + 1;
-      final items = await _repository.getMessages(
+      final response = await _repository.getMessages(
         currentConversationId,
         page: nextPage,
         perPage: _perPage,
       );
-      if (items.isEmpty) {
+      if (response.items.isEmpty) {
         _hasMore = false;
       } else {
-        _currentPage = nextPage;
-        _messages = [..._messages, ...items];
-        _hasMore = items.length >= _perPage;
+        _currentPage = response.currentPage;
+        _messages = _mergeMessages(_messages, response.items);
+        _hasMore = response.hasMore;
         await _markReceivedMessagesAsRead();
       }
     } on MessageException catch (error) {
@@ -170,5 +171,13 @@ class MessagesProvider extends ChangeNotifier {
     for (final message in unreadReceived) {
       await markMessageAsRead(message.id);
     }
+  }
+
+  List<MessageModel> _mergeMessages(
+    List<MessageModel> current,
+    List<MessageModel> next,
+  ) {
+    final seenIds = current.map((message) => message.id).toSet();
+    return [...current, ...next.where((message) => seenIds.add(message.id))];
   }
 }

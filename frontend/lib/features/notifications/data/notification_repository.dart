@@ -1,5 +1,6 @@
 import '../../../core/api/api_client.dart';
 import '../../../core/api/api_endpoints.dart';
+import '../../../core/models/paginated_response.dart';
 import '../models/notification_model.dart';
 
 class NotificationException implements Exception {
@@ -17,7 +18,7 @@ class NotificationRepository {
   NotificationRepository({ApiClient? apiClient})
     : _apiClient = apiClient ?? ApiClient();
 
-  Future<List<NotificationModel>> getNotifications({
+  Future<PaginatedResponse<NotificationModel>> getNotifications({
     int page = 1,
     int perPage = 15,
     String filter = 'all',
@@ -28,18 +29,13 @@ class NotificationRepository {
     );
 
     final response = _readData(result.data?.data, result.error);
-    final data = response['data'];
-
-    if (data is! List) {
-      throw const NotificationException(
-        'Invalid notifications response from API.',
-      );
-    }
-
-    return data
-        .whereType<Map<String, dynamic>>()
-        .map(NotificationModel.fromJson)
-        .toList();
+    return PaginatedResponse<NotificationModel>.fromApi(
+      response: response,
+      itemBuilder: NotificationModel.fromJson,
+      dataKey: 'notifications',
+      fallbackPage: page,
+      fallbackPerPage: perPage,
+    );
   }
 
   Future<int> getUnreadCount() async {

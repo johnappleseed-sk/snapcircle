@@ -43,12 +43,13 @@ class ConversationsProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final items = await _repository.getConversations(
+      final response = await _repository.getConversations(
         page: _currentPage,
         perPage: _perPage,
       );
-      _conversations = items;
-      _hasMore = items.length >= _perPage;
+      _conversations = response.items;
+      _currentPage = response.currentPage;
+      _hasMore = response.hasMore;
     } on ConversationException catch (error) {
       _errorMessage = error.message;
     } catch (_) {
@@ -70,16 +71,16 @@ class ConversationsProvider extends ChangeNotifier {
 
     try {
       final nextPage = _currentPage + 1;
-      final items = await _repository.getConversations(
+      final response = await _repository.getConversations(
         page: nextPage,
         perPage: _perPage,
       );
-      if (items.isEmpty) {
+      if (response.items.isEmpty) {
         _hasMore = false;
       } else {
-        _currentPage = nextPage;
-        _conversations = [..._conversations, ...items];
-        _hasMore = items.length >= _perPage;
+        _currentPage = response.currentPage;
+        _conversations = _mergeConversations(_conversations, response.items);
+        _hasMore = response.hasMore;
       }
     } on ConversationException catch (error) {
       _errorMessage = error.message;
@@ -145,6 +146,17 @@ class ConversationsProvider extends ChangeNotifier {
               .toList()
         : [conversation, ..._conversations];
     _sortConversations();
+  }
+
+  List<ConversationModel> _mergeConversations(
+    List<ConversationModel> current,
+    List<ConversationModel> next,
+  ) {
+    final seenIds = current.map((conversation) => conversation.id).toSet();
+    return [
+      ...current,
+      ...next.where((conversation) => seenIds.add(conversation.id)),
+    ];
   }
 
   void _sortConversations() {

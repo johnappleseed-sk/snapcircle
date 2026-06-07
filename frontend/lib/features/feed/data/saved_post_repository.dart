@@ -1,5 +1,6 @@
 import '../../../core/api/api_client.dart';
 import '../../../core/api/api_endpoints.dart';
+import '../../../core/models/paginated_response.dart';
 import '../models/post_model.dart';
 
 class SavedPostException implements Exception {
@@ -27,7 +28,7 @@ class SavedPostRepository {
     return _readData(result.data?.data, result.error);
   }
 
-  Future<List<PostModel>> getSavedPosts({
+  Future<PaginatedResponse<PostModel>> getSavedPosts({
     int page = 1,
     int perPage = 10,
   }) async {
@@ -37,16 +38,13 @@ class SavedPostRepository {
     );
 
     final response = _readData(result.data?.data, result.error);
-    final data = response['data'];
-
-    if (data is! List) {
-      throw const SavedPostException('Invalid saved posts response from API.');
-    }
-
-    return data
-        .whereType<Map<String, dynamic>>()
-        .map(PostModel.fromJson)
-        .toList();
+    return PaginatedResponse<PostModel>.fromApi(
+      response: response,
+      itemBuilder: PostModel.fromJson,
+      dataKey: 'posts',
+      fallbackPage: page,
+      fallbackPerPage: perPage,
+    );
   }
 
   Map<String, dynamic> _readData(dynamic responseData, String? error) {

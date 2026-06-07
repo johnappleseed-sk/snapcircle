@@ -44,9 +44,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         widget.conversationId,
         refresh: true,
       );
-      if (_conversation == null) {
-        _fetchConversation();
-      }
+      _fetchConversation();
     });
   }
 
@@ -119,10 +117,15 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
         ),
         actions: [
           IconButton(
-            onPressed: () => messagesProvider.fetchMessages(
-              widget.conversationId,
-              refresh: true,
-            ),
+            onPressed: () async {
+              await _fetchConversation();
+              if (context.mounted) {
+                await messagesProvider.fetchMessages(
+                  widget.conversationId,
+                  refresh: true,
+                );
+              }
+            },
             icon: const Icon(Icons.refresh),
             tooltip: 'Refresh messages',
           ),

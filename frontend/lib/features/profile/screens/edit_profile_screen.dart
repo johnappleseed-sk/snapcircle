@@ -233,7 +233,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                           ? null
                           : (value) => setState(() => _isPrivate = value),
                       title: const Text('Private profile'),
-                      subtitle: const Text('Placeholder privacy setting'),
+                      subtitle: const Text(
+                        'Limit discovery and follow access when supported.',
+                      ),
                       contentPadding: EdgeInsets.zero,
                     ),
                     if (_localError != null) ...[

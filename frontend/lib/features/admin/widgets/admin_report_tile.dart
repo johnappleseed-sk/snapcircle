@@ -24,7 +24,7 @@ class AdminReportTile extends StatelessWidget {
             children: [
               Expanded(
                 child: Text(
-                  '${report.type.toUpperCase()} • ${report.reason}',
+                  '${report.type.toUpperCase()} - ${report.reason}',
                   style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.w800,
                   ),
@@ -48,7 +48,7 @@ class AdminReportTile extends StatelessWidget {
           Text(report.preview),
           const SizedBox(height: AppSizes.paddingSmall),
           Text(
-            'Status: ${report.status} • Reporter: ${report.reporter?.name ?? 'Unknown'}',
+            'Status: ${report.status} - Reporter: ${report.reporter?.name ?? 'Unknown'}',
             style: Theme.of(context).textTheme.bodySmall,
           ),
         ],

@@ -3,6 +3,7 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../auth/models/user_model.dart';
 import '../../feed/models/post_model.dart';
+import '../../stories/models/story_model.dart';
 import '../data/profile_repository.dart';
 
 class ProfileProvider extends ChangeNotifier {
@@ -11,15 +12,19 @@ class ProfileProvider extends ChangeNotifier {
   UserModel? _profile;
   UserModel? _selectedUser;
   List<PostModel> _profilePosts = [];
+  List<StoryModel> _profileStories = [];
   bool _isLoading = false;
   bool _isUpdating = false;
   bool _isFollowing = false;
   bool _isLoadingPosts = false;
   bool _isLoadingMorePosts = false;
+  bool _isLoadingStories = false;
   bool _hasMorePosts = true;
   int _currentPostsPage = 1;
+  int _currentStoriesPage = 1;
   String _currentPostsSort = 'latest';
   String? _errorMessage;
+  String? _storiesErrorMessage;
 
   ProfileProvider({ProfileRepository? profileRepository})
     : _profileRepository = profileRepository ?? ProfileRepository();
@@ -27,15 +32,18 @@ class ProfileProvider extends ChangeNotifier {
   UserModel? get profile => _profile;
   UserModel? get selectedUser => _selectedUser;
   List<PostModel> get profilePosts => List.unmodifiable(_profilePosts);
+  List<StoryModel> get profileStories => List.unmodifiable(_profileStories);
   bool get isLoading => _isLoading;
   bool get isUpdating => _isUpdating;
   bool get isFollowing => _isFollowing;
   bool get isLoadingPosts => _isLoadingPosts;
   bool get isLoadingMorePosts => _isLoadingMorePosts;
+  bool get isLoadingStories => _isLoadingStories;
   bool get hasMorePosts => _hasMorePosts;
   int get currentPostsPage => _currentPostsPage;
   String get currentPostsSort => _currentPostsSort;
   String? get errorMessage => _errorMessage;
+  String? get storiesErrorMessage => _storiesErrorMessage;
 
   Future<void> fetchProfile() async {
     _isLoading = true;
@@ -142,13 +150,14 @@ class ProfileProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final posts = await _profileRepository.getUserPosts(
+      final response = await _profileRepository.getUserPosts(
         userId,
         page: _currentPostsPage,
         sort: _currentPostsSort,
       );
-      _profilePosts = posts;
-      _hasMorePosts = posts.isNotEmpty;
+      _profilePosts = response.items;
+      _currentPostsPage = response.currentPage;
+      _hasMorePosts = response.hasMore;
     } on ProfileException catch (error) {
       _errorMessage = error.message;
     } catch (_) {
@@ -170,17 +179,18 @@ class ProfileProvider extends ChangeNotifier {
 
     try {
       final nextPage = _currentPostsPage + 1;
-      final posts = await _profileRepository.getUserPosts(
+      final response = await _profileRepository.getUserPosts(
         userId,
         page: nextPage,
         sort: _currentPostsSort,
       );
 
-      if (posts.isEmpty) {
+      if (response.items.isEmpty) {
         _hasMorePosts = false;
       } else {
-        _currentPostsPage = nextPage;
-        _profilePosts = [..._profilePosts, ...posts];
+        _currentPostsPage = response.currentPage;
+        _profilePosts = _mergePosts(_profilePosts, response.items);
+        _hasMorePosts = response.hasMore;
       }
     } on ProfileException catch (error) {
       _errorMessage = error.message;
@@ -201,6 +211,36 @@ class ProfileProvider extends ChangeNotifier {
     final userId = _selectedUser?.id ?? _profile?.id;
     if (userId != null) {
       await fetchProfilePosts(userId, refresh: true);
+    }
+  }
+
+  Future<void> fetchProfileStories(int userId, {bool refresh = false}) async {
+    if (_isLoadingStories) {
+      return;
+    }
+
+    if (refresh) {
+      _currentStoriesPage = 1;
+    }
+
+    _isLoadingStories = true;
+    _storiesErrorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await _profileRepository.getUserStories(
+        userId,
+        page: _currentStoriesPage,
+      );
+      _profileStories = response.items;
+      _currentStoriesPage = response.currentPage;
+    } on ProfileException catch (error) {
+      _storiesErrorMessage = error.message;
+    } catch (_) {
+      _storiesErrorMessage = 'Unable to load profile stories.';
+    } finally {
+      _isLoadingStories = false;
+      notifyListeners();
     }
   }
 
@@ -271,5 +311,10 @@ class ProfileProvider extends ChangeNotifier {
     }
 
     return user.followersCount;
+  }
+
+  List<PostModel> _mergePosts(List<PostModel> current, List<PostModel> next) {
+    final seenIds = current.map((post) => post.id).toSet();
+    return [...current, ...next.where((post) => seenIds.add(post.id))];
   }
 }

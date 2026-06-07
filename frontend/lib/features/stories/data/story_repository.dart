@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 
 import '../../../core/api/api_client.dart';
 import '../../../core/api/api_endpoints.dart';
+import '../../../core/models/paginated_response.dart';
 import '../../../core/utils/image_compressor.dart';
 import '../models/story_model.dart';
 
@@ -24,7 +25,7 @@ class StoryRepository {
     : _apiClient = apiClient ?? ApiClient(),
       _imageCompressor = imageCompressor ?? const ImageCompressor();
 
-  Future<List<StoryModel>> getStories({
+  Future<PaginatedResponse<StoryModel>> getStories({
     int page = 1,
     int perPage = 15,
     String mode = 'all',
@@ -34,9 +35,13 @@ class StoryRepository {
       queryParameters: {'page': page, 'per_page': perPage, 'mode': mode},
     );
     final response = _readResponse(result.data?.data, result.error);
-    final items = _extractList(response);
-
-    return items.map(StoryModel.fromJson).toList();
+    return PaginatedResponse<StoryModel>.fromApi(
+      response: response,
+      itemBuilder: StoryModel.fromJson,
+      dataKey: 'stories',
+      fallbackPage: page,
+      fallbackPerPage: perPage,
+    );
   }
 
   Future<StoryModel> createStory({required File media, String? caption}) async {
@@ -85,7 +90,7 @@ class StoryRepository {
     return data;
   }
 
-  Future<List<StoryModel>> getUserStories(
+  Future<PaginatedResponse<StoryModel>> getUserStories(
     int userId, {
     int page = 1,
     int perPage = 15,
@@ -95,9 +100,13 @@ class StoryRepository {
       queryParameters: {'page': page, 'per_page': perPage},
     );
     final response = _readResponse(result.data?.data, result.error);
-    final items = _extractList(response);
-
-    return items.map(StoryModel.fromJson).toList();
+    return PaginatedResponse<StoryModel>.fromApi(
+      response: response,
+      itemBuilder: StoryModel.fromJson,
+      dataKey: 'stories',
+      fallbackPage: page,
+      fallbackPerPage: perPage,
+    );
   }
 
   StoryModel _parseStory(dynamic responseData, String? error) {
@@ -126,20 +135,4 @@ class StoryRepository {
     return responseData;
   }
 
-  List<Map<String, dynamic>> _extractList(Map<String, dynamic> response) {
-    final data = response['data'];
-    final list = data is List
-        ? data
-        : data is Map<String, dynamic> && data['data'] is List
-        ? data['data']
-        : response['stories'] is List
-        ? response['stories']
-        : null;
-
-    if (list is! List) {
-      throw const StoryException('Invalid stories response.');
-    }
-
-    return list.whereType<Map<String, dynamic>>().toList();
-  }
 }

@@ -1,10 +1,13 @@
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
 
 import '../constants/app_config.dart';
 import '../storage/token_storage.dart';
 import '../utils/result.dart';
 
 class ApiClient {
+  static final ValueNotifier<int> unauthorizedEvents = ValueNotifier<int>(0);
+
   final TokenStorage _tokenStorage;
   late final Dio _dio;
 
@@ -64,6 +67,10 @@ class ApiClient {
     try {
       return Result.success(await request());
     } on DioException catch (error) {
+      if (error.response?.statusCode == 401) {
+        await _tokenStorage.deleteToken();
+        unauthorizedEvents.value++;
+      }
       final message = _messageFromError(error);
       return Result.failure(message);
     } catch (_) {

@@ -39,12 +39,13 @@ class SavedPostsProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final fetchedPosts = await _repository.getSavedPosts(
+      final response = await _repository.getSavedPosts(
         page: _currentPage,
         perPage: _perPage,
       );
-      _posts = fetchedPosts;
-      _hasMore = fetchedPosts.length >= _perPage;
+      _posts = response.items;
+      _currentPage = response.currentPage;
+      _hasMore = response.hasMore;
     } on SavedPostException catch (error) {
       _errorMessage = error.message;
     } catch (_) {
@@ -66,17 +67,17 @@ class SavedPostsProvider extends ChangeNotifier {
 
     try {
       final nextPage = _currentPage + 1;
-      final fetchedPosts = await _repository.getSavedPosts(
+      final response = await _repository.getSavedPosts(
         page: nextPage,
         perPage: _perPage,
       );
 
-      if (fetchedPosts.isEmpty) {
+      if (response.items.isEmpty) {
         _hasMore = false;
       } else {
-        _currentPage = nextPage;
-        _posts = [..._posts, ...fetchedPosts];
-        _hasMore = fetchedPosts.length >= _perPage;
+        _currentPage = response.currentPage;
+        _posts = _mergePosts(_posts, response.items);
+        _hasMore = response.hasMore;
       }
     } on SavedPostException catch (error) {
       _errorMessage = error.message;
@@ -110,6 +111,11 @@ class SavedPostsProvider extends ChangeNotifier {
   void removeSavedPost(int postId) {
     _posts = _posts.where((post) => post.id != postId).toList();
     notifyListeners();
+  }
+
+  List<PostModel> _mergePosts(List<PostModel> current, List<PostModel> next) {
+    final seenIds = current.map((post) => post.id).toSet();
+    return [...current, ...next.where((post) => seenIds.add(post.id))];
   }
 
   void clearError() {

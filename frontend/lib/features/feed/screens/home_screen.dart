@@ -129,17 +129,26 @@ class _HomeScreenState extends State<HomeScreen> {
             context.read<RealtimeProvider>().checkFeedStatus();
           }
         },
-        child: _FeedBody(
-          feedProvider: feedProvider,
-          showNewPostsBanner: realtimeProvider.hasNewPosts,
-          currentUserId: authProvider.user?.id,
-          onRefreshNewPosts: () async {
-            await feedProvider.refreshPosts();
-            if (context.mounted) {
-              context.read<RealtimeProvider>().markFeedAsSeen();
-              context.read<RealtimeProvider>().checkFeedStatus();
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (notification) {
+            if (notification.metrics.pixels >=
+                notification.metrics.maxScrollExtent - 480) {
+              feedProvider.loadMorePosts();
             }
+            return false;
           },
+          child: _FeedBody(
+            feedProvider: feedProvider,
+            showNewPostsBanner: realtimeProvider.hasNewPosts,
+            currentUserId: authProvider.user?.id,
+            onRefreshNewPosts: () async {
+              await feedProvider.refreshPosts();
+              if (context.mounted) {
+                context.read<RealtimeProvider>().markFeedAsSeen();
+                context.read<RealtimeProvider>().checkFeedStatus();
+              }
+            },
+          ),
         ),
       ),
     );
@@ -258,6 +267,7 @@ class _FeedBody extends StatelessWidget {
           onCommentsTap: () {
             context.push('/posts/${post.id}/comments', extra: post);
           },
+          onEdit: () => context.push('/posts/${post.id}/edit', extra: post),
           onDelete: () => _confirmDelete(context, post.id),
         );
       },

@@ -12,6 +12,7 @@ import '../../reports/widgets/report_dialog.dart';
 import '../providers/profile_provider.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/profile_posts_section.dart';
+import '../widgets/profile_stories_section.dart';
 
 class UserProfileScreen extends StatefulWidget {
   final int? userId;
@@ -42,6 +43,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
     final user = profileProvider.selectedUser;
     if (user != null) {
+      await profileProvider.fetchProfileStories(user.id, refresh: true);
       await profileProvider.fetchProfilePosts(user.id, refresh: true);
     }
   }
@@ -117,6 +119,12 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         context.push('/users/${user.id}/followers'),
                     onFollowingTap: () =>
                         context.push('/users/${user.id}/following'),
+                  ),
+                  const SizedBox(height: AppSizes.paddingLarge),
+                  ProfileStoriesSection(
+                    stories: profileProvider.profileStories,
+                    isLoading: profileProvider.isLoadingStories,
+                    errorMessage: profileProvider.storiesErrorMessage,
                   ),
                   const SizedBox(height: AppSizes.paddingLarge),
                   ProfilePostsSection(

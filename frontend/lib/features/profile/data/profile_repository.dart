@@ -6,9 +6,11 @@ import 'package:image_picker/image_picker.dart';
 
 import '../../../core/api/api_client.dart';
 import '../../../core/api/api_endpoints.dart';
+import '../../../core/models/paginated_response.dart';
 import '../../../core/utils/image_compressor.dart';
 import '../../auth/models/user_model.dart';
 import '../../feed/models/post_model.dart';
+import '../../stories/models/story_model.dart';
 
 class ProfileException implements Exception {
   final String message;
@@ -69,7 +71,7 @@ class ProfileRepository {
     return _parseUserResponse(result.data?.data, result.error);
   }
 
-  Future<List<PostModel>> getUserPosts(
+  Future<PaginatedResponse<PostModel>> getUserPosts(
     int userId, {
     int page = 1,
     int perPage = 10,
@@ -81,12 +83,24 @@ class ProfileRepository {
     );
 
     final response = _readResponse(result.data?.data, result.error);
-    final posts = _extractPostsJson(response);
-    return posts.map(PostModel.fromJson).toList();
+    return PaginatedResponse<PostModel>.fromApi(
+      response: response,
+      itemBuilder: PostModel.fromJson,
+      dataKey: 'posts',
+      fallbackPage: page,
+      fallbackPerPage: perPage,
+    );
   }
 
-  Future<List<UserModel>> getUsers({int page = 1, String? search}) async {
-    final queryParameters = <String, dynamic>{'page': page};
+  Future<PaginatedResponse<UserModel>> getUsers({
+    int page = 1,
+    int perPage = 15,
+    String? search,
+  }) async {
+    final queryParameters = <String, dynamic>{
+      'page': page,
+      'per_page': perPage,
+    };
     if (search != null && search.trim().isNotEmpty) {
       queryParameters['search'] = search.trim();
     }
@@ -96,25 +110,67 @@ class ProfileRepository {
       queryParameters: queryParameters,
     );
 
-    return _parseUsersResponse(result.data?.data, result.error);
+    return _parseUsersResponse(
+      result.data?.data,
+      result.error,
+      page: page,
+      perPage: perPage,
+    );
   }
 
-  Future<List<UserModel>> getFollowers(int userId, {int page = 1}) async {
+  Future<PaginatedResponse<UserModel>> getFollowers(
+    int userId, {
+    int page = 1,
+    int perPage = 15,
+  }) async {
     final result = await _apiClient.get(
       ApiEndpoints.followers(userId),
-      queryParameters: {'page': page},
+      queryParameters: {'page': page, 'per_page': perPage},
     );
 
-    return _parseUsersResponse(result.data?.data, result.error);
+    return _parseUsersResponse(
+      result.data?.data,
+      result.error,
+      page: page,
+      perPage: perPage,
+    );
   }
 
-  Future<List<UserModel>> getFollowing(int userId, {int page = 1}) async {
+  Future<PaginatedResponse<UserModel>> getFollowing(
+    int userId, {
+    int page = 1,
+    int perPage = 15,
+  }) async {
     final result = await _apiClient.get(
       ApiEndpoints.following(userId),
-      queryParameters: {'page': page},
+      queryParameters: {'page': page, 'per_page': perPage},
     );
 
-    return _parseUsersResponse(result.data?.data, result.error);
+    return _parseUsersResponse(
+      result.data?.data,
+      result.error,
+      page: page,
+      perPage: perPage,
+    );
+  }
+
+  Future<PaginatedResponse<StoryModel>> getUserStories(
+    int userId, {
+    int page = 1,
+    int perPage = 15,
+  }) async {
+    final result = await _apiClient.get(
+      ApiEndpoints.userStories(userId),
+      queryParameters: {'page': page, 'per_page': perPage},
+    );
+    final response = _readResponse(result.data?.data, result.error);
+    return PaginatedResponse<StoryModel>.fromApi(
+      response: response,
+      itemBuilder: StoryModel.fromJson,
+      dataKey: 'stories',
+      fallbackPage: page,
+      fallbackPerPage: perPage,
+    );
   }
 
   Future<Map<String, dynamic>> followUser(int userId) async {
@@ -194,10 +250,20 @@ class ProfileRepository {
     return UserModel.fromJson(userJson);
   }
 
-  List<UserModel> _parseUsersResponse(dynamic responseData, String? error) {
+  PaginatedResponse<UserModel> _parseUsersResponse(
+    dynamic responseData,
+    String? error, {
+    required int page,
+    required int perPage,
+  }) {
     final response = _readResponse(responseData, error);
-    final usersJson = _extractUsersJson(response);
-    return usersJson.map(UserModel.fromJson).toList();
+    return PaginatedResponse<UserModel>.fromApi(
+      response: response,
+      itemBuilder: UserModel.fromJson,
+      dataKey: 'users',
+      fallbackPage: page,
+      fallbackPerPage: perPage,
+    );
   }
 
   Map<String, dynamic> _parseFollowResponse(
@@ -246,37 +312,6 @@ class ProfileRepository {
     }
 
     return null;
-  }
-
-  List<Map<String, dynamic>> _extractUsersJson(Map<String, dynamic> response) {
-    final data = response['data'];
-
-    if (data is Map<String, dynamic> && data['users'] is List) {
-      return (data['users'] as List).whereType<Map<String, dynamic>>().toList();
-    }
-
-    if (data is Map<String, dynamic> && data['data'] is List) {
-      return (data['data'] as List).whereType<Map<String, dynamic>>().toList();
-    }
-
-    if (data is List) {
-      return data.whereType<Map<String, dynamic>>().toList();
-    }
-
-    throw const ProfileException('Invalid users response from API.');
-  }
-
-  List<Map<String, dynamic>> _extractPostsJson(Map<String, dynamic> response) {
-    final data = response['data'];
-    final posts = data is Map<String, dynamic>
-        ? data['posts'] ?? data['data']
-        : data;
-
-    if (posts is! List) {
-      throw const ProfileException('Invalid user posts response from API.');
-    }
-
-    return posts.whereType<Map<String, dynamic>>().toList();
   }
 
   int _parseInt(dynamic value) {

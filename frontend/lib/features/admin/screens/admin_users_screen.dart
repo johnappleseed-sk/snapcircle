@@ -128,9 +128,29 @@ class _AdminUserTile extends StatelessWidget {
                     context,
                   ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
                 ),
-                Text('${user.role} • ${user.accountStatus}'),
+                Text('${user.role} - ${user.accountStatus}'),
               ],
             ),
+          ),
+          PopupMenuButton<String>(
+            tooltip: 'Update role',
+            onSelected: (role) async {
+              final success = await provider.updateUserRole(user.id, role);
+              if (!context.mounted) return;
+              if (success) {
+                SnackbarHelper.showSuccess(context, 'User role updated.');
+              } else {
+                SnackbarHelper.showError(
+                  context,
+                  provider.errorMessage ?? 'Unable to update role.',
+                );
+              }
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(value: 'user', child: Text('User')),
+              PopupMenuItem(value: 'moderator', child: Text('Moderator')),
+              PopupMenuItem(value: 'admin', child: Text('Admin')),
+            ],
           ),
           TextButton(
             onPressed: () async {

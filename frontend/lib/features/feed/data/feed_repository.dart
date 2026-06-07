@@ -46,13 +46,12 @@ class FeedRepository {
     );
 
     final response = _readResponse(result.data?.data, result.error);
-    final postsJson = _extractPostsList(response);
-    return PaginatedResponse<PostModel>(
-      items: postsJson.map(PostModel.fromJson).toList(),
-      currentPage: _parseInt(response['current_page'], fallback: page),
-      lastPage: _parseInt(response['last_page'], fallback: page),
-      perPage: _parseInt(response['per_page'], fallback: perPage),
-      total: _parseInt(response['total'], fallback: postsJson.length),
+    return PaginatedResponse<PostModel>.fromApi(
+      response: response,
+      itemBuilder: PostModel.fromJson,
+      dataKey: 'posts',
+      fallbackPage: page,
+      fallbackPerPage: perPage,
     );
   }
 
@@ -130,39 +129,6 @@ class FeedRepository {
     }
 
     return responseData;
-  }
-
-  List<Map<String, dynamic>> _extractPostsList(Map<String, dynamic> response) {
-    final data = response['data'];
-    final posts = data is List
-        ? data
-        : response['posts'] is List
-        ? response['posts']
-        : data is Map<String, dynamic> && data['data'] is List
-        ? data['data']
-        : null;
-
-    if (posts is! List) {
-      throw const FeedException('Invalid posts response from API.');
-    }
-
-    return posts.whereType<Map<String, dynamic>>().toList();
-  }
-
-  int _parseInt(dynamic value, {required int fallback}) {
-    if (value is int) {
-      return value;
-    }
-
-    if (value is num) {
-      return value.toInt();
-    }
-
-    if (value is String) {
-      return int.tryParse(value) ?? fallback;
-    }
-
-    return fallback;
   }
 
   Map<String, dynamic>? _extractPostJson(Map<String, dynamic> response) {

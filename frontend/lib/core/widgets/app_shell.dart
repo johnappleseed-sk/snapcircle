@@ -11,7 +11,7 @@ class AppShell extends StatelessWidget {
     '/home',
     '/explore',
     '/create',
-    '/messages',
+    '/notifications',
     '/profile',
   ];
 
@@ -45,9 +45,9 @@ class AppShell extends StatelessWidget {
             label: 'Create',
           ),
           NavigationDestination(
-            icon: Icon(Icons.chat_bubble_outline),
-            selectedIcon: Icon(Icons.chat_bubble),
-            label: 'Messages',
+            icon: Icon(Icons.notifications_none_outlined),
+            selectedIcon: Icon(Icons.notifications),
+            label: 'Notifications',
           ),
           NavigationDestination(
             icon: Icon(Icons.person_outline),

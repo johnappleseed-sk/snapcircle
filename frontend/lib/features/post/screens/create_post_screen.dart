@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -11,10 +12,13 @@ import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../core/utils/snackbar_helper.dart';
+import '../../feed/models/post_model.dart';
 import '../../feed/providers/feed_provider.dart';
 
 class CreatePostScreen extends StatefulWidget {
-  const CreatePostScreen({super.key});
+  final PostModel? initialPost;
+
+  const CreatePostScreen({super.key, this.initialPost});
 
   @override
   State<CreatePostScreen> createState() => _CreatePostScreenState();
@@ -28,6 +32,13 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
   File? _selectedImage;
   String? _localError;
+  bool get _isEditing => widget.initialPost != null;
+
+  @override
+  void initState() {
+    super.initState();
+    _contentController.text = widget.initialPost?.content ?? '';
+  }
 
   @override
   void dispose() {
@@ -53,8 +64,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
   Future<void> _submitPost() async {
     final content = _contentController.text.trim();
+    final hasExistingImage =
+        _isEditing && widget.initialPost?.imageUrl?.isNotEmpty == true;
 
-    if (content.isEmpty && _selectedImage == null) {
+    if (content.isEmpty && _selectedImage == null && !hasExistingImage) {
       setState(() {
         _localError = 'Add some text or choose an image before posting.';
       });
@@ -69,18 +82,31 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     }
 
     final feedProvider = context.read<FeedProvider>();
-    final created = await feedProvider.createPost(
-      content: content,
-      image: _selectedImage,
-    );
+    final updatedPost = _isEditing
+        ? await feedProvider.updatePost(
+            widget.initialPost!.id,
+            content: content,
+            image: _selectedImage,
+          )
+        : null;
+    final created = _isEditing
+        ? updatedPost != null
+        : await feedProvider.createPost(content: content, image: _selectedImage);
 
     if (!mounted) {
       return;
     }
 
     if (created) {
-      SnackbarHelper.showSuccess(context, 'Post created successfully.');
-      context.go('/home');
+      SnackbarHelper.showSuccess(
+        context,
+        _isEditing ? 'Post updated successfully.' : 'Post created successfully.',
+      );
+      if (_isEditing) {
+        context.pop();
+      } else {
+        context.go('/home');
+      }
       return;
     }
 
@@ -93,18 +119,20 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   Widget build(BuildContext context) {
     final feedProvider = context.watch<FeedProvider>();
     final contentLength = _contentController.text.trim().length;
+    final hasExistingImage =
+        _isEditing && widget.initialPost?.imageUrl?.isNotEmpty == true;
     final canSubmit =
         !feedProvider.isCreating &&
-        (_selectedImage != null || contentLength > 0) &&
+        (_selectedImage != null || hasExistingImage || contentLength > 0) &&
         contentLength <= _maxPostLength;
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create post'),
+        title: Text(_isEditing ? 'Edit post' : 'Create post'),
         actions: [
           TextButton(
             onPressed: canSubmit ? _submitPost : null,
-            child: const Text('Post'),
+            child: Text(_isEditing ? 'Save' : 'Post'),
           ),
         ],
       ),
@@ -149,6 +177,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     _ImagePickerArea(
                       isDisabled: feedProvider.isCreating,
                       onPick: _pickImage,
+                      existingImageUrl: widget.initialPost?.imageUrl,
                     )
                   else
                     _SelectedImagePreview(
@@ -168,8 +197,8 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             ],
             const SizedBox(height: AppSizes.paddingLarge),
             AppButton(
-              label: 'Share post',
-              icon: Icons.send_outlined,
+              label: _isEditing ? 'Save changes' : 'Share post',
+              icon: _isEditing ? Icons.save_outlined : Icons.send_outlined,
               isLoading: feedProvider.isCreating,
               onPressed: canSubmit ? _submitPost : null,
             ),
@@ -183,23 +212,48 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 class _ImagePickerArea extends StatelessWidget {
   final bool isDisabled;
   final VoidCallback onPick;
+  final String? existingImageUrl;
 
-  const _ImagePickerArea({required this.isDisabled, required this.onPick});
+  const _ImagePickerArea({
+    required this.isDisabled,
+    required this.onPick,
+    this.existingImageUrl,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return OutlinedButton(
-      onPressed: isDisabled ? null : onPick,
-      child: const Padding(
-        padding: EdgeInsets.symmetric(vertical: AppSizes.paddingLarge),
-        child: Column(
-          children: [
-            Icon(Icons.add_photo_alternate_outlined, size: 32),
-            SizedBox(height: AppSizes.paddingSmall),
-            Text('Add image'),
-          ],
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (existingImageUrl != null && existingImageUrl!.isNotEmpty) ...[
+          ClipRRect(
+            borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+            child: AspectRatio(
+              aspectRatio: 4 / 3,
+              child: CachedNetworkImage(
+                imageUrl: existingImageUrl!,
+                fit: BoxFit.cover,
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSizes.paddingSmall),
+        ],
+        OutlinedButton(
+          onPressed: isDisabled ? null : onPick,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              vertical: AppSizes.paddingLarge,
+            ),
+            child: Column(
+              children: [
+                const Icon(Icons.add_photo_alternate_outlined, size: 32),
+                const SizedBox(height: AppSizes.paddingSmall),
+                Text(existingImageUrl == null ? 'Add image' : 'Replace image'),
+              ],
+            ),
+          ),
         ),
-      ),
+      ],
     );
   }
 }

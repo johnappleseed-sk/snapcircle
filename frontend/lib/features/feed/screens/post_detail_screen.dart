@@ -143,6 +143,10 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 onCommentsTap: () {
                   context.push('/posts/${post.id}/comments', extra: post);
                 },
+                onEdit: () => context.push(
+                  '/posts/${post.id}/edit',
+                  extra: post,
+                ).then((_) => _fetchPost()),
                 onDelete: () => _deletePost(context, post.id),
               ),
               const SizedBox(height: AppSizes.paddingMedium),

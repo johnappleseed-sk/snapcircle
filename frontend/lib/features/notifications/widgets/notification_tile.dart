@@ -25,6 +25,9 @@ class NotificationTile extends StatelessWidget {
     final preview = _previewText;
 
     return AppCard(
+      color: notification.isRead
+          ? null
+          : AppColors.primary.withValues(alpha: 0.05),
       onTap: onTap,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

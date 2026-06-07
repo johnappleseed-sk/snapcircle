@@ -49,13 +49,14 @@ class StoriesProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final items = await _repository.getStories(
+      final response = await _repository.getStories(
         page: _currentPage,
         perPage: _perPage,
         mode: _currentMode,
       );
-      _stories = items;
-      _hasMore = items.length >= _perPage;
+      _stories = response.items;
+      _currentPage = response.currentPage;
+      _hasMore = response.hasMore;
     } on StoryException catch (error) {
       _errorMessage = error.message;
     } catch (_) {
@@ -77,17 +78,17 @@ class StoriesProvider extends ChangeNotifier {
 
     try {
       final nextPage = _currentPage + 1;
-      final items = await _repository.getStories(
+      final response = await _repository.getStories(
         page: nextPage,
         perPage: _perPage,
         mode: _currentMode,
       );
-      if (items.isEmpty) {
+      if (response.items.isEmpty) {
         _hasMore = false;
       } else {
-        _currentPage = nextPage;
-        _stories = [..._stories, ...items];
-        _hasMore = items.length >= _perPage;
+        _currentPage = response.currentPage;
+        _stories = _mergeStories(_stories, response.items);
+        _hasMore = response.hasMore;
       }
     } on StoryException catch (error) {
       _errorMessage = error.message;
@@ -176,5 +177,10 @@ class StoriesProvider extends ChangeNotifier {
     if (value is int) return value;
     if (value is num) return value.toInt();
     return int.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  List<StoryModel> _mergeStories(List<StoryModel> current, List<StoryModel> next) {
+    final seenIds = current.map((story) => story.id).toSet();
+    return [...current, ...next.where((story) => seenIds.add(story.id))];
   }
 }

@@ -133,9 +133,72 @@ class AppTheme {
   }
 
   static ThemeData get darkTheme {
+    const darkBackground = Color(0xFF0F172A);
+    const darkSurface = Color(0xFF111827);
+    const darkCard = Color(0xFF1E293B);
+    const darkText = Color(0xFFF8FAFC);
+    const darkMuted = Color(0xFFCBD5E1);
+    const darkBorder = Color(0xFF334155);
+    final colorScheme = ColorScheme.fromSeed(
+      seedColor: AppColors.primary,
+      brightness: Brightness.dark,
+      primary: const Color(0xFF60A5FA),
+      secondary: const Color(0xFFA78BFA),
+      surface: darkSurface,
+    );
+
     return lightTheme.copyWith(
       brightness: Brightness.dark,
-      scaffoldBackgroundColor: const Color(0xFF0F172A),
+      colorScheme: colorScheme,
+      scaffoldBackgroundColor: darkBackground,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: darkBackground,
+        foregroundColor: darkText,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        centerTitle: false,
+        titleTextStyle: TextStyle(
+          color: darkText,
+          fontSize: 24,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+      cardTheme: CardThemeData(
+        color: darkCard,
+        elevation: 0,
+        margin: EdgeInsets.zero,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+          side: const BorderSide(color: darkBorder),
+        ),
+      ),
+      inputDecorationTheme: lightTheme.inputDecorationTheme.copyWith(
+        filled: true,
+        fillColor: darkCard,
+        labelStyle: const TextStyle(color: darkMuted),
+        hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+          borderSide: const BorderSide(color: darkBorder),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+          borderSide: const BorderSide(color: Color(0xFF60A5FA), width: 1.5),
+        ),
+      ),
+      navigationBarTheme: NavigationBarThemeData(
+        backgroundColor: darkSurface,
+        indicatorColor: const Color(0xFF60A5FA).withValues(alpha: 0.18),
+        elevation: 0,
+        labelTextStyle: WidgetStateProperty.all(
+          const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+        ),
+      ),
+      textTheme: lightTheme.textTheme.apply(
+        bodyColor: darkText,
+        displayColor: darkText,
+      ),
+      dividerColor: darkBorder,
     );
   }
 }

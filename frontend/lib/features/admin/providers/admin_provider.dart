@@ -56,6 +56,13 @@ class AdminProvider extends ChangeNotifier {
     });
   }
 
+  Future<bool> updateUserRole(int userId, String role) async {
+    return _runBool(() async {
+      await _repository.updateUserRole(userId, role);
+      await fetchUsers();
+    });
+  }
+
   Future<void> _run(Future<void> Function() action) async {
     _isLoading = true;
     _errorMessage = null;

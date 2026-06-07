@@ -1,0 +1,135 @@
+# SnapCircle Frontend API Coverage
+
+Last updated: 2026-06-07
+
+This document tracks Laravel API routes discovered in `backend/routes/api.php` and how the Flutter frontend currently uses them. Email/password login, register, and forgot password routes are not present in the backend route file, so the frontend must not invent those flows.
+
+Status legend:
+
+- Used: A Flutter repository/provider/screen calls the route and exposes the flow.
+- Partially used: Code exists but the route is not fully surfaced in UI, or the flow is incomplete.
+- Not used: Backend route exists but no meaningful Flutter usage was found.
+- Backend missing: Product requirement exists but backend route was not found.
+
+## Public
+
+| Method | Route | Status | Flutter usage |
+| --- | --- | --- | --- |
+| GET | `/health` | Not used | Endpoint constant exists; no health check UI/service call yet. |
+| POST | `/auth/google` | Used | `AuthRepository.signInWithGoogle`, `AuthProvider`, `LoginScreen`. |
+| POST | `/auth/facebook` | Used | `AuthRepository.signInWithFacebook`, `AuthProvider`, `LoginScreen`. |
+| POST | `/auth/demo` | Used | Debug local demo login in `LoginScreen`. |
+| POST | `/auth/login` | Backend missing | Email/password login is not defined in Laravel routes. |
+| POST | `/auth/register` | Backend missing | Registration is not defined in Laravel routes. |
+| POST | `/auth/forgot-password` | Backend missing | Forgot password is not defined in Laravel routes. |
+
+## Authenticated User And Account
+
+| Method | Route | Status | Flutter usage |
+| --- | --- | --- | --- |
+| GET | `/user` | Used | Auth bootstrap via `AuthRepository.getCurrentUser`. |
+| POST | `/logout` | Used | `AuthRepository.logout`, profile/settings logout flows. |
+| GET | `/settings` | Used | `SettingsRepository`, settings screens. |
+| PUT | `/settings` | Used | Settings update screens. |
+| PUT | `/account/deactivate` | Used | Account settings screen. |
+| DELETE | `/account` | Used | Account settings screen. |
+
+## Profile, Users, Follow
+
+| Method | Route | Status | Flutter usage |
+| --- | --- | --- | --- |
+| GET | `/profile` | Used | `ProfileRepository.getProfile`, `ProfileScreen`. |
+| PUT | `/profile` | Used | `EditProfileScreen`, avatar and cover upload. |
+| GET | `/users` | Used | `ProfileRepository.getUsers`, search/users provider. |
+| GET | `/users/username/{username}` | Used | `/u/:username` route and `UserProfileScreen`. |
+| GET | `/users/{user}` | Used | User profile screen. |
+| GET | `/users/{user}/posts` | Used | Profile posts section. |
+| GET | `/users/{user}/stories` | Used | Profile stories section on own and other-user profile screens. |
+| POST | `/users/{user}/report` | Used | Report dialog on user profile. |
+| POST | `/users/{user}/follow` | Used | Profile and explore follow actions. |
+| DELETE | `/users/{user}/follow` | Used | Profile and explore unfollow actions. |
+| GET | `/users/{user}/followers` | Used | Follow list screen. |
+| GET | `/users/{user}/following` | Used | Follow list screen. |
+
+## Explore And Search
+
+| Method | Route | Status | Flutter usage |
+| --- | --- | --- | --- |
+| GET | `/explore/posts` | Used | `ExploreRepository`, explore post grid. |
+| GET | `/explore/users` | Used | `ExploreRepository`; partially surfaced via search/recommended people. |
+| GET | `/explore/trending-posts` | Used | Trending section in explore. |
+| GET | `/explore/recommended-users` | Used | Recommended people section. |
+| GET | `/explore/search` | Used | Explore search bar and results. |
+
+## Feed, Posts, Comments, Likes, Saves
+
+| Method | Route | Status | Flutter usage |
+| --- | --- | --- | --- |
+| GET | `/feed/status` | Used | `RealtimeRepository`, feed polling banner. |
+| GET | `/posts` | Used | Home feed, pagination, search/modes. |
+| POST | `/posts` | Used | Create post screen with multipart image support. |
+| GET | `/posts/{post}` | Used | Post detail screen. |
+| PUT | `/posts/{post}` | Used | Owner-only edit action opens edit post UI and updates feed/detail state. |
+| DELETE | `/posts/{post}` | Used | Owner delete actions in feed/detail. |
+| POST | `/posts/{post}/report` | Used | Report dialog from post UI. |
+| GET | `/posts/{post}/comments/status` | Used | Comments polling for new-comment banner. |
+| GET | `/posts/{post}/comments` | Used | Comments screen. |
+| POST | `/posts/{post}/comments` | Used | Comment composer. |
+| PUT | `/comments/{comment}` | Used | Comment edit UI. |
+| DELETE | `/comments/{comment}` | Used | Comment delete UI. |
+| POST | `/comments/{comment}/report` | Used | Report dialog from comment UI. |
+| POST | `/posts/{post}/like` | Used | Post card like action. |
+| DELETE | `/posts/{post}/like` | Used | Post card unlike action. |
+| POST | `/posts/{post}/save` | Used | Save/bookmark action. |
+| DELETE | `/posts/{post}/save` | Used | Unsave action. |
+| GET | `/saved-posts` | Used | Saved posts screen. |
+
+## Stories
+
+| Method | Route | Status | Flutter usage |
+| --- | --- | --- | --- |
+| GET | `/stories` | Used | Home stories row. |
+| POST | `/stories` | Used | Create story screen. |
+| GET | `/stories/{story}` | Used | Story viewer. |
+| DELETE | `/stories/{story}` | Used | Story provider delete support. |
+| POST | `/stories/{story}/view` | Used | Story viewer marks viewed. |
+
+## Notifications
+
+| Method | Route | Status | Flutter usage |
+| --- | --- | --- | --- |
+| GET | `/notifications` | Used | Notifications screen. |
+| GET | `/notifications/unread-count` | Used | Home app bar badge and notification screen. |
+| PUT | `/notifications/read-all` | Used | Notifications screen. |
+| PUT | `/notifications/{notification}/read` | Used | Notification tap flow. |
+| DELETE | `/notifications/{notification}` | Used | Notification delete action. |
+
+## Chat
+
+| Method | Route | Status | Flutter usage |
+| --- | --- | --- | --- |
+| GET | `/conversations` | Used | Conversations screen. |
+| POST | `/conversations` | Used | Start chat from user profile. |
+| GET | `/conversations/{conversation}` | Used | Chat detail refreshes conversation metadata. |
+| DELETE | `/conversations/{conversation}` | Partially used | Backend route exists but returns MVP not implemented. Do not expose as a delete feature. |
+| GET | `/conversations/{conversation}/messages` | Used | Chat detail screen. |
+| POST | `/conversations/{conversation}/messages` | Used | Chat composer. |
+| PUT | `/messages/{message}/read` | Used | Message read support. |
+
+## Reports And Admin
+
+| Method | Route | Status | Flutter usage |
+| --- | --- | --- | --- |
+| GET | `/admin/dashboard` | Used | Admin dashboard screen. |
+| GET | `/admin/reports` | Used | Admin reports screen. |
+| GET | `/admin/reports/{report}` | Not used | No report detail repository/screen call found. |
+| PUT | `/admin/reports/{report}/status` | Used | Admin report status update. |
+| GET | `/admin/users` | Used | Admin users screen. |
+| GET | `/admin/users/{user}` | Not used | No admin user detail repository/screen call found. |
+| PUT | `/admin/users/{user}/ban` | Used | Admin users moderation flow. |
+| PUT | `/admin/users/{user}/unban` | Used | Admin users moderation flow. |
+| PUT | `/admin/users/{user}/role` | Used | Admin users screen role update menu. |
+| GET | `/admin/posts` | Not used | No admin content repository/screen call found. |
+| DELETE | `/admin/posts/{post}` | Not used | No admin content delete flow found. |
+| GET | `/admin/comments` | Not used | No admin content repository/screen call found. |
+| DELETE | `/admin/comments/{comment}` | Not used | No admin content delete flow found. |

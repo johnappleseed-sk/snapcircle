@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 
+import '../../../core/api/api_client.dart';
 import '../data/auth_repository.dart';
 import '../models/auth_response.dart';
 import '../models/user_model.dart';
@@ -13,7 +14,9 @@ class AuthProvider extends ChangeNotifier {
   String? _errorMessage;
 
   AuthProvider({AuthRepository? authRepository})
-    : _authRepository = authRepository ?? AuthRepository();
+    : _authRepository = authRepository ?? AuthRepository() {
+    ApiClient.unauthorizedEvents.addListener(_handleUnauthorizedEvent);
+  }
 
   UserModel? get user => _user;
   bool get isAuthenticated => _isAuthenticated;
@@ -87,6 +90,12 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  @override
+  void dispose() {
+    ApiClient.unauthorizedEvents.removeListener(_handleUnauthorizedEvent);
+    super.dispose();
+  }
+
   Future<bool> _login(Future<AuthResponse> Function() loginAction) async {
     _setLoading(true);
     _errorMessage = null;
@@ -112,6 +121,16 @@ class AuthProvider extends ChangeNotifier {
   void _clearSession() {
     _user = null;
     _isAuthenticated = false;
+  }
+
+  void _handleUnauthorizedEvent() {
+    if (!_isAuthenticated) {
+      return;
+    }
+
+    _clearSession();
+    _errorMessage = 'Your session expired. Please log in again.';
+    notifyListeners();
   }
 
   void _setLoading(bool value) {

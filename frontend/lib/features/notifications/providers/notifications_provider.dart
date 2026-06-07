@@ -47,13 +47,14 @@ class NotificationsProvider extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final items = await _repository.getNotifications(
+      final response = await _repository.getNotifications(
         page: _currentPage,
         perPage: _perPage,
         filter: _currentFilter,
       );
-      _notifications = items;
-      _hasMore = items.length >= _perPage;
+      _notifications = response.items;
+      _currentPage = response.currentPage;
+      _hasMore = response.hasMore;
     } on NotificationException catch (error) {
       _errorMessage = error.message;
     } catch (_) {
@@ -76,17 +77,17 @@ class NotificationsProvider extends ChangeNotifier {
 
     try {
       final nextPage = _currentPage + 1;
-      final items = await _repository.getNotifications(
+      final response = await _repository.getNotifications(
         page: nextPage,
         perPage: _perPage,
         filter: _currentFilter,
       );
-      if (items.isEmpty) {
+      if (response.items.isEmpty) {
         _hasMore = false;
       } else {
-        _currentPage = nextPage;
-        _notifications = [..._notifications, ...items];
-        _hasMore = items.length >= _perPage;
+        _currentPage = response.currentPage;
+        _notifications = _mergeNotifications(_notifications, response.items);
+        _hasMore = response.hasMore;
       }
     } on NotificationException catch (error) {
       _errorMessage = error.message;
@@ -194,5 +195,16 @@ class NotificationsProvider extends ChangeNotifier {
               notification.id == updated.id ? updated : notification,
         )
         .toList();
+  }
+
+  List<NotificationModel> _mergeNotifications(
+    List<NotificationModel> current,
+    List<NotificationModel> next,
+  ) {
+    final seenIds = current.map((notification) => notification.id).toSet();
+    return [
+      ...current,
+      ...next.where((notification) => seenIds.add(notification.id)),
+    ];
   }
 }

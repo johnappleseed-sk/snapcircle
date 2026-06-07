@@ -16,6 +16,7 @@ class PostCard extends StatelessWidget {
   final PostModel post;
   final bool canDelete;
   final VoidCallback? onDelete;
+  final VoidCallback? onEdit;
   final VoidCallback? onCommentsTap;
   final VoidCallback? onTap;
   final Future<bool> Function()? onSaveTap;
@@ -26,6 +27,7 @@ class PostCard extends StatelessWidget {
     required this.post,
     this.canDelete = false,
     this.onDelete,
+    this.onEdit,
     this.onCommentsTap,
     this.onTap,
     this.onSaveTap,
@@ -78,13 +80,16 @@ class PostCard extends StatelessWidget {
                   ],
                 ),
               ),
-              if (canDelete || !post.isOwner)
+              if (canDelete || post.canUpdate || !post.isOwner)
                 PopupMenuButton<String>(
                   tooltip: 'Post options',
                   icon: const Icon(Icons.more_horiz),
                   onSelected: (value) {
                     if (value == 'delete') {
                       onDelete?.call();
+                    }
+                    if (value == 'edit') {
+                      onEdit?.call();
                     }
                     if (value == 'report') {
                       ReportDialog.show(
@@ -95,6 +100,17 @@ class PostCard extends StatelessWidget {
                     }
                   },
                   itemBuilder: (context) => [
+                    if (post.canUpdate)
+                      const PopupMenuItem(
+                        value: 'edit',
+                        child: Row(
+                          children: [
+                            Icon(Icons.edit_outlined),
+                            SizedBox(width: 8),
+                            Text('Edit'),
+                          ],
+                        ),
+                      ),
                     if (canDelete)
                       const PopupMenuItem(
                         value: 'delete',

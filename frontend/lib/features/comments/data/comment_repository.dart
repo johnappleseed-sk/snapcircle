@@ -1,5 +1,6 @@
 import '../../../core/api/api_client.dart';
 import '../../../core/api/api_endpoints.dart';
+import '../../../core/models/paginated_response.dart';
 import '../models/comment_model.dart';
 
 class CommentException implements Exception {
@@ -17,15 +18,24 @@ class CommentRepository {
   CommentRepository({ApiClient? apiClient})
     : _apiClient = apiClient ?? ApiClient();
 
-  Future<List<CommentModel>> getComments(int postId, {int page = 1}) async {
+  Future<PaginatedResponse<CommentModel>> getComments(
+    int postId, {
+    int page = 1,
+    int perPage = 15,
+  }) async {
     final result = await _apiClient.get(
       ApiEndpoints.postComments(postId),
-      queryParameters: {'page': page},
+      queryParameters: {'page': page, 'per_page': perPage},
     );
 
     final response = _readResponse(result.data?.data, result.error);
-    final commentsJson = _extractCommentsList(response);
-    return commentsJson.map(CommentModel.fromJson).toList();
+    return PaginatedResponse<CommentModel>.fromApi(
+      response: response,
+      itemBuilder: CommentModel.fromJson,
+      dataKey: 'comments',
+      fallbackPage: page,
+      fallbackPerPage: perPage,
+    );
   }
 
   Future<CommentModel> createComment(int postId, String comment) async {
@@ -74,20 +84,6 @@ class CommentRepository {
     }
 
     return responseData;
-  }
-
-  List<Map<String, dynamic>> _extractCommentsList(
-    Map<String, dynamic> response,
-  ) {
-    final data = response['data'];
-    final nestedData = data is Map<String, dynamic> ? data['data'] : null;
-    final comments = nestedData is List ? nestedData : data;
-
-    if (comments is! List) {
-      throw const CommentException('Invalid comments response from API.');
-    }
-
-    return comments.whereType<Map<String, dynamic>>().toList();
   }
 
   Map<String, dynamic>? _extractCommentJson(Map<String, dynamic> response) {

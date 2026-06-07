@@ -119,7 +119,7 @@ class FeedProvider extends ChangeNotifier {
       if (response.items.isEmpty) {
         _hasMore = false;
       } else {
-        _posts = [..._posts, ...response.items];
+        _posts = _mergePosts(_posts, response.items);
         _updateLatestLoadedPost();
       }
     } on FeedException catch (error) {
@@ -200,6 +200,35 @@ class FeedProvider extends ChangeNotifier {
     } catch (_) {
       _errorMessage = 'Unable to create post. Please try again.';
       return false;
+    } finally {
+      _isCreating = false;
+      notifyListeners();
+    }
+  }
+
+  Future<PostModel?> updatePost(
+    int postId, {
+    String? content,
+    File? image,
+  }) async {
+    _isCreating = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final post = await _feedRepository.updatePost(
+        postId,
+        content: content,
+        image: image,
+      );
+      upsertPost(post);
+      return post;
+    } on FeedException catch (error) {
+      _errorMessage = error.message;
+      return null;
+    } catch (_) {
+      _errorMessage = 'Unable to update post. Please try again.';
+      return null;
     } finally {
       _isCreating = false;
       notifyListeners();
@@ -514,5 +543,10 @@ class FeedProvider extends ChangeNotifier {
     });
     _latestLoadedPostId = latestPost.id;
     _latestLoadedPostCreatedAt = latestPost.createdAt;
+  }
+
+  List<PostModel> _mergePosts(List<PostModel> current, List<PostModel> next) {
+    final seenIds = current.map((post) => post.id).toSet();
+    return [...current, ...next.where((post) => seenIds.add(post.id))];
   }
 }

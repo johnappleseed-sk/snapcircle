@@ -1,5 +1,6 @@
 import '../../../core/api/api_client.dart';
 import '../../../core/api/api_endpoints.dart';
+import '../../../core/models/paginated_response.dart';
 import '../models/message_model.dart';
 
 class MessageException implements Exception {
@@ -17,7 +18,7 @@ class MessageRepository {
   MessageRepository({ApiClient? apiClient})
     : _apiClient = apiClient ?? ApiClient();
 
-  Future<List<MessageModel>> getMessages(
+  Future<PaginatedResponse<MessageModel>> getMessages(
     int conversationId, {
     int page = 1,
     int perPage = 30,
@@ -27,9 +28,13 @@ class MessageRepository {
       queryParameters: {'page': page, 'per_page': perPage},
     );
     final response = _readResponse(result.data?.data, result.error);
-    final items = _extractList(response);
-
-    return items.map(MessageModel.fromJson).toList();
+    return PaginatedResponse<MessageModel>.fromApi(
+      response: response,
+      itemBuilder: MessageModel.fromJson,
+      dataKey: 'messages',
+      fallbackPage: page,
+      fallbackPerPage: perPage,
+    );
   }
 
   Future<MessageModel> sendMessage(int conversationId, String message) async {
@@ -75,22 +80,4 @@ class MessageRepository {
     return responseData;
   }
 
-  List<Map<String, dynamic>> _extractList(Map<String, dynamic> response) {
-    final data = response['data'];
-    final list = data is List
-        ? data
-        : response['messages'] is List
-        ? response['messages']
-        : data is Map<String, dynamic> && data['messages'] is List
-        ? data['messages']
-        : data is Map<String, dynamic> && data['data'] is List
-        ? data['data']
-        : null;
-
-    if (list is! List) {
-      throw const MessageException('Invalid message list response.');
-    }
-
-    return list.whereType<Map<String, dynamic>>().toList();
-  }
 }

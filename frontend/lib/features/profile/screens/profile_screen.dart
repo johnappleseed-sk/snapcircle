@@ -10,6 +10,7 @@ import '../../auth/providers/auth_provider.dart';
 import '../providers/profile_provider.dart';
 import '../widgets/profile_header.dart';
 import '../widgets/profile_posts_section.dart';
+import '../widgets/profile_stories_section.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -32,6 +33,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     await profileProvider.fetchProfile();
     final profile = profileProvider.profile;
     if (profile != null) {
+      await profileProvider.fetchProfileStories(profile.id, refresh: true);
       await profileProvider.fetchProfilePosts(profile.id, refresh: true);
     }
   }
@@ -110,6 +112,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: AppSizes.paddingLarge),
+                  ProfileStoriesSection(
+                    stories: profileProvider.profileStories,
+                    isLoading: profileProvider.isLoadingStories,
+                    errorMessage: profileProvider.storiesErrorMessage,
                   ),
                   const SizedBox(height: AppSizes.paddingLarge),
                   ProfilePostsSection(
