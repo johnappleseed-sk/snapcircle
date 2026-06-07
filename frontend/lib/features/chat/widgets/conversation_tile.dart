@@ -23,6 +23,7 @@ class ConversationTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final participant = conversation.otherParticipant(currentUserId);
     final latestMessage = conversation.latestMessage?.message;
+    final textColor = Theme.of(context).colorScheme.onSurface;
 
     return AppCard(
       onTap: onTap,
@@ -73,7 +74,7 @@ class ConversationTile extends StatelessWidget {
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: conversation.unreadCount > 0
-                              ? AppColors.textPrimary
+                              ? textColor
                               : AppColors.textSecondary,
                           fontWeight: conversation.unreadCount > 0
                               ? FontWeight.w700
@@ -106,7 +107,7 @@ class _UnreadBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       decoration: BoxDecoration(
-        color: AppColors.primary,
+        color: Theme.of(context).colorScheme.primary,
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(

@@ -74,3 +74,21 @@ Remaining limitations:
 - Email/password login, registration, and forgot password still require backend implementation before corresponding Flutter screens should be added.
 - Conversation deletion remains unavailable because the existing backend route reports the MVP limitation.
 - Admin report detail, admin user detail, and admin post/comment moderation UI are still not exposed in Flutter.
+
+## Instagram and Threads Inspired UI Polish Pass
+
+Date: 2026-06-07
+
+New findings:
+
+- No new frontend/backend gaps were introduced.
+- The visual polish pass did not require new Laravel routes.
+- Profile grid previews, story rings, post actions, comments, notifications, and chat polish all use existing data already returned by the backend.
+
+Features not implemented because backend support is still missing:
+
+- Email/password login.
+- User registration.
+- Forgot password or password reset.
+- Real conversation deletion.
+- Admin report detail, admin user detail, and admin post/comment moderation screens.

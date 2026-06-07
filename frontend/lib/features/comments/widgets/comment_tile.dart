@@ -4,6 +4,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/widgets/app_avatar.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/confirmation_dialog.dart';
 import '../../../core/utils/date_formatter.dart';
 import '../../../core/utils/snackbar_helper.dart';
 import '../../reports/widgets/report_dialog.dart';
@@ -36,7 +37,7 @@ class CommentTile extends StatelessWidget {
         const SizedBox(width: AppSizes.paddingMedium),
         Expanded(
           child: AppCard(
-            padding: const EdgeInsets.all(AppSizes.paddingMedium),
+            padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -130,7 +131,6 @@ class CommentTile extends StatelessWidget {
                   comment.comment,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     height: 1.35,
-                    color: AppColors.text,
                   ),
                 ),
               ],
@@ -184,26 +184,15 @@ class CommentTile extends StatelessWidget {
   }
 
   Future<void> _confirmDelete(BuildContext context) async {
-    final confirmed = await showDialog<bool>(
+    final confirmed = await showConfirmationDialog(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Delete comment?'),
-        content: const Text('This comment will be removed from the post.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            style: FilledButton.styleFrom(backgroundColor: AppColors.danger),
-            child: const Text('Delete'),
-          ),
-        ],
-      ),
+      title: 'Delete comment?',
+      message: 'This comment will be removed from the post.',
+      confirmLabel: 'Delete',
+      isDestructive: true,
     );
 
-    if (confirmed != true || !context.mounted) {
+    if (!confirmed || !context.mounted) {
       return;
     }
 

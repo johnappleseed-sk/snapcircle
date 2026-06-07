@@ -26,10 +26,12 @@ class CommentsScreen extends StatefulWidget {
 class _CommentsScreenState extends State<CommentsScreen> {
   final _commentController = TextEditingController();
   String? _localError;
+  bool _canSubmitComment = false;
 
   @override
   void initState() {
     super.initState();
+    _commentController.addListener(_handleComposerChanged);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<CommentsProvider>().fetchComments(
         widget.postId,
@@ -44,8 +46,18 @@ class _CommentsScreenState extends State<CommentsScreen> {
   @override
   void dispose() {
     context.read<CommentsProvider>().stopCommentsStatusPolling();
+    _commentController.removeListener(_handleComposerChanged);
     _commentController.dispose();
     super.dispose();
+  }
+
+  void _handleComposerChanged() {
+    final canSubmit = _commentController.text.trim().isNotEmpty;
+    if (canSubmit == _canSubmitComment) {
+      return;
+    }
+
+    setState(() => _canSubmitComment = canSubmit);
   }
 
   Future<void> _submitComment() async {
@@ -106,6 +118,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
               controller: _commentController,
               errorMessage: _localError,
               isSubmitting: commentsProvider.isSubmitting,
+              canSubmit: _canSubmitComment,
               onSubmit: _submitComment,
             ),
           ],
@@ -299,21 +312,23 @@ class _CommentComposer extends StatelessWidget {
   final TextEditingController controller;
   final String? errorMessage;
   final bool isSubmitting;
+  final bool canSubmit;
   final VoidCallback onSubmit;
 
   const _CommentComposer({
     required this.controller,
     required this.errorMessage,
     required this.isSubmitting,
+    required this.canSubmit,
     required this.onSubmit,
   });
 
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
-        border: Border(top: BorderSide(color: AppColors.border)),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        border: Border(top: BorderSide(color: Theme.of(context).dividerColor)),
       ),
       child: Padding(
         padding: EdgeInsets.fromLTRB(
@@ -352,7 +367,7 @@ class _CommentComposer extends StatelessWidget {
                 ),
                 const SizedBox(width: 10),
                 IconButton.filled(
-                  onPressed: isSubmitting ? null : onSubmit,
+                  onPressed: isSubmitting || !canSubmit ? null : onSubmit,
                   icon: isSubmitting
                       ? const SizedBox(
                           height: 18,

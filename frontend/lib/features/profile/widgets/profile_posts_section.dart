@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
-import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../feed/models/post_model.dart';
 
@@ -73,10 +72,20 @@ class ProfilePostsSection extends StatelessWidget {
                 : 'This profile does not have posts to show yet.',
           )
         else ...[
-          for (final post in posts) ...[
-            _ProfilePostPreview(post: post),
-            const SizedBox(height: AppSizes.paddingSmall),
-          ],
+          GridView.builder(
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemCount: posts.length,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 3,
+              crossAxisSpacing: 3,
+              mainAxisSpacing: 3,
+            ),
+            itemBuilder: (context, index) {
+              return _ProfilePostPreview(post: posts[index]);
+            },
+          ),
+          const SizedBox(height: AppSizes.paddingMedium),
           if (hasMore)
             OutlinedButton(
               onPressed: isLoadingMore ? null : onLoadMore,
@@ -125,64 +134,82 @@ class _ProfilePostPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
-      padding: const EdgeInsets.all(12),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(3),
+      child: Stack(
+        fit: StackFit.expand,
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
-            child: SizedBox(
-              height: 76,
-              width: 76,
-              child: post.imageUrl == null
-                  ? Container(
-                      color: AppColors.surfaceSoft,
-                      alignment: Alignment.center,
-                      child: const Icon(
-                        Icons.notes_outlined,
+          post.imageUrl == null
+              ? Container(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  alignment: Alignment.center,
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSizes.paddingSmall),
+                    child: Text(
+                      post.content?.trim().isNotEmpty == true
+                          ? post.content!
+                          : 'Text post',
+                      maxLines: 4,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center,
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w700,
                       ),
-                    )
-                  : CachedNetworkImage(
-                      imageUrl: post.imageUrl!,
-                      fit: BoxFit.cover,
                     ),
-            ),
-          ),
-          const SizedBox(width: AppSizes.paddingSmall + 4),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  post.content?.trim().isNotEmpty == true
-                      ? post.content!
-                      : 'Photo post',
-                  maxLines: 3,
-                  overflow: TextOverflow.ellipsis,
+                  ),
+                )
+              : CachedNetworkImage(imageUrl: post.imageUrl!, fit: BoxFit.cover),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withValues(alpha: 0.58),
+                  ],
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
                 ),
-                const SizedBox(height: AppSizes.paddingSmall),
-                Row(
+              ),
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(6, 14, 6, 6),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     const Icon(
-                      Icons.favorite_border,
-                      size: 16,
-                      color: AppColors.textSecondary,
+                      Icons.favorite,
+                      size: 14,
+                      color: Colors.white,
                     ),
-                    const SizedBox(width: 4),
-                    Text('${post.likesCount}'),
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 3),
+                    Text(
+                      '${post.likesCount}',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
                     const Icon(
-                      Icons.chat_bubble_outline,
-                      size: 16,
-                      color: AppColors.textSecondary,
+                      Icons.chat_bubble,
+                      size: 13,
+                      color: Colors.white,
                     ),
-                    const SizedBox(width: 4),
-                    Text('${post.commentsCount}'),
+                    const SizedBox(width: 3),
+                    Text(
+                      '${post.commentsCount}',
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
                   ],
                 ),
-              ],
+              ),
             ),
           ),
         ],

@@ -72,6 +72,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ),
                   ],
                   const SizedBox(height: AppSizes.paddingMedium),
+                  _SectionLabel('Appearance'),
+                  const SettingsTile(
+                    icon: Icons.dark_mode_outlined,
+                    title: 'Theme',
+                    subtitle: 'Follows your device light or dark mode',
+                    iconColor: AppColors.textSecondary,
+                  ),
+                  const SizedBox(height: AppSizes.paddingMedium),
                   _SectionLabel('Privacy'),
                   SettingsTile(
                     icon: Icons.lock_outline,

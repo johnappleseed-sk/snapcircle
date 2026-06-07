@@ -10,8 +10,10 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/app_avatar.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../core/utils/snackbar_helper.dart';
+import '../../auth/providers/auth_provider.dart';
 import '../../feed/models/post_model.dart';
 import '../../feed/providers/feed_provider.dart';
 
@@ -118,6 +120,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   @override
   Widget build(BuildContext context) {
     final feedProvider = context.watch<FeedProvider>();
+    final user = context.watch<AuthProvider>().user;
     final contentLength = _contentController.text.trim().length;
     final hasExistingImage =
         _isEditing && widget.initialPost?.imageUrl?.isNotEmpty == true;
@@ -144,13 +147,44 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  Row(
+                    children: [
+                      AppAvatar(
+                        name: user?.name ?? 'You',
+                        imageUrl: user?.avatarUrl ?? user?.avatar,
+                        size: AppAvatarSize.medium,
+                      ),
+                      const SizedBox(width: AppSizes.paddingSmall + 4),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              user?.name ?? 'Share to SnapCircle',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context).textTheme.titleSmall
+                                  ?.copyWith(fontWeight: FontWeight.w900),
+                            ),
+                            Text(
+                              _isEditing
+                                  ? 'Update your post'
+                                  : 'Post to your circle',
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: AppColors.textSecondary),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSizes.paddingMedium),
                   AppTextField(
-                    label: 'What is happening?',
+                    label: 'Caption',
                     hint: 'Share something with your circle...',
                     controller: _contentController,
                     enabled: !feedProvider.isCreating,
-                    maxLines: 6,
-                    prefixIcon: const Icon(Icons.edit_outlined),
+                    maxLines: 8,
                     onChanged: (_) {
                       if (_localError != null) {
                         setState(() => _localError = null);
@@ -227,7 +261,7 @@ class _ImagePickerArea extends StatelessWidget {
       children: [
         if (existingImageUrl != null && existingImageUrl!.isNotEmpty) ...[
           ClipRRect(
-            borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+            borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
             child: AspectRatio(
               aspectRatio: 4 / 3,
               child: CachedNetworkImage(
@@ -240,15 +274,24 @@ class _ImagePickerArea extends StatelessWidget {
         ],
         OutlinedButton(
           onPressed: isDisabled ? null : onPick,
+          style: OutlinedButton.styleFrom(
+            side: BorderSide(color: Theme.of(context).dividerColor),
+            backgroundColor: Theme.of(context).colorScheme.surface,
+          ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(
-              vertical: AppSizes.paddingLarge,
-            ),
+            padding: const EdgeInsets.symmetric(vertical: AppSizes.paddingLarge),
             child: Column(
               children: [
-                const Icon(Icons.add_photo_alternate_outlined, size: 32),
+                const Icon(Icons.add_photo_alternate_outlined, size: 34),
                 const SizedBox(height: AppSizes.paddingSmall),
                 Text(existingImageUrl == null ? 'Add image' : 'Replace image'),
+                const SizedBox(height: 3),
+                Text(
+                  'Photos make posts stand out in the feed',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
               ],
             ),
           ),
@@ -269,7 +312,7 @@ class _SelectedImagePreview extends StatelessWidget {
     return Stack(
       children: [
         ClipRRect(
-          borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+          borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
           child: AspectRatio(
             aspectRatio: 4 / 3,
             child: Image.file(image, fit: BoxFit.cover),

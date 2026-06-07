@@ -178,3 +178,57 @@ Known limitations:
 Recommended next step:
 
 - Re-run Flutter formatter, analyzer, tests, and debug APK build from a shell where Flutter is installed, then perform device smoke testing against a seeded Laravel backend.
+
+## Instagram and Threads Inspired UI Polish Pass
+
+Date: 2026-06-07
+
+Screens redesigned or polished:
+
+- Home feed post cards, including header hierarchy, rounded media, and action row.
+- Bottom navigation, including icon-first tabs and a centered Create action.
+- Create post screen, including user identity, larger composer, and improved image picker/preview.
+- Profile post section, changing post previews to a compact social grid.
+- Stories row and story circles, including gradient story rings.
+- Comments screen and comment tiles, including disabled empty send and shared destructive confirmation.
+- Notifications and chat widgets, including theme-aware unread states and message bubbles.
+- Settings screen, including a real Appearance section and cleaner grouped settings copy.
+
+Reusable widgets/components improved:
+
+- `AppShell` now acts as a custom social bottom navigation shell.
+- `AppCard` has softer shadow/radius treatment.
+- `confirmation_dialog.dart` is reused by destructive comment actions.
+- Existing avatar, button, input, empty/error/loading, section header, settings tile, and post card widgets were improved in place instead of creating a parallel widget system.
+
+UX improvements:
+
+- Lighter light mode with a content-first surface.
+- True dark background with darker cards, dividers, inputs, chat bubbles, and navigation.
+- Cleaner post actions for like, comment, share, and save.
+- Profile posts now scan like a social media grid.
+- Comments and chat prevent empty sends.
+- Story rings now visually distinguish fresh stories from viewed ones.
+
+Backend APIs used:
+
+- No backend API changes were made.
+- Existing feed, post, comments, stories, profile, explore, notifications, chat, settings, and auth integrations remain in use.
+
+Verification commands:
+
+- `git diff --check`: passed, with Windows LF/CRLF notices only.
+- `flutter pub get`: failed because `flutter` is not available on PATH in this shell.
+- `flutter analyze`: failed because `flutter` is not available on PATH in this shell.
+- `flutter test`: failed because `flutter` is not available on PATH in this shell.
+- `flutter build apk --debug`: failed because `flutter` is not available on PATH in this shell.
+
+Known limitations:
+
+- The UI is inspired by modern social apps but does not copy proprietary branding, logos, or assets.
+- Flutter formatter/analyzer/tests/build still need to be rerun in an environment where Flutter is available on PATH.
+- Missing backend features remain unchanged: email/password auth, registration, forgot password, conversation deletion, and deeper admin detail/moderation screens.
+
+Next recommended step:
+
+- Run the Flutter toolchain locally and do a device visual QA pass across light and dark mode on feed, profile, create post, comments, notifications, and chat.

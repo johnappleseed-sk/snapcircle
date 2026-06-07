@@ -13,6 +13,8 @@ class MessageBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isMine = message.isMine;
+    final theme = Theme.of(context);
+    final otherBubble = theme.colorScheme.surfaceContainerHighest;
 
     return Align(
       alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
@@ -22,8 +24,8 @@ class MessageBubble extends StatelessWidget {
         ),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: isMine ? AppColors.primary : AppColors.card,
-            border: isMine ? null : Border.all(color: AppColors.border),
+            color: isMine ? theme.colorScheme.primary : otherBubble,
+            border: isMine ? null : Border.all(color: theme.dividerColor),
             borderRadius: BorderRadius.only(
               topLeft: const Radius.circular(AppSizes.radiusMedium),
               topRight: const Radius.circular(AppSizes.radiusMedium),
@@ -47,7 +49,7 @@ class MessageBubble extends StatelessWidget {
                 Text(
                   message.message,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: isMine ? Colors.white : AppColors.textPrimary,
+                    color: isMine ? Colors.white : theme.colorScheme.onSurface,
                     height: 1.35,
                   ),
                 ),

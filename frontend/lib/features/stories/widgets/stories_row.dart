@@ -20,7 +20,7 @@ class StoriesRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          height: 96,
+          height: 98,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: 1 + (provider.isLoading ? 4 : provider.stories.length),
@@ -29,7 +29,7 @@ class StoriesRow extends StatelessWidget {
             itemBuilder: (context, index) {
               if (index == 0) {
                 return StoryCircle(
-                  label: 'Your Story',
+                  label: 'Your story',
                   isAddItem: true,
                   onTap: () => context.push('/stories/create'),
                 );
@@ -50,9 +50,9 @@ class StoriesRow extends StatelessWidget {
           ),
         ),
         if (!provider.isLoading && !hasStories) ...[
-          const SizedBox(height: AppSizes.paddingSmall),
+          const SizedBox(height: 2),
           Text(
-            'No stories yet. Add yours to start the circle.',
+            'Add a story to start the row.',
             style: Theme.of(
               context,
             ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),

@@ -36,6 +36,7 @@ class AppTheme {
         foregroundColor: AppColors.textPrimary,
         elevation: 0,
         scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
         centerTitle: false,
         titleTextStyle: AppTextStyles.headingMedium,
       ),
@@ -44,7 +45,7 @@ class AppTheme {
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+          borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
           side: const BorderSide(color: AppColors.border),
         ),
       ),
@@ -54,7 +55,7 @@ class AppTheme {
           foregroundColor: Colors.white,
           minimumSize: const Size.fromHeight(52),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+            borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
           ),
           textStyle: AppTextStyles.button,
         ),
@@ -65,7 +66,7 @@ class AppTheme {
           minimumSize: const Size.fromHeight(48),
           side: const BorderSide(color: AppColors.border),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+            borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
           ),
           textStyle: AppTextStyles.button,
         ),
@@ -78,7 +79,7 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white,
+        fillColor: AppColors.surfaceMuted,
         labelStyle: const TextStyle(color: AppColors.textSecondary),
         hintStyle: const TextStyle(color: AppColors.textMuted),
         contentPadding: const EdgeInsets.symmetric(
@@ -86,23 +87,23 @@ class AppTheme {
           vertical: 14,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
+          borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
-          borderSide: const BorderSide(color: AppColors.border),
+          borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
+          borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+          borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
           borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+          borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
           borderSide: const BorderSide(color: AppColors.error),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+          borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
           borderSide: const BorderSide(color: AppColors.error, width: 1.5),
         ),
       ),
@@ -119,10 +120,10 @@ class AppTheme {
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: AppColors.surface,
-        indicatorColor: AppColors.primary.withValues(alpha: 0.12),
+        indicatorColor: Colors.transparent,
         elevation: 0,
         labelTextStyle: WidgetStateProperty.all(
-          const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+          const TextStyle(fontSize: 11, fontWeight: FontWeight.w800),
         ),
       ),
       floatingActionButtonTheme: const FloatingActionButtonThemeData(
@@ -133,12 +134,12 @@ class AppTheme {
   }
 
   static ThemeData get darkTheme {
-    const darkBackground = Color(0xFF0F172A);
-    const darkSurface = Color(0xFF111827);
-    const darkCard = Color(0xFF1E293B);
+    const darkBackground = Color(0xFF000000);
+    const darkSurface = Color(0xFF0A0A0A);
+    const darkCard = Color(0xFF111111);
     const darkText = Color(0xFFF8FAFC);
     const darkMuted = Color(0xFFCBD5E1);
-    const darkBorder = Color(0xFF334155);
+    const darkBorder = Color(0xFF27272A);
     final colorScheme = ColorScheme.fromSeed(
       seedColor: AppColors.primary,
       brightness: Brightness.dark,
@@ -156,6 +157,7 @@ class AppTheme {
         foregroundColor: darkText,
         elevation: 0,
         scrolledUnderElevation: 0,
+        surfaceTintColor: Colors.transparent,
         centerTitle: false,
         titleTextStyle: TextStyle(
           color: darkText,
@@ -168,7 +170,7 @@ class AppTheme {
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+          borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
           side: const BorderSide(color: darkBorder),
         ),
       ),
@@ -178,17 +180,17 @@ class AppTheme {
         labelStyle: const TextStyle(color: darkMuted),
         hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
-          borderSide: const BorderSide(color: darkBorder),
+          borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
+          borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+          borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
           borderSide: const BorderSide(color: Color(0xFF60A5FA), width: 1.5),
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(
         backgroundColor: darkSurface,
-        indicatorColor: const Color(0xFF60A5FA).withValues(alpha: 0.18),
+        indicatorColor: Colors.transparent,
         elevation: 0,
         labelTextStyle: WidgetStateProperty.all(
           const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),

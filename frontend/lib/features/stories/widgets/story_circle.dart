@@ -22,11 +22,13 @@ class StoryCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final borderColor = isAddItem
-        ? AppColors.primary
-        : isViewed
-        ? AppColors.border
-        : AppColors.primary;
+    final ringGradient = isViewed
+        ? null
+        : const LinearGradient(
+            colors: [AppColors.accent, AppColors.secondary, AppColors.primary],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          );
 
     return SizedBox(
       width: 76,
@@ -41,30 +43,45 @@ class StoryCircle extends StatelessWidget {
               padding: const EdgeInsets.all(3),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: borderColor, width: 2),
+                gradient: ringGradient,
+                border: ringGradient == null
+                    ? Border.all(color: Theme.of(context).dividerColor, width: 2)
+                    : null,
               ),
               child: Stack(
                 children: [
-                  ClipOval(
-                    child: SizedBox.expand(
-                      child: imageUrl == null
-                          ? Container(
-                              color: AppColors.primary.withValues(alpha: 0.10),
-                              child: const Icon(
-                                Icons.add_photo_alternate_outlined,
-                                color: AppColors.primary,
+                  Container(
+                    padding: const EdgeInsets.all(2),
+                    decoration: BoxDecoration(
+                      color: Theme.of(context).colorScheme.surface,
+                      shape: BoxShape.circle,
+                    ),
+                    child: ClipOval(
+                      child: SizedBox.expand(
+                        child: imageUrl == null
+                            ? Container(
+                                color: AppColors.primary.withValues(alpha: 0.10),
+                                child: const Icon(
+                                  Icons.add_photo_alternate_outlined,
+                                  color: AppColors.primary,
+                                ),
+                              )
+                            : CachedNetworkImage(
+                                imageUrl: imageUrl!,
+                                fit: BoxFit.cover,
+                                placeholder: (_, _) => Container(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.surfaceContainerHighest,
+                                ),
+                                errorWidget: (_, _, _) => Container(
+                                  color: Theme.of(
+                                    context,
+                                  ).colorScheme.surfaceContainerHighest,
+                                  child: const Icon(Icons.image_not_supported),
+                                ),
                               ),
-                            )
-                          : CachedNetworkImage(
-                              imageUrl: imageUrl!,
-                              fit: BoxFit.cover,
-                              placeholder: (_, _) =>
-                                  Container(color: AppColors.border),
-                              errorWidget: (_, _, _) => Container(
-                                color: AppColors.border,
-                                child: const Icon(Icons.image_not_supported),
-                              ),
-                            ),
+                      ),
                     ),
                   ),
                   if (isAddItem)
@@ -96,7 +113,7 @@ class StoryCircle extends StatelessWidget {
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
                 color: AppColors.textSecondary,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w800,
               ),
             ),
           ],

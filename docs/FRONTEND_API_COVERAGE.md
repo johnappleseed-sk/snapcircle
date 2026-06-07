@@ -169,3 +169,19 @@ Result:
 - Backend API coverage status is unchanged.
 - No additional unused Laravel routes were surfaced in Flutter during this pass.
 - Existing documented gaps remain valid.
+
+## Instagram and Threads Inspired UI Polish Pass
+
+Date: 2026-06-07
+
+API coverage review:
+
+- This pass was UI-only and did not add new API calls.
+- Feed, post, comments, stories, profile, explore, notifications, chat, settings, and auth screens continue to use the same documented Laravel endpoints.
+- UI-only changes include theme, bottom navigation, post cards, story rings, profile grid previews, comment composer behavior, notification styling, chat bubbles, and settings grouping.
+
+Result:
+
+- Backend API coverage status is unchanged.
+- No backend routes were invented.
+- Existing backend gaps remain documented in `FRONTEND_BACKEND_GAPS.md`.

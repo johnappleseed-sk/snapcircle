@@ -41,9 +41,16 @@ class PostCard extends StatelessWidget {
     final feedProvider = context.watch<FeedProvider>();
     final isLikeUpdating = feedProvider.isLikeUpdating(post.id);
     final isSaveUpdating = feedProvider.isSaveUpdating(post.id);
+    final username = post.user.username?.trim();
+    final subtitle = [
+      if (username != null && username.isNotEmpty) '@$username',
+      DateFormatter.timeAgo(post.createdAt),
+    ].join(' · ');
+    final imageFill = Theme.of(context).colorScheme.surfaceContainerHighest;
 
     return AppCard(
       onTap: onTap,
+      padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -52,10 +59,10 @@ class PostCard extends StatelessWidget {
             children: [
               AppAvatar(
                 name: post.user.name,
-                imageUrl: post.user.avatar,
+                imageUrl: post.user.avatarUrl ?? post.user.avatar,
                 size: AppAvatarSize.medium,
               ),
-              const SizedBox(width: AppSizes.paddingMedium),
+              const SizedBox(width: 12),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -65,14 +72,16 @@ class PostCard extends StatelessWidget {
                           ? 'SnapCircle User'
                           : post.user.name,
                       maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        fontWeight: FontWeight.w800,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w900,
                       ),
                     ),
-                    const SizedBox(height: AppSizes.paddingXS),
+                    const SizedBox(height: 2),
                     Text(
-                      DateFormatter.timeAgo(post.createdAt),
+                      subtitle,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.mutedText,
                       ),
@@ -142,7 +151,7 @@ class PostCard extends StatelessWidget {
             Text(
               post.content!,
               style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                height: 1.35,
+                height: 1.4,
               ),
             ),
           ],
@@ -156,12 +165,12 @@ class PostCard extends StatelessWidget {
                   imageUrl: post.imageUrl!,
                   fit: BoxFit.cover,
                   placeholder: (context, url) => Container(
-                    color: AppColors.background,
+                    color: imageFill,
                     alignment: Alignment.center,
                     child: const CircularProgressIndicator(strokeWidth: 2),
                   ),
                   errorWidget: (context, url, error) => Container(
-                    color: AppColors.background,
+                    color: imageFill,
                     alignment: Alignment.center,
                     child: const Icon(
                       Icons.broken_image_outlined,
@@ -173,12 +182,15 @@ class PostCard extends StatelessWidget {
             ),
           ],
           const SizedBox(height: AppSizes.paddingMedium),
-          Wrap(
-            spacing: AppSizes.paddingLarge,
-            runSpacing: AppSizes.paddingSmall,
+          Row(
             children: [
-              InkWell(
-                borderRadius: BorderRadius.circular(8),
+              _PostAction(
+                icon: post.likedByMe
+                    ? Icons.favorite
+                    : Icons.favorite_border_outlined,
+                label: post.likesCount.toString(),
+                color: post.likedByMe ? AppColors.danger : null,
+                isLoading: isLikeUpdating,
                 onTap: isLikeUpdating
                     ? null
                     : () async {
@@ -194,38 +206,27 @@ class PostCard extends StatelessWidget {
                           }
                         }
                       },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6),
-                  child: isLikeUpdating
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : _PostMetric(
-                          icon: post.likedByMe
-                              ? Icons.favorite
-                              : Icons.favorite_border_outlined,
-                          label: post.likesCount.toString(),
-                          color: post.likedByMe
-                              ? AppColors.danger
-                              : AppColors.mutedText,
-                        ),
-                ),
               ),
-              InkWell(
-                borderRadius: BorderRadius.circular(8),
+              _PostAction(
+                icon: Icons.chat_bubble_outline,
+                label: post.commentsCount.toString(),
                 onTap: onCommentsTap,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6),
-                  child: _PostMetric(
-                    icon: Icons.chat_bubble_outline,
-                    label: post.commentsCount.toString(),
-                  ),
-                ),
               ),
-              InkWell(
-                borderRadius: BorderRadius.circular(8),
+              _PostAction(
+                icon: Icons.ios_share_outlined,
+                label: 'Share',
+                onTap:
+                    onShareTap ??
+                    () => context.read<FeedProvider>().sharePost(post),
+              ),
+              const Spacer(),
+              _PostAction(
+                icon: post.savedByMe
+                    ? Icons.bookmark
+                    : Icons.bookmark_border_outlined,
+                label: post.savesCount.toString(),
+                color: post.savedByMe ? AppColors.primary : null,
+                isLoading: isSaveUpdating,
                 onTap: isSaveUpdating
                     ? null
                     : () async {
@@ -243,37 +244,6 @@ class PostCard extends StatelessWidget {
                           }
                         }
                       },
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 6),
-                  child: isSaveUpdating
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : _PostMetric(
-                          icon: post.savedByMe
-                              ? Icons.bookmark
-                              : Icons.bookmark_border_outlined,
-                          label: post.savesCount.toString(),
-                          color: post.savedByMe
-                              ? AppColors.primary
-                              : AppColors.mutedText,
-                        ),
-                ),
-              ),
-              InkWell(
-                borderRadius: BorderRadius.circular(8),
-                onTap:
-                    onShareTap ??
-                    () => context.read<FeedProvider>().sharePost(post),
-                child: const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 6),
-                  child: _PostMetric(
-                    icon: Icons.ios_share_outlined,
-                    label: 'Share',
-                  ),
-                ),
               ),
             ],
           ),
@@ -283,32 +253,50 @@ class PostCard extends StatelessWidget {
   }
 }
 
-class _PostMetric extends StatelessWidget {
+class _PostAction extends StatelessWidget {
   final IconData icon;
   final String label;
-  final Color color;
+  final Color? color;
+  final bool isLoading;
+  final VoidCallback? onTap;
 
-  const _PostMetric({
+  const _PostAction({
     required this.icon,
     required this.label,
-    this.color = AppColors.mutedText,
+    this.color,
+    this.isLoading = false,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        Icon(icon, size: 20, color: color),
-        const SizedBox(width: 6),
-        Text(
-          label,
-          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-            color: color,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-      ],
+    final foreground = color ?? AppColors.mutedText;
+    return InkWell(
+      borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+        child: isLoading
+            ? const SizedBox(
+                height: 20,
+                width: 20,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              )
+            : Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(icon, size: 22, color: foreground),
+                  const SizedBox(width: 5),
+                  Text(
+                    label,
+                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: foreground,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
+              ),
+      ),
     );
   }
 }

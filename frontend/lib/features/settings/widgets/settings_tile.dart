@@ -24,6 +24,7 @@ class SettingsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final color = iconColor ?? Theme.of(context).colorScheme.primary;
     return AppCard(
       onTap: onTap,
       padding: const EdgeInsets.all(AppSizes.paddingMedium),
@@ -33,10 +34,10 @@ class SettingsTile extends StatelessWidget {
             height: 42,
             width: 42,
             decoration: BoxDecoration(
-              color: (iconColor ?? AppColors.primary).withValues(alpha: 0.10),
+              color: color.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
             ),
-            child: Icon(icon, color: iconColor ?? AppColors.primary),
+            child: Icon(icon, color: color),
           ),
           const SizedBox(width: AppSizes.paddingMedium),
           Expanded(

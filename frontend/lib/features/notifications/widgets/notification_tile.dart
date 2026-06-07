@@ -23,11 +23,12 @@ class NotificationTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final actor = notification.actor;
     final preview = _previewText;
+    final theme = Theme.of(context);
 
     return AppCard(
       color: notification.isRead
           ? null
-          : AppColors.primary.withValues(alpha: 0.05),
+          : theme.colorScheme.primary.withValues(alpha: 0.08),
       onTap: onTap,
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -60,8 +61,8 @@ class NotificationTile extends StatelessWidget {
                       Container(
                         height: 9,
                         width: 9,
-                        decoration: const BoxDecoration(
-                          color: AppColors.primary,
+                        decoration: BoxDecoration(
+                          color: theme.colorScheme.primary,
                           shape: BoxShape.circle,
                         ),
                       ),
@@ -105,7 +106,7 @@ class NotificationTile extends StatelessWidget {
                     width: double.infinity,
                     padding: const EdgeInsets.all(AppSizes.paddingSmall),
                     decoration: BoxDecoration(
-                      color: AppColors.surfaceMuted,
+                      color: theme.colorScheme.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
                     ),
                     child: Text(
