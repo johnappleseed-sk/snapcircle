@@ -137,7 +137,15 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
             : Form(
                 key: _formKey,
                 child: ListView(
-                  padding: const EdgeInsets.all(AppSizes.paddingMedium),
+                  keyboardDismissBehavior:
+                      ScrollViewKeyboardDismissBehavior.onDrag,
+                  padding: EdgeInsets.fromLTRB(
+                    AppSizes.paddingMedium,
+                    AppSizes.paddingMedium,
+                    AppSizes.paddingMedium,
+                    AppSizes.paddingLarge +
+                        MediaQuery.viewInsetsOf(context).bottom,
+                  ),
                   children: [
                     AppCard(
                       padding: EdgeInsets.zero,

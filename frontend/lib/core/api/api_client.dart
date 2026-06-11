@@ -135,7 +135,7 @@ class ApiClient {
       case DioExceptionType.sendTimeout:
         return 'The request timed out. Check your connection and try again.';
       case DioExceptionType.connectionError:
-        return 'Unable to reach the SnapCircle API. Check the server URL and your connection.';
+        return 'Unable to reach the SnapCircle API. Start the backend and check the Android API URL.';
       case DioExceptionType.cancel:
         return 'The request was cancelled.';
       case DioExceptionType.badCertificate:
@@ -147,8 +147,6 @@ class ApiClient {
           return 'Network error: ${error.message!.trim()}';
         }
         return 'Network error. Please try again.';
-      default:
-        return 'Request failed. Please try again.';
     }
   }
 

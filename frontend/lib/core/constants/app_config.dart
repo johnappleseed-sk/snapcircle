@@ -10,10 +10,9 @@ class AppConfig {
   // Override for demos/releases:
   // flutter run --dart-define=SNAPCIRCLE_API_BASE_URL=https://api.example.com/api
   //
-  // Local defaults:
-  // - Android emulator: 10.0.2.2 reaches the host machine.
-  // - iOS simulator, desktop, and web: 127.0.0.1 reaches the host machine.
-  // - Real phones need your computer's LAN IP or a deployed HTTPS API.
+  // Android local defaults:
+  // - Emulator: 10.0.2.2 reaches the computer running Laravel.
+  // - Physical devices need --dart-define with the computer's LAN IP.
   static String get baseUrl {
     if (_definedApiBaseUrl.trim().isNotEmpty) {
       return _definedApiBaseUrl.trim();

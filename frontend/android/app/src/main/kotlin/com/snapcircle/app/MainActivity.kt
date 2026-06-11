@@ -1,4 +1,4 @@
-package com.example.snapcircle
+package com.snapcircle.app
 
 import io.flutter.embedding.android.FlutterActivity
 

@@ -22,53 +22,57 @@ class AppShell extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Scaffold(
-      body: child,
-      bottomNavigationBar: SafeArea(
-        top: false,
-        child: Container(
-          padding: const EdgeInsets.fromLTRB(10, 6, 10, 8),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.surface,
-            border: Border(top: BorderSide(color: theme.dividerColor)),
+      body: Column(
+        children: [
+          Expanded(child: child),
+          SafeArea(
+            top: false,
+            child: Container(
+              padding: const EdgeInsets.fromLTRB(10, 6, 10, 8),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.surface,
+                border: Border(top: BorderSide(color: theme.dividerColor)),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _NavItem(
+                    icon: Icons.home_outlined,
+                    selectedIcon: Icons.home,
+                    label: 'Home',
+                    isSelected: currentIndex == 0,
+                    onTap: () => _go(context, 0),
+                  ),
+                  _NavItem(
+                    icon: Icons.search,
+                    selectedIcon: Icons.travel_explore,
+                    label: 'Explore',
+                    isSelected: currentIndex == 1,
+                    onTap: () => _go(context, 1),
+                  ),
+                  _CreateNavItem(
+                    isSelected: currentIndex == 2,
+                    onTap: () => _go(context, 2),
+                  ),
+                  _NavItem(
+                    icon: Icons.favorite_border,
+                    selectedIcon: Icons.favorite,
+                    label: 'Activity',
+                    isSelected: currentIndex == 3,
+                    onTap: () => _go(context, 3),
+                  ),
+                  _NavItem(
+                    icon: Icons.person_outline,
+                    selectedIcon: Icons.person,
+                    label: 'Profile',
+                    isSelected: currentIndex == 4,
+                    onTap: () => _go(context, 4),
+                  ),
+                ],
+              ),
+            ),
           ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _NavItem(
-                icon: Icons.home_outlined,
-                selectedIcon: Icons.home,
-                label: 'Home',
-                isSelected: currentIndex == 0,
-                onTap: () => _go(context, 0),
-              ),
-              _NavItem(
-                icon: Icons.search,
-                selectedIcon: Icons.travel_explore,
-                label: 'Explore',
-                isSelected: currentIndex == 1,
-                onTap: () => _go(context, 1),
-              ),
-              _CreateNavItem(
-                isSelected: currentIndex == 2,
-                onTap: () => _go(context, 2),
-              ),
-              _NavItem(
-                icon: Icons.favorite_border,
-                selectedIcon: Icons.favorite,
-                label: 'Activity',
-                isSelected: currentIndex == 3,
-                onTap: () => _go(context, 3),
-              ),
-              _NavItem(
-                icon: Icons.person_outline,
-                selectedIcon: Icons.person,
-                label: 'Profile',
-                isSelected: currentIndex == 4,
-                onTap: () => _go(context, 4),
-              ),
-            ],
-          ),
-        ),
+        ],
       ),
     );
   }

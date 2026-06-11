@@ -95,6 +95,55 @@ Real device on the same Wi-Fi:
 flutter run --dart-define=SNAPCIRCLE_API_BASE_URL=http://YOUR_COMPUTER_LAN_IP:8000/api
 ```
 
+## Android Demo Setup
+
+Start Laravel so Android emulators and devices can reach it:
+
+```bash
+cd backend
+php artisan serve --host=0.0.0.0 --port=8000
+```
+
+Backend health check:
+
+```txt
+http://127.0.0.1:8000/api/health
+```
+
+Run on an Android emulator:
+
+```bash
+cd frontend
+flutter run -d android --dart-define=SNAPCIRCLE_API_BASE_URL=http://10.0.2.2:8000/api
+```
+
+Run on a physical Android device on the same Wi-Fi:
+
+```bash
+cd frontend
+flutter run -d android --dart-define=SNAPCIRCLE_API_BASE_URL=http://YOUR_COMPUTER_LAN_IP:8000/api
+```
+
+Build a debug APK for local Android testing:
+
+```bash
+cd frontend
+flutter build apk --debug --dart-define=SNAPCIRCLE_API_BASE_URL=http://10.0.2.2:8000/api
+```
+
+Demo login:
+
+```txt
+Email: maya@snapcircle.local
+Password: password
+```
+
+Android notes:
+
+- `10.0.2.2` is only for Android emulators. Physical devices need your computer's LAN IP.
+- Local HTTP is enabled for Android debug/profile builds only; release builds should use HTTPS.
+- If image uploads fail, confirm `php artisan storage:link` has run and `APP_URL`/API URL are reachable from the Android device.
+
 ## Demo Flow
 
 1. Login with email, demo, or social authentication.

@@ -40,6 +40,59 @@ Override the API base URL without editing source:
 flutter run --dart-define=SNAPCIRCLE_API_BASE_URL=http://192.168.1.25:8000/api
 ```
 
+## Android Demo Setup
+
+Use this path for the Android emulator or an Android physical device demo.
+
+Backend:
+
+```bash
+cd backend
+php artisan serve --host=0.0.0.0 --port=8000
+```
+
+Backend health check:
+
+```txt
+http://127.0.0.1:8000/api/health
+```
+
+Android emulator frontend:
+
+```bash
+cd frontend
+flutter run -d android --dart-define=SNAPCIRCLE_API_BASE_URL=http://10.0.2.2:8000/api
+```
+
+Physical Android device frontend:
+
+```bash
+cd frontend
+flutter run -d android --dart-define=SNAPCIRCLE_API_BASE_URL=http://YOUR_COMPUTER_LAN_IP:8000/api
+```
+
+Debug APK build:
+
+```bash
+cd frontend
+flutter build apk --debug --dart-define=SNAPCIRCLE_API_BASE_URL=http://10.0.2.2:8000/api
+```
+
+Demo login credentials:
+
+```txt
+Email: maya@snapcircle.local
+Password: password
+```
+
+Android connection troubleshooting:
+
+- Emulator: use `10.0.2.2`, not `127.0.0.1`, because `127.0.0.1` means the emulator itself.
+- Physical device: use your computer's LAN IP, keep both devices on the same Wi-Fi, and allow firewall access to port `8000`.
+- Backend: run Laravel with `--host=0.0.0.0` so it accepts connections beyond localhost.
+- Images: run `php artisan storage:link`; make sure uploaded image URLs point to a host the Android device can reach.
+- Local HTTP: Android debug/profile builds allow cleartext traffic for the local Laravel backend. Production/release demos should use HTTPS.
+
 ## 3. Demo Login Options
 
 - Email login/register: uses `POST /api/auth/login` and `POST /api/auth/register`.

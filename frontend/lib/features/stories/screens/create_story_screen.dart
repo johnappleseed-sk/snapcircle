@@ -79,20 +79,27 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<StoriesProvider>();
+    final canSubmit = !provider.isCreating && _selectedImage != null;
 
     return Scaffold(
       appBar: AppBar(
         title: const Text('Create story'),
         actions: [
           TextButton(
-            onPressed: provider.isCreating ? null : _submitStory,
+            onPressed: canSubmit ? _submitStory : null,
             child: const Text('Share'),
           ),
         ],
       ),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.all(AppSizes.paddingMedium),
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: EdgeInsets.fromLTRB(
+            AppSizes.paddingMedium,
+            AppSizes.paddingMedium,
+            AppSizes.paddingMedium,
+            AppSizes.paddingLarge + MediaQuery.viewInsetsOf(context).bottom,
+          ),
           children: [
             AppCard(
               child: Column(
@@ -162,7 +169,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
               label: 'Share story',
               icon: Icons.auto_stories_outlined,
               isLoading: provider.isCreating,
-              onPressed: _submitStory,
+              onPressed: canSubmit ? _submitStory : null,
             ),
           ],
         ),

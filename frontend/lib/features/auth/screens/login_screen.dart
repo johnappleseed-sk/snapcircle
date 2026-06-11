@@ -173,7 +173,10 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: () => _loginWithFacebook(context),
                   variant: AppButtonVariant.outline,
                 ),
-                if (kDebugMode) ...[
+                if (kDebugMode ||
+                    defaultTargetPlatform == TargetPlatform.android) ...[
+                  const SizedBox(height: AppSizes.paddingMedium),
+                  const _DemoCredentialsCard(),
                   const SizedBox(height: AppSizes.paddingMedium),
                   AppButton(
                     label: 'Use local demo account',
@@ -226,6 +229,44 @@ class _LoginScreenState extends State<LoginScreen> {
       return 'Password is required.';
     }
     return null;
+  }
+}
+
+class _DemoCredentialsCard extends StatelessWidget {
+  const _DemoCredentialsCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(AppSizes.paddingMedium),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.08),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.18)),
+        borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Android demo account',
+            style: Theme.of(context).textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w800,
+              color: Theme.of(context).colorScheme.onSurface,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            'Email: maya@snapcircle.local',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+          Text(
+            'Password: password',
+            style: Theme.of(context).textTheme.bodyMedium,
+          ),
+        ],
+      ),
+    );
   }
 }
 

@@ -2,6 +2,56 @@
 
 Last updated: 2026-06-07
 
+## Android Demo Readiness Pass
+
+Date: 2026-06-11
+
+Priority:
+
+- Focused this pass on Android emulator, Android physical devices, and debug APK readiness.
+- Preserved the current Flutter architecture: Provider, go_router, Dio, Laravel API, and existing feature repositories.
+- Web support was not expanded in this pass.
+
+Android setup confirmed or improved:
+
+- Android API fallback uses `http://10.0.2.2:8000/api` when no `SNAPCIRCLE_API_BASE_URL` dart-define is provided on Android.
+- Physical devices are documented to use the computer LAN IP, for example `http://192.168.x.x:8000/api`.
+- Android internet permission is present.
+- Local HTTP cleartext is now enabled in Android debug/profile manifests, not the main release manifest.
+- Android application id and namespace are set to `com.snapcircle.app`.
+- Android app label uses the existing `SnapCircle` string resource.
+- Local demo login is visible on the login screen with `maya@snapcircle.local` / `password`.
+- Android connection errors now point users toward backend/API URL setup.
+- Create story and edit profile screens dismiss the keyboard on drag and keep submit/loading states clearer.
+
+Android demo commands:
+
+```bash
+cd backend
+php artisan serve --host=0.0.0.0 --port=8000
+```
+
+```bash
+cd frontend
+flutter run -d android --dart-define=SNAPCIRCLE_API_BASE_URL=http://10.0.2.2:8000/api
+```
+
+```bash
+cd frontend
+flutter run -d android --dart-define=SNAPCIRCLE_API_BASE_URL=http://YOUR_COMPUTER_LAN_IP:8000/api
+```
+
+```bash
+cd frontend
+flutter build apk --debug --dart-define=SNAPCIRCLE_API_BASE_URL=http://10.0.2.2:8000/api
+```
+
+Known Android limitations:
+
+- No Android emulator or physical Android device was connected during inspection, so live on-device smoke testing could not be completed in this shell.
+- Google and Facebook login still require real OAuth configuration; local demo login is the recommended Android demo path.
+- Release builds should use HTTPS and production OAuth credentials.
+
 ## Work Started
 
 - Created a baseline API coverage document from `backend/routes/api.php` and existing Flutter repositories/screens.
