@@ -134,6 +134,9 @@ class _ProfilePostPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cacheWidth =
+        (MediaQuery.sizeOf(context).width / 3 * MediaQuery.devicePixelRatioOf(context))
+            .round();
     return ClipRRect(
       borderRadius: BorderRadius.circular(3),
       child: Stack(
@@ -159,7 +162,11 @@ class _ProfilePostPreview extends StatelessWidget {
                     ),
                   ),
                 )
-              : CachedNetworkImage(imageUrl: post.imageUrl!, fit: BoxFit.cover),
+              : CachedNetworkImage(
+                  imageUrl: post.imageUrl!,
+                  fit: BoxFit.cover,
+                  memCacheWidth: cacheWidth,
+                ),
           Positioned(
             left: 0,
             right: 0,

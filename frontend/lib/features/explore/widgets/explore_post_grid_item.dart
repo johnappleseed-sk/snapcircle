@@ -17,6 +17,7 @@ class ExplorePostGridItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final cacheWidth = (180 * MediaQuery.devicePixelRatioOf(context)).round();
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
@@ -29,6 +30,7 @@ class ExplorePostGridItem extends StatelessWidget {
               CachedNetworkImage(
                 imageUrl: post.imageUrl!,
                 fit: BoxFit.cover,
+                memCacheWidth: cacheWidth,
                 placeholder: (_, _) => Container(color: AppColors.border),
                 errorWidget: (_, _, _) => _TextPreview(post: post),
               )

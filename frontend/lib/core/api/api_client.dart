@@ -72,28 +72,39 @@ class ApiClient {
         unauthorizedEvents.value++;
       }
       final message = _messageFromError(error);
+      if (kDebugMode) {
+        debugPrint(
+          'SnapCircle API error: ${error.requestOptions.method} '
+          '${error.requestOptions.uri} -> ${error.response?.statusCode} '
+          '$message',
+        );
+      }
       return Result.failure(message);
-    } catch (_) {
+    } catch (error) {
+      if (kDebugMode) {
+        debugPrint('SnapCircle API unexpected error: $error');
+      }
       return Result.failure('Something went wrong. Please try again.');
     }
   }
 
   String _messageFromError(DioException error) {
-    final data = error.response?.data;
-    if (data is Map<String, dynamic> && data['message'] is String) {
-      return data['message'] as String;
-    }
-
-    if (data is Map<String, dynamic> && data['errors'] is Map) {
-      final errors = data['errors'] as Map;
-      for (final value in errors.values) {
-        if (value is List && value.isNotEmpty) {
-          return value.first.toString();
-        }
-      }
-    }
-
     final statusCode = error.response?.statusCode;
+    final data = error.response?.data;
+    final parsedData = data is Map
+        ? Map<String, dynamic>.from(data)
+        : <String, dynamic>{};
+
+    if (parsedData['message'] is String &&
+        (parsedData['message'] as String).trim().isNotEmpty) {
+      return (parsedData['message'] as String).trim();
+    }
+
+    final validationMessage = _validationMessage(parsedData['errors']);
+    if (validationMessage != null) {
+      return validationMessage;
+    }
+
     if (statusCode == 401) {
       return 'Your session expired. Please log in again.';
     }
@@ -114,15 +125,52 @@ class ApiClient {
       return 'Too many requests. Please try again later.';
     }
 
+    if (statusCode != null && statusCode >= 500) {
+      return 'The server is having trouble. Please try again shortly.';
+    }
+
     switch (error.type) {
       case DioExceptionType.connectionTimeout:
       case DioExceptionType.receiveTimeout:
       case DioExceptionType.sendTimeout:
-        return 'Please check your internet connection.';
+        return 'The request timed out. Check your connection and try again.';
       case DioExceptionType.connectionError:
-        return 'Unable to connect to server.';
+        return 'Unable to reach the SnapCircle API. Check the server URL and your connection.';
+      case DioExceptionType.cancel:
+        return 'The request was cancelled.';
+      case DioExceptionType.badCertificate:
+        return 'The server certificate could not be verified.';
+      case DioExceptionType.badResponse:
+        return 'The server returned an unexpected response.';
+      case DioExceptionType.unknown:
+        if (error.message?.trim().isNotEmpty == true) {
+          return 'Network error: ${error.message!.trim()}';
+        }
+        return 'Network error. Please try again.';
       default:
         return 'Request failed. Please try again.';
     }
+  }
+
+  String? _validationMessage(dynamic errors) {
+    if (errors is! Map) {
+      return null;
+    }
+
+    for (final entry in errors.entries) {
+      final value = entry.value;
+      if (value is List && value.isNotEmpty) {
+        final message = value.first.toString().trim();
+        if (message.isNotEmpty) {
+          return message;
+        }
+      }
+
+      if (value is String && value.trim().isNotEmpty) {
+        return value.trim();
+      }
+    }
+
+    return null;
   }
 }

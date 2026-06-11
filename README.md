@@ -73,17 +73,37 @@ flutter pub get
 flutter run
 ```
 
-The Android emulator uses this API URL:
+The frontend API base URL is configurable with `SNAPCIRCLE_API_BASE_URL`.
+
+Default Android emulator API URL:
 
 ```txt
 http://10.0.2.2:8000/api
 ```
 
-The iOS simulator can use:
+Default iOS simulator, desktop, and web API URL:
 
 ```txt
 http://127.0.0.1:8000/api
 ```
+
+Real device on the same Wi-Fi:
+
+```bash
+flutter run --dart-define=SNAPCIRCLE_API_BASE_URL=http://YOUR_COMPUTER_LAN_IP:8000/api
+```
+
+## Demo Flow
+
+1. Login with demo/social authentication.
+2. View and refresh the home feed.
+3. Create a post with text and optional image.
+4. Like, comment, save, and share posts.
+5. Explore/search users and posts.
+6. View and edit profile details.
+7. Review notifications.
+8. Send a chat message.
+9. Review settings and logout.
 
 ## Environment Variable Notes
 
@@ -97,6 +117,7 @@ http://127.0.0.1:8000/api
 - [Backend API Documentation](docs/API_DOCUMENTATION.md)
 - [Technical Audit](docs/TECHNICAL_AUDIT.md)
 - [Setup Guide](docs/SETUP_GUIDE.md)
+- [Demo Guide](docs/DEMO_GUIDE.md)
 - [Testing Checklist](docs/TESTING_CHECKLIST.md)
 - [Assignment Report Draft](docs/ASSIGNMENT_REPORT.md)
 - [Submission Guide](docs/SUBMISSION_GUIDE.md)

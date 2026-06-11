@@ -72,6 +72,18 @@ iOS simulator:
 http://127.0.0.1:8000/api
 ```
 
+Real device on the same Wi-Fi:
+
+```txt
+http://YOUR_COMPUTER_LAN_IP:8000/api
+```
+
+You can override the API URL at runtime without editing source:
+
+```bash
+flutter run --dart-define=SNAPCIRCLE_API_BASE_URL=http://192.168.1.25:8000/api
+```
+
 ## Test Commands
 
 Backend:

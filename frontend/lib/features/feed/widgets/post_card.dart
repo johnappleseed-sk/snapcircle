@@ -49,6 +49,9 @@ class PostCard extends StatelessWidget {
       DateFormatter.timeAgo(post.createdAt),
     ].join(' - ');
     final imageFill = Theme.of(context).colorScheme.surfaceContainerHighest;
+    final mediaCacheWidth = (MediaQuery.sizeOf(context).width *
+            MediaQuery.devicePixelRatioOf(context))
+        .round();
 
     return AppCard(
       onTap: onTap,
@@ -117,6 +120,7 @@ class PostCard extends StatelessWidget {
                 child: CachedNetworkImage(
                   imageUrl: post.imageUrl!,
                   fit: BoxFit.cover,
+                  memCacheWidth: mediaCacheWidth,
                   placeholder: (context, url) => Container(
                     color: imageFill,
                     alignment: Alignment.center,

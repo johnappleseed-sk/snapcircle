@@ -306,3 +306,56 @@ Known limitations:
 Recommended next step:
 
 - Run the Flutter toolchain and device QA, then tune animation durations and skeleton spacing from screenshots or screen recordings.
+
+## Production Hardening and Demo Readiness Pass
+
+Date: 2026-06-11
+
+Performance improvements:
+
+- Added bounded memory cache widths for feed media, Explore grid images, and profile grid thumbnails.
+- Kept cached network images and constrained aspect ratios for feed/profile/explore media.
+- Reused provider guards that prevent duplicate like/save/follow/pagination requests.
+- Kept skeleton loading inline for profile, saved posts, Explore, notifications, chat, and feed surfaces.
+
+API reliability improvements:
+
+- Added `SNAPCIRCLE_API_BASE_URL` dart-define support so demo/release URLs can be configured without source edits.
+- Improved Dio error parsing for validation errors, server errors, cancelled requests, certificate issues, timeouts, and connection failures.
+- Kept 401 handling centralized in `ApiClient`, clearing stale tokens and notifying auth state listeners.
+- Added debug-only API error logging so development failures stay visible without exposing details in production UI.
+
+Security and privacy checks:
+
+- Auth tokens remain stored in `flutter_secure_storage`.
+- Logout and session expiry clear local auth state/token.
+- Destructive post/comment/account actions use confirmations.
+- No secrets, `.env`, API keys, tokens, build outputs, or cache folders were added.
+
+Demo readiness:
+
+- Added `docs/DEMO_GUIDE.md` with backend/frontend startup steps, demo login options, main demo flow, known limitations, and troubleshooting.
+- Updated root `README.md` with setup, environment configuration, useful commands, demo flow, and documentation links.
+- Updated `docs/SETUP_GUIDE.md` with Android emulator, simulator, real-device, and dart-define API URL guidance.
+
+Verification commands:
+
+- `git status`: clean before the pass.
+- `git branch --show-current`: `main`.
+- `git log --oneline -5`: latest commit was `8f14438 Enhance SnapCircle micro-interactions and UX polish`.
+- `flutter pub get`: failed because `flutter` is not available on PATH in this shell.
+- `flutter analyze`: failed because `flutter` is not available on PATH in this shell.
+- `flutter test`: failed because `flutter` is not available on PATH in this shell.
+- `flutter build apk --debug`: failed because `flutter` is not available on PATH in this shell.
+- `php artisan route:list`: passed and listed 80 routes.
+- `php artisan test`: failed because the PHP `mbstring` extension is not available.
+
+Known limitations:
+
+- Flutter and APK verification still need to run in a configured Flutter environment.
+- Backend route/test verification may require PHP dependencies, `.env`, app key, and a local database.
+- Email/password auth, registration, forgot password, conversation deletion, and deeper admin detail/moderation UI remain future work.
+
+Recommended next step:
+
+- Run the full Flutter and Laravel verification suite on a configured demo machine, then record a short demo walkthrough using `docs/DEMO_GUIDE.md`.
