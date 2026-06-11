@@ -93,6 +93,12 @@ Android connection troubleshooting:
 - Images: run `php artisan storage:link`; make sure uploaded image URLs point to a host the Android device can reach.
 - Local HTTP: Android debug/profile builds allow cleartext traffic for the local Laravel backend. Production/release demos should use HTTPS.
 
+Full Android APK install and real-device QA details are documented in:
+
+```txt
+docs/ANDROID_DEMO_GUIDE.md
+```
+
 ## 3. Demo Login Options
 
 - Email login/register: uses `POST /api/auth/login` and `POST /api/auth/register`.

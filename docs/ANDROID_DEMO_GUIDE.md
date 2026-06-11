@@ -1,0 +1,213 @@
+# SnapCircle Android Demo Guide
+
+This guide is for installing, testing, and demoing SnapCircle on an Android emulator or a real Android phone.
+
+## Requirements
+
+- Flutter SDK with Android toolchain installed.
+- Android Studio or Android SDK command-line tools.
+- A running Laravel backend.
+- MySQL running and seeded with demo data.
+- Android emulator or physical Android phone with USB debugging enabled.
+- Phone and computer on the same Wi-Fi for physical-device testing.
+
+## Backend Setup
+
+From the project root:
+
+```bash
+cd backend
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate --seed
+php artisan storage:link
+php artisan serve --host=0.0.0.0 --port=8000
+```
+
+Backend health check on the computer:
+
+```txt
+http://127.0.0.1:8000/api/health
+```
+
+Current detected LAN IP for this machine:
+
+```txt
+192.168.1.30
+```
+
+Physical Android devices should use:
+
+```txt
+http://192.168.1.30:8000/api
+```
+
+If the Wi-Fi network changes, find the new LAN IP before running the app.
+
+## Find The Computer LAN IP
+
+macOS:
+
+```bash
+ipconfig getifaddr en0
+```
+
+If that returns nothing, inspect the active route:
+
+```bash
+route get default
+```
+
+Use the IP address on the active Wi-Fi interface. It usually looks like `192.168.x.x` or `10.x.x.x`.
+
+## Android Emulator Setup
+
+The Android emulator reaches the host computer through `10.0.2.2`.
+
+Run:
+
+```bash
+cd frontend
+flutter pub get
+flutter run -d android --dart-define=SNAPCIRCLE_API_BASE_URL=http://10.0.2.2:8000/api
+```
+
+Build an emulator debug APK:
+
+```bash
+cd frontend
+flutter build apk --debug --dart-define=SNAPCIRCLE_API_BASE_URL=http://10.0.2.2:8000/api
+```
+
+## Real Android Device Setup
+
+1. Connect the phone by USB or use wireless debugging.
+2. Enable Developer options and USB debugging.
+3. Keep the phone and computer on the same Wi-Fi.
+4. Start Laravel with `--host=0.0.0.0`.
+5. Open the backend health URL in the phone browser:
+
+```txt
+http://192.168.1.30:8000/api/health
+```
+
+Run on a connected Android phone:
+
+```bash
+cd frontend
+flutter run -d android --dart-define=SNAPCIRCLE_API_BASE_URL=http://192.168.1.30:8000/api
+```
+
+Build a physical-device debug APK:
+
+```bash
+cd frontend
+flutter build apk --debug --dart-define=SNAPCIRCLE_API_BASE_URL=http://192.168.1.30:8000/api
+```
+
+## Install A Debug APK
+
+The debug APK is generated at:
+
+```txt
+frontend/build/app/outputs/flutter-apk/app-debug.apk
+```
+
+Install with Flutter/ADB when a device is connected:
+
+```bash
+cd frontend
+flutter install -d android
+```
+
+Or install directly with ADB:
+
+```bash
+/Users/John/Library/Android/sdk/platform-tools/adb install -r build/app/outputs/flutter-apk/app-debug.apk
+```
+
+If sharing the APK manually, copy `app-debug.apk` to the phone and allow install from unknown sources for the file manager or browser used to open it.
+
+## Demo Login
+
+Use the local demo account:
+
+```txt
+Email: maya@snapcircle.local
+Password: password
+```
+
+The Android login screen also includes a local demo login button for faster demos.
+
+## Android Demo Flow Checklist
+
+Use this checklist for emulator or real-device smoke testing:
+
+1. Open app.
+2. Login with demo account.
+3. Load home feed.
+4. Pull to refresh feed.
+5. Create text post.
+6. Create image post.
+7. Like and unlike a post.
+8. Comment on a post.
+9. Save and unsave a post.
+10. Explore/search.
+11. View another user profile.
+12. Edit own profile.
+13. Upload avatar.
+14. View notifications.
+15. Open chat.
+16. Send message.
+17. Open settings.
+18. Logout.
+19. Login again.
+20. Confirm token persistence by closing and reopening the app while logged in.
+
+## Troubleshooting
+
+Backend not reachable:
+
+- Confirm Laravel is running with `php artisan serve --host=0.0.0.0 --port=8000`.
+- Confirm the phone and computer are on the same Wi-Fi.
+- Open `http://YOUR_COMPUTER_LAN_IP:8000/api/health` in the phone browser.
+- Check macOS firewall or security software for port `8000` blocking.
+
+Login fails:
+
+- Run `php artisan migrate --seed` in `backend`.
+- Use `maya@snapcircle.local` and `password`.
+- Confirm the app was launched or built with the correct `SNAPCIRCLE_API_BASE_URL`.
+
+Images not uploading:
+
+- Run `php artisan storage:link`.
+- Confirm the backend URL is reachable from the Android device.
+- Make sure Android has photo access when prompted by `image_picker`.
+- Check Laravel logs in `backend/storage/logs` for upload validation errors.
+
+App stuck loading:
+
+- Pull to refresh or restart the app.
+- Confirm backend health endpoint works.
+- Log out and log in again if the token is stale.
+
+Cleartext HTTP issue:
+
+- Local HTTP is allowed for Android debug/profile builds.
+- Release builds should use HTTPS.
+- If a debug APK cannot reach HTTP, rebuild with the correct dart define and confirm the debug manifest is being used.
+
+Phone and computer not on same Wi-Fi:
+
+- Use the same Wi-Fi network for both devices.
+- Avoid guest networks that isolate clients.
+- If needed, use USB reverse/tethering or deploy the backend to an HTTPS host.
+
+## Known Limitations
+
+- Google and Facebook login require real OAuth credentials and provider setup.
+- The debug APK is for local demo/testing, not Play Store release.
+- Release signing is not configured for production distribution.
+- Physical-device testing still depends on the phone being able to reach the developer machine over Wi-Fi.

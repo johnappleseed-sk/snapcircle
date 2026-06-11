@@ -52,6 +52,38 @@ Known Android limitations:
 - Google and Facebook login still require real OAuth configuration; local demo login is the recommended Android demo path.
 - Release builds should use HTTPS and production OAuth credentials.
 
+## Android APK Demo Release Packaging Pass
+
+Date: 2026-06-11
+
+Release-packaging checks:
+
+- Confirmed Flutter doctor reports a healthy Android toolchain.
+- Confirmed `flutter analyze` passes with no issues.
+- Confirmed active LAN IP for this machine is `192.168.1.30`.
+- Confirmed Laravel health endpoint is reachable locally and over LAN while served with `--host=0.0.0.0`.
+- Confirmed Android app name is `SnapCircle`.
+- Confirmed Android application id is `com.snapcircle.app`.
+- Confirmed Android Internet permission exists.
+- Confirmed local HTTP cleartext is limited to Android debug/profile manifests.
+- Confirmed tracked files do not include local `.env`, APKs, build folders, token files, or local IDE folders.
+
+Documentation added:
+
+- Added `docs/ANDROID_DEMO_GUIDE.md` with backend setup, emulator setup, physical device setup, LAN IP discovery, APK build/install commands, demo login, QA checklist, and troubleshooting.
+- Updated README and demo guide to point to the Android guide.
+
+Current physical-device API URL:
+
+```txt
+http://192.168.1.30:8000/api
+```
+
+Physical-device QA status:
+
+- No Android phone was connected during this pass.
+- Physical-device smoke testing remains the next required manual QA step.
+
 ## Work Started
 
 - Created a baseline API coverage document from `backend/routes/api.php` and existing Flutter repositories/screens.

@@ -144,6 +144,8 @@ Android notes:
 - Local HTTP is enabled for Android debug/profile builds only; release builds should use HTTPS.
 - If image uploads fail, confirm `php artisan storage:link` has run and `APP_URL`/API URL are reachable from the Android device.
 
+Full Android install, APK, and real-device QA details are in [Android Demo Guide](docs/ANDROID_DEMO_GUIDE.md).
+
 ## Demo Flow
 
 1. Login with email, demo, or social authentication.
@@ -169,6 +171,7 @@ Android notes:
 - [Technical Audit](docs/TECHNICAL_AUDIT.md)
 - [Setup Guide](docs/SETUP_GUIDE.md)
 - [Demo Guide](docs/DEMO_GUIDE.md)
+- [Android Demo Guide](docs/ANDROID_DEMO_GUIDE.md)
 - [Testing Checklist](docs/TESTING_CHECKLIST.md)
 - [Assignment Report Draft](docs/ASSIGNMENT_REPORT.md)
 - [Submission Guide](docs/SUBMISSION_GUIDE.md)
