@@ -10,6 +10,7 @@ class AdminProvider extends ChangeNotifier {
 
   AdminDashboardModel? _dashboard;
   List<ReportModel> _reports = [];
+  ReportModel? _selectedReport;
   List<UserModel> _users = [];
   bool _isLoading = false;
   String? _errorMessage;
@@ -19,6 +20,7 @@ class AdminProvider extends ChangeNotifier {
 
   AdminDashboardModel? get dashboard => _dashboard;
   List<ReportModel> get reports => List.unmodifiable(_reports);
+  ReportModel? get selectedReport => _selectedReport;
   List<UserModel> get users => List.unmodifiable(_users);
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
@@ -28,12 +30,23 @@ class AdminProvider extends ChangeNotifier {
   }
 
   Future<void> fetchReports({String? status}) async {
-    await _run(() async => _reports = await _repository.getReports(status: status));
+    await _run(
+      () async => _reports = await _repository.getReports(status: status),
+    );
+  }
+
+  Future<void> fetchReport(int reportId) async {
+    await _run(
+      () async => _selectedReport = await _repository.getReport(reportId),
+    );
   }
 
   Future<bool> updateReportStatus(int reportId, String status) async {
     return _runBool(() async {
       await _repository.updateReportStatus(reportId, status);
+      if (_selectedReport?.id == reportId) {
+        _selectedReport = await _repository.getReport(reportId);
+      }
       await fetchReports();
     });
   }

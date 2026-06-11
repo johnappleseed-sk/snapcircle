@@ -23,6 +23,8 @@ class UserModel {
   final int followersCount;
   final int followingCount;
   final bool isFollowedByMe;
+  final bool isBlockedByMe;
+  final bool hasBlockedMe;
 
   const UserModel({
     required this.id,
@@ -49,6 +51,8 @@ class UserModel {
     this.followersCount = 0,
     this.followingCount = 0,
     this.isFollowedByMe = false,
+    this.isBlockedByMe = false,
+    this.hasBlockedMe = false,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -77,6 +81,8 @@ class UserModel {
       followersCount: _parseInt(json['followers_count']),
       followingCount: _parseInt(json['following_count']),
       isFollowedByMe: _parseBool(json['is_followed_by_me']),
+      isBlockedByMe: _parseBool(json['is_blocked_by_me']),
+      hasBlockedMe: _parseBool(json['has_blocked_me']),
     );
   }
 
@@ -106,6 +112,8 @@ class UserModel {
       'followers_count': followersCount,
       'following_count': followingCount,
       'is_followed_by_me': isFollowedByMe,
+      'is_blocked_by_me': isBlockedByMe,
+      'has_blocked_me': hasBlockedMe,
     };
   }
 
@@ -134,6 +142,8 @@ class UserModel {
     int? followersCount,
     int? followingCount,
     bool? isFollowedByMe,
+    bool? isBlockedByMe,
+    bool? hasBlockedMe,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -160,6 +170,8 @@ class UserModel {
       followersCount: followersCount ?? this.followersCount,
       followingCount: followingCount ?? this.followingCount,
       isFollowedByMe: isFollowedByMe ?? this.isFollowedByMe,
+      isBlockedByMe: isBlockedByMe ?? this.isBlockedByMe,
+      hasBlockedMe: hasBlockedMe ?? this.hasBlockedMe,
     );
   }
 

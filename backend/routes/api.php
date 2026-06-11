@@ -5,6 +5,7 @@ use App\Http\Controllers\Api\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\Admin\AdminReportController;
 use App\Http\Controllers\Api\Admin\AdminUserController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\BlockController;
 use App\Http\Controllers\Api\CommentController;
 use App\Http\Controllers\Api\ConversationController;
 use App\Http\Controllers\Api\ExploreController;
@@ -54,6 +55,11 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::delete('/account', [SettingsController::class, 'destroy'])->middleware('throttle:5,1');
 
     Route::middleware('account.active')->group(function (): void {
+        Route::get('/blocks', [BlockController::class, 'index']);
+        Route::post('/users/{user}/block', [BlockController::class, 'store']);
+        Route::delete('/users/{user}/block', [BlockController::class, 'destroy']);
+        Route::get('/users/{user}/block-status', [BlockController::class, 'status']);
+
         Route::get('/profile', [ProfileController::class, 'profile']);
         Route::put('/profile', [ProfileController::class, 'update']);
         Route::get('/users', [ProfileController::class, 'users']);
@@ -62,6 +68,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::get('/users/{user}/posts', [ProfileController::class, 'posts']);
         Route::get('/users/{user}/stories', [StoryController::class, 'userStories']);
         Route::post('/users/{user}/report', [ReportController::class, 'reportUser']);
+        Route::post('/reports', [ReportController::class, 'storeGeneric']);
 
         Route::get('/explore/posts', [ExploreController::class, 'posts']);
         Route::get('/explore/users', [ExploreController::class, 'users']);

@@ -70,6 +70,14 @@ class ProfileHeader extends StatelessWidget {
                           icon: const Icon(Icons.edit_outlined),
                           label: const Text('Edit'),
                         )
+                      else if (user.isBlockedByMe || user.hasBlockedMe)
+                        OutlinedButton.icon(
+                          onPressed: null,
+                          icon: const Icon(Icons.block),
+                          label: Text(
+                            user.isBlockedByMe ? 'Blocked' : 'Unavailable',
+                          ),
+                        )
                       else
                         Row(
                           children: [
@@ -131,6 +139,10 @@ class ProfileHeader extends StatelessWidget {
                         const SizedBox(height: AppSizes.paddingSmall),
                         Text(user.bio!),
                       ],
+                      if (user.isBlockedByMe || user.hasBlockedMe) ...[
+                        const SizedBox(height: AppSizes.paddingSmall),
+                        _BlockedNotice(isBlockedByMe: user.isBlockedByMe),
+                      ],
                       const SizedBox(height: AppSizes.paddingSmall),
                       Wrap(
                         spacing: 12,
@@ -167,6 +179,38 @@ class ProfileHeader extends StatelessWidget {
                   ),
                 ),
               ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BlockedNotice extends StatelessWidget {
+  final bool isBlockedByMe;
+
+  const _BlockedNotice({required this.isBlockedByMe});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.warning.withValues(alpha: 0.10),
+        border: Border.all(color: AppColors.warning.withValues(alpha: 0.24)),
+        borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.block, color: AppColors.warning, size: 20),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              isBlockedByMe
+                  ? 'You blocked this user. Their posts and messages are hidden.'
+                  : 'This profile is not available for messaging or following.',
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
           ),
         ],

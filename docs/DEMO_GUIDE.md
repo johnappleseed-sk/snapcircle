@@ -117,25 +117,32 @@ Do not commit real OAuth secrets or local `.env` files.
 4. Like, comment, save, and share a post.
 5. Open Explore, search for people/posts, and use recent searches.
 6. Open a user profile from Explore.
-7. Open your profile and edit profile details/avatar.
-8. Open Notifications and mark items read.
-9. Open Messages and send a chat message.
-10. Open Settings, review privacy/notification/account settings, then logout.
+7. Report a post or user with a specific reason.
+8. Block a user from the profile menu or feed post menu, then confirm their content is hidden.
+9. Open Settings > Blocked users and unblock that account.
+10. Open your profile and edit profile details/avatar.
+11. Open Notifications and mark items read.
+12. Open Messages and send a chat message.
+13. If using an admin account, open Admin > Reports and review a report detail/status.
+14. Open Settings, review privacy/notification/account settings, then logout.
 
 ## 5. Known Limitations
 
 - Conversation deletion is intentionally not exposed because the backend route is MVP-limited.
 - Password reset email delivery requires mail settings in `backend/.env`.
 - Mobile reset deep links are not wired yet; use the reset-token screen for local testing.
-- Some admin detail/moderation screens remain future UI work.
+- Admin report detail is available; admin user detail and admin content moderation screens remain future UI work.
+- Blocking hides and prevents core interactions with blocked users, but it does not delete historical data.
 - Local social login needs real OAuth credentials in `backend/.env`.
-- Flutter verification requires Flutter to be installed and available on PATH.
+- Physical Android device QA still requires a connected phone on the same Wi-Fi as the backend host.
 
 ## 6. Troubleshooting
 
 - Android emulator cannot connect: make sure the backend is running with `--host=0.0.0.0` and use `10.0.2.2`.
 - Real phone cannot connect: use the host computer LAN IP and ensure firewall access to port `8000`.
 - Images fail on Android: ensure backend `APP_URL` is reachable from the device, not only `127.0.0.1`.
+- Blocked user still visible: pull to refresh the current screen, then confirm both accounts are using the same backend database.
+- Report submission fails: choose one of the supported reasons and avoid sending duplicate pending reports for the same target.
 - Session expired: log in again; the Flutter app clears stale local tokens on `401`.
 - Database errors: confirm MySQL is running and `backend/.env` database values are correct.
 - `php artisan test` reports missing PHP extensions: enable/install the listed extensions, especially `mbstring`, then rerun the command.

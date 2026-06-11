@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/admin/screens/admin_dashboard_screen.dart';
+import '../features/admin/screens/admin_report_detail_screen.dart';
 import '../features/admin/screens/admin_reports_screen.dart';
 import '../features/admin/screens/admin_users_screen.dart';
 import '../features/auth/providers/auth_provider.dart';
@@ -29,6 +30,7 @@ import '../features/profile/screens/follow_list_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
 import '../features/profile/screens/user_profile_screen.dart';
 import '../features/settings/screens/account_settings_screen.dart';
+import '../features/settings/screens/blocked_users_screen.dart';
 import '../features/settings/screens/notification_settings_screen.dart';
 import '../features/settings/screens/privacy_settings_screen.dart';
 import '../features/settings/screens/settings_screen.dart';
@@ -56,7 +58,9 @@ class AppRouter {
         final isOnboarding = location == onboarding;
         final isLogin = location == login;
         final isPublicAuthRoute =
-            isLogin || location == register || location == forgotPassword ||
+            isLogin ||
+            location == register ||
+            location == forgotPassword ||
             location == resetPassword;
         final isAdminRoute = location.startsWith('/admin');
         final userRole = authProvider.user?.role;
@@ -119,10 +123,8 @@ class AppRouter {
         ),
         GoRoute(
           path: createPost,
-          pageBuilder: (context, state) => _fadeSlidePage(
-            state: state,
-            child: const CreatePostScreen(),
-          ),
+          pageBuilder: (context, state) =>
+              _fadeSlidePage(state: state, child: const CreatePostScreen()),
         ),
         GoRoute(
           path: '/posts/:postId/edit',
@@ -159,10 +161,8 @@ class AppRouter {
         ),
         GoRoute(
           path: '/saved-posts',
-          pageBuilder: (context, state) => _fadeSlidePage(
-            state: state,
-            child: const SavedPostsScreen(),
-          ),
+          pageBuilder: (context, state) =>
+              _fadeSlidePage(state: state, child: const SavedPostsScreen()),
         ),
         GoRoute(
           path: '/stories/create',
@@ -209,6 +209,10 @@ class AppRouter {
           builder: (context, state) => const AccountSettingsScreen(),
         ),
         GoRoute(
+          path: '/settings/blocked-users',
+          builder: (context, state) => const BlockedUsersScreen(),
+        ),
+        GoRoute(
           path: '/admin',
           builder: (context, state) => const AdminDashboardScreen(),
         ),
@@ -217,15 +221,22 @@ class AppRouter {
           builder: (context, state) => const AdminReportsScreen(),
         ),
         GoRoute(
+          path: '/admin/reports/:reportId',
+          builder: (context, state) {
+            final reportId = int.tryParse(
+              state.pathParameters['reportId'] ?? '',
+            );
+            return AdminReportDetailScreen(reportId: reportId ?? 0);
+          },
+        ),
+        GoRoute(
           path: '/admin/users',
           builder: (context, state) => const AdminUsersScreen(),
         ),
         GoRoute(
           path: '/messages',
-          pageBuilder: (context, state) => _fadeSlidePage(
-            state: state,
-            child: const ConversationsScreen(),
-          ),
+          pageBuilder: (context, state) =>
+              _fadeSlidePage(state: state, child: const ConversationsScreen()),
         ),
         GoRoute(
           path: '/messages/:conversationId',
@@ -267,10 +278,8 @@ class AppRouter {
         ),
         GoRoute(
           path: '/profile/edit',
-          pageBuilder: (context, state) => _fadeSlidePage(
-            state: state,
-            child: const EditProfileScreen(),
-          ),
+          pageBuilder: (context, state) =>
+              _fadeSlidePage(state: state, child: const EditProfileScreen()),
         ),
         GoRoute(
           path: '/users/:userId',
@@ -315,10 +324,7 @@ class AppRouter {
             );
           },
         ),
-        GoRoute(
-          path: '/search',
-          redirect: (context, state) => '/explore',
-        ),
+        GoRoute(path: '/search', redirect: (context, state) => '/explore'),
       ],
     );
   }

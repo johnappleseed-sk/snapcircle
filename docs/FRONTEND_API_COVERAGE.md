@@ -1,6 +1,6 @@
 # SnapCircle Frontend API Coverage
 
-Last updated: 2026-06-07
+Last updated: 2026-06-11
 
 This document tracks Laravel API routes discovered in `backend/routes/api.php` and how the Flutter frontend currently uses them. Email/password login, registration, forgot password, and reset password are now implemented through the Laravel API and surfaced in Flutter.
 
@@ -47,6 +47,10 @@ Status legend:
 | GET | `/users/{user}/posts` | Used | Profile posts section. |
 | GET | `/users/{user}/stories` | Used | Profile stories section on own and other-user profile screens. |
 | POST | `/users/{user}/report` | Used | Report dialog on user profile. |
+| GET | `/blocks` | Used | Settings > Blocked users list. |
+| POST | `/users/{user}/block` | Used | User profile menu and feed post action sheet. |
+| DELETE | `/users/{user}/block` | Used | User profile menu and blocked-users settings screen. |
+| GET | `/users/{user}/block-status` | Partially used | Endpoint exists for direct status checks; profile responses already include block state. |
 | POST | `/users/{user}/follow` | Used | Profile and explore follow actions. |
 | DELETE | `/users/{user}/follow` | Used | Profile and explore unfollow actions. |
 | GET | `/users/{user}/followers` | Used | Follow list screen. |
@@ -79,6 +83,7 @@ Status legend:
 | PUT | `/comments/{comment}` | Used | Comment edit UI. |
 | DELETE | `/comments/{comment}` | Used | Comment delete UI. |
 | POST | `/comments/{comment}/report` | Used | Report dialog from comment UI. |
+| POST | `/reports` | Used | Generic report endpoint supports post, comment, user, and message targets; current dialog continues to use target-specific routes where available. |
 | POST | `/posts/{post}/like` | Used | Post card like action. |
 | DELETE | `/posts/{post}/like` | Used | Post card unlike action. |
 | POST | `/posts/{post}/save` | Used | Save/bookmark action. |
@@ -123,7 +128,7 @@ Status legend:
 | --- | --- | --- | --- |
 | GET | `/admin/dashboard` | Used | Admin dashboard screen. |
 | GET | `/admin/reports` | Used | Admin reports screen. |
-| GET | `/admin/reports/{report}` | Not used | No report detail repository/screen call found. |
+| GET | `/admin/reports/{report}` | Used | Admin report detail screen. |
 | PUT | `/admin/reports/{report}/status` | Used | Admin report status update. |
 | GET | `/admin/users` | Used | Admin users screen. |
 | GET | `/admin/users/{user}` | Not used | No admin user detail repository/screen call found. |
@@ -217,3 +222,22 @@ Remaining API coverage gaps:
 
 - Conversation deletion remains partially used because the backend MVP route still reports delete as not implemented.
 - Admin report detail, admin user detail, and admin post/comment moderation routes still need deeper Flutter screens if required for a complete moderator workflow.
+
+## Safety And Moderation Pass
+
+Date: 2026-06-11
+
+API coverage update:
+
+- Added and surfaced block routes: `GET /blocks`, `POST /users/{user}/block`, `DELETE /users/{user}/block`, and `GET /users/{user}/block-status`.
+- Backend feed, explore, profile lists, follow lists, notifications, comments, and chat queries now suppress blocked or blocking users where relevant.
+- Follow, conversation start, message sending, and commenting on blocked-owner content are blocked server-side.
+- Report reasons now include spam, harassment, hate, violence, nudity, scam, misinformation, and other, while keeping older backend reasons for compatibility.
+- Added generic `POST /reports` support for post, comment, user, and message targets.
+- Flutter now surfaces block/unblock from user profiles, feed post menus, and Settings > Blocked users.
+- Admin report detail is now fully surfaced through `GET /admin/reports/{report}`.
+
+Remaining API coverage gaps:
+
+- Conversation deletion remains partially used because the backend MVP route still reports delete as not implemented.
+- Admin user detail and admin post/comment moderation screens are still not surfaced in Flutter.

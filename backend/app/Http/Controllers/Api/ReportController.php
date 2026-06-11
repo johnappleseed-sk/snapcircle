@@ -6,6 +6,7 @@ use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ReportResource;
 use App\Models\Comment;
+use App\Models\Message;
 use App\Models\Post;
 use App\Models\Report;
 use App\Models\User;
@@ -31,11 +32,29 @@ class ReportController extends Controller
         return $this->store($request, $user);
     }
 
+    public function storeGeneric(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'type' => ['required', 'string', Rule::in(['post', 'comment', 'user', 'message'])],
+            'id' => ['required', 'integer', 'min:1'],
+        ]);
+
+        $reportable = match ($validated['type']) {
+            'post' => Post::query()->findOrFail($validated['id']),
+            'comment' => Comment::query()->findOrFail($validated['id']),
+            'user' => User::query()->findOrFail($validated['id']),
+            'message' => Message::query()->findOrFail($validated['id']),
+        };
+
+        return $this->store($request, $reportable);
+    }
+
     private function store(Request $request, Model $reportable): JsonResponse
     {
         $validated = $request->validate([
             'reason' => ['required', 'string', Rule::in(Report::reasons())],
             'description' => ['nullable', 'string', 'max:1000'],
+            'details' => ['nullable', 'string', 'max:1000'],
         ]);
 
         $existingReport = Report::query()
@@ -54,7 +73,7 @@ class ReportController extends Controller
             'reportable_type' => $reportable::class,
             'reportable_id' => $reportable->getKey(),
             'reason' => $validated['reason'],
-            'description' => $validated['description'] ?? null,
+            'description' => $validated['description'] ?? $validated['details'] ?? null,
         ]);
 
         $report->load(['reporter.setting', 'reviewer.setting', 'reportable']);
@@ -71,6 +90,10 @@ class ReportController extends Controller
 
         if ($reportable instanceof Post || $reportable instanceof Comment) {
             $reportable->loadMissing('user.setting');
+        }
+
+        if ($reportable instanceof Message) {
+            $reportable->loadMissing('sender.setting');
         }
     }
 }

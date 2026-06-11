@@ -154,6 +154,23 @@ class ProfileRepository {
     );
   }
 
+  Future<PaginatedResponse<UserModel>> getBlockedUsers({
+    int page = 1,
+    int perPage = 15,
+  }) async {
+    final result = await _apiClient.get(
+      ApiEndpoints.blocks,
+      queryParameters: {'page': page, 'per_page': perPage},
+    );
+
+    return _parseUsersResponse(
+      result.data?.data,
+      result.error,
+      page: page,
+      perPage: perPage,
+    );
+  }
+
   Future<PaginatedResponse<StoryModel>> getUserStories(
     int userId, {
     int page = 1,
@@ -181,6 +198,16 @@ class ProfileRepository {
   Future<Map<String, dynamic>> unfollowUser(int userId) async {
     final result = await _apiClient.delete(ApiEndpoints.unfollowUser(userId));
     return _parseFollowResponse(result.data?.data, result.error);
+  }
+
+  Future<UserModel> blockUser(int userId) async {
+    final result = await _apiClient.post(ApiEndpoints.blockUser(userId));
+    return _parseUserResponse(result.data?.data, result.error);
+  }
+
+  Future<UserModel> unblockUser(int userId) async {
+    final result = await _apiClient.delete(ApiEndpoints.unblockUser(userId));
+    return _parseUserResponse(result.data?.data, result.error);
   }
 
   Future<FormData> _buildProfileData({

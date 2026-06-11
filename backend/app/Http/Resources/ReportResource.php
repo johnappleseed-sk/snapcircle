@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use App\Models\Comment;
+use App\Models\Message;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -35,6 +36,7 @@ class ReportResource extends JsonResource
         return match ($this->reportable_type) {
             Post::class => 'post',
             Comment::class => 'comment',
+            Message::class => 'message',
             User::class => 'user',
             default => class_basename((string) $this->reportable_type),
         };
@@ -83,6 +85,17 @@ class ReportResource extends JsonResource
                 'avatar_url' => $reportable->avatar && ! str_starts_with($reportable->avatar, 'http')
                     ? asset('storage/'.$reportable->avatar)
                     : $reportable->avatar,
+            ];
+        }
+
+        if ($reportable instanceof Message) {
+            return [
+                'id' => $reportable->id,
+                'type' => 'message',
+                'message_preview' => str($reportable->message ?? '')->limit(120)->toString(),
+                'owner' => $reportable->relationLoaded('sender')
+                    ? UserResource::make($reportable->sender)
+                    : null,
             ];
         }
 

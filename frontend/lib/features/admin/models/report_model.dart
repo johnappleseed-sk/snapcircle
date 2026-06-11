@@ -8,7 +8,10 @@ class ReportModel {
   final String? description;
   final String? actionTaken;
   final UserModel? reporter;
+  final UserModel? reviewer;
   final String preview;
+  final DateTime? createdAt;
+  final DateTime? reviewedAt;
 
   const ReportModel({
     required this.id,
@@ -18,11 +21,15 @@ class ReportModel {
     this.description,
     this.actionTaken,
     this.reporter,
+    this.reviewer,
     this.preview = '',
+    this.createdAt,
+    this.reviewedAt,
   });
 
   factory ReportModel.fromJson(Map<String, dynamic> json) {
     final reporterJson = json['reporter'];
+    final reviewerJson = json['reviewer'];
     return ReportModel(
       id: _int(json['id']),
       type: json['type']?.toString() ?? '',
@@ -33,7 +40,12 @@ class ReportModel {
       reporter: reporterJson is Map<String, dynamic>
           ? UserModel.fromJson(reporterJson)
           : null,
+      reviewer: reviewerJson is Map<String, dynamic>
+          ? UserModel.fromJson(reviewerJson)
+          : null,
       preview: _preview(json['reportable_preview']),
+      createdAt: DateTime.tryParse(json['created_at']?.toString() ?? ''),
+      reviewedAt: DateTime.tryParse(json['reviewed_at']?.toString() ?? ''),
     );
   }
 
@@ -41,6 +53,7 @@ class ReportModel {
     if (value is! Map<String, dynamic>) return 'Content unavailable';
     return (value['content_preview'] ??
             value['comment_preview'] ??
+            value['message_preview'] ??
             value['name'] ??
             'Content preview')
         .toString();

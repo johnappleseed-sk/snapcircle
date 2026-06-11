@@ -87,6 +87,13 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     subtitle: 'Messages and profile visibility',
                     onTap: () => context.push('/settings/privacy'),
                   ),
+                  const SizedBox(height: AppSizes.paddingSmall),
+                  SettingsTile(
+                    icon: Icons.block,
+                    title: 'Blocked users',
+                    subtitle: 'Review and unblock accounts',
+                    onTap: () => context.push('/settings/blocked-users'),
+                  ),
                   const SizedBox(height: AppSizes.paddingMedium),
                   _SectionLabel('Notifications'),
                   SettingsTile(

@@ -22,6 +22,7 @@ class CommentController extends Controller
     {
         $comments = $post->comments()
             ->with('user.setting')
+            ->whereNotIn('user_id', $request->user()->blockedUserIds())
             ->latest()
             ->paginate(Pagination::perPage($request));
 
@@ -35,6 +36,10 @@ class CommentController extends Controller
 
     public function store(StoreCommentRequest $request, Post $post): JsonResponse
     {
+        if ($request->user()->isBlockingOrBlockedBy($post->user)) {
+            return ApiResponse::error('You cannot comment on this post.', [], 422);
+        }
+
         $comment = $post->comments()->create([
             'user_id' => $request->user()->id,
             'comment' => $request->input('comment'),

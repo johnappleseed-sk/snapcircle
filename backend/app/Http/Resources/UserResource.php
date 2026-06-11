@@ -29,6 +29,13 @@ class UserResource extends JsonResource
                 ->exists();
         }
 
+        $isBlockedByMe = $this->is_blocked_by_me;
+        $hasBlockedMe = $this->has_blocked_me;
+        if ($authUser && $authUser->id !== $this->id) {
+            $isBlockedByMe ??= $authUser->hasBlocked($this->resource);
+            $hasBlockedMe ??= $this->resource->hasBlocked($authUser);
+        }
+
         return [
             'id' => $this->id,
             'name' => $this->name,
@@ -62,6 +69,8 @@ class UserResource extends JsonResource
                 : $this->following()->count(),
             'is_me' => $isMe,
             'is_followed_by_me' => (bool) $isFollowedByMe,
+            'is_blocked_by_me' => (bool) $isBlockedByMe,
+            'has_blocked_me' => (bool) $hasBlockedMe,
             'profile_completion' => $this->profileCompletion(),
             'joined_at' => $this->created_at?->toISOString(),
             'last_active_at' => $this->last_active_at?->toISOString(),

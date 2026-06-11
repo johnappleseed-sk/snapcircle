@@ -13,9 +13,12 @@ class ProfileProvider extends ChangeNotifier {
   UserModel? _selectedUser;
   List<PostModel> _profilePosts = [];
   List<StoryModel> _profileStories = [];
+  List<UserModel> _blockedUsers = [];
   bool _isLoading = false;
   bool _isUpdating = false;
   bool _isFollowing = false;
+  bool _isBlocking = false;
+  bool _isLoadingBlockedUsers = false;
   bool _isLoadingPosts = false;
   bool _isLoadingMorePosts = false;
   bool _isLoadingStories = false;
@@ -33,9 +36,12 @@ class ProfileProvider extends ChangeNotifier {
   UserModel? get selectedUser => _selectedUser;
   List<PostModel> get profilePosts => List.unmodifiable(_profilePosts);
   List<StoryModel> get profileStories => List.unmodifiable(_profileStories);
+  List<UserModel> get blockedUsers => List.unmodifiable(_blockedUsers);
   bool get isLoading => _isLoading;
   bool get isUpdating => _isUpdating;
   bool get isFollowing => _isFollowing;
+  bool get isBlocking => _isBlocking;
+  bool get isLoadingBlockedUsers => _isLoadingBlockedUsers;
   bool get isLoadingPosts => _isLoadingPosts;
   bool get isLoadingMorePosts => _isLoadingMorePosts;
   bool get isLoadingStories => _isLoadingStories;
@@ -252,6 +258,32 @@ class ProfileProvider extends ChangeNotifier {
     return _setFollowStatus(userId, shouldFollow: false);
   }
 
+  Future<void> fetchBlockedUsers() async {
+    _isLoadingBlockedUsers = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await _profileRepository.getBlockedUsers();
+      _blockedUsers = response.items;
+    } on ProfileException catch (error) {
+      _errorMessage = error.message;
+    } catch (_) {
+      _errorMessage = 'Unable to load blocked users. Please try again.';
+    } finally {
+      _isLoadingBlockedUsers = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> blockUser(int userId) async {
+    return _setBlockStatus(userId, shouldBlock: true);
+  }
+
+  Future<bool> unblockUser(int userId) async {
+    return _setBlockStatus(userId, shouldBlock: false);
+  }
+
   void clearError() {
     _errorMessage = null;
     notifyListeners();
@@ -297,6 +329,52 @@ class ProfileProvider extends ChangeNotifier {
       return false;
     } finally {
       _isFollowing = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> _setBlockStatus(int userId, {required bool shouldBlock}) async {
+    if (_isBlocking) {
+      return false;
+    }
+
+    _isBlocking = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final updatedUser = shouldBlock
+          ? await _profileRepository.blockUser(userId)
+          : await _profileRepository.unblockUser(userId);
+
+      if (_selectedUser?.id == userId) {
+        _selectedUser = updatedUser;
+      }
+
+      if (shouldBlock) {
+        _profilePosts = [];
+        _profileStories = [];
+        _blockedUsers = [
+          updatedUser,
+          ..._blockedUsers.where((user) => user.id != updatedUser.id),
+        ];
+      } else {
+        _blockedUsers = _blockedUsers
+            .where((user) => user.id != updatedUser.id)
+            .toList();
+      }
+
+      return true;
+    } on ProfileException catch (error) {
+      _errorMessage = error.message;
+      return false;
+    } catch (_) {
+      _errorMessage = shouldBlock
+          ? 'Unable to block this user. Please try again.'
+          : 'Unable to unblock this user. Please try again.';
+      return false;
+    } finally {
+      _isBlocking = false;
       notifyListeners();
     }
   }

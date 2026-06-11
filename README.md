@@ -14,6 +14,9 @@ SnapCircle is a full-stack social media mobile application built as an academic 
 - Like and unlike posts
 - Add, edit, and delete comments
 - Follow and unfollow users
+- Block and unblock users
+- Report posts, comments, users, and messages for moderation review
+- Admin report review and moderation status updates
 - Search users
 - View followers and following lists
 - Flutter mobile UI with Provider state management
@@ -153,10 +156,11 @@ Full Android install, APK, and real-device QA details are in [Android Demo Guide
 3. Create a post with text and optional image.
 4. Like, comment, save, and share posts.
 5. Explore/search users and posts.
-6. View and edit profile details.
-7. Review notifications.
-8. Send a chat message.
-9. Review settings and logout.
+6. Report or block a user/post, then review blocked users in Settings.
+7. View and edit profile details.
+8. Review notifications.
+9. Send a chat message.
+10. Review settings and logout.
 
 ## Environment Variable Notes
 
@@ -212,6 +216,8 @@ Required screenshot placeholders include login, home feed, create post, comments
 ## Assignment Summary
 
 SnapCircle demonstrates a modern full-stack mobile application architecture. Flutter communicates with Laravel through REST JSON endpoints, Laravel uses Eloquent ORM to manage MySQL data, and Sanctum tokens secure protected API requests after email, demo, Google, or Facebook authentication.
+
+The current Android demo build also includes safety and moderation workflows: user blocking, filtered feed/discovery/chat behavior for blocked users, expanded report reasons, and an admin report detail screen.
 
 This project is for academic assignment purposes. A real production deployment would require stronger security configuration, production OAuth credentials, HTTPS, cloud storage, monitoring, and server deployment hardening.
 

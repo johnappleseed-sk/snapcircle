@@ -156,7 +156,8 @@ class ExploreController extends Controller
             ->withExists([
                 'likes as liked_by_me' => fn ($query) => $query->where('user_id', $authUser->id),
                 'savedPosts as saved_by_me' => fn ($query) => $query->where('user_id', $authUser->id),
-            ]);
+            ])
+            ->whereNotIn('user_id', $authUser->blockedUserIds());
     }
 
     private function baseUserQuery(Request $request)
@@ -165,6 +166,7 @@ class ExploreController extends Controller
 
         return User::query()
             ->where('id', '!=', $authUser->id)
+            ->whereNotIn('id', $authUser->blockedUserIds())
             ->with('setting')
             ->withCount(['posts', 'followers', 'following'])
             ->withExists([

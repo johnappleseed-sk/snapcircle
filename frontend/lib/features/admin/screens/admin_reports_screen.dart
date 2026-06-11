@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_sizes.dart';
@@ -78,6 +79,7 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
             final report = provider.reports[index - 1];
             return AdminReportTile(
               report: report,
+              onTap: () => context.push('/admin/reports/${report.id}'),
               onStatusSelected: (status) async {
                 final success = await provider.updateReportStatus(
                   report.id,

@@ -7,6 +7,7 @@ import '../../../core/utils/snackbar_helper.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/confirmation_dialog.dart';
 import '../../../core/widgets/skeleton_box.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../chat/providers/conversations_provider.dart';
@@ -45,8 +46,10 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
     final user = profileProvider.selectedUser;
     if (user != null) {
-      await profileProvider.fetchProfileStories(user.id, refresh: true);
-      await profileProvider.fetchProfilePosts(user.id, refresh: true);
+      if (!user.isBlockedByMe && !user.hasBlockedMe) {
+        await profileProvider.fetchProfileStories(user.id, refresh: true);
+        await profileProvider.fetchProfilePosts(user.id, refresh: true);
+      }
     }
   }
 
@@ -62,14 +65,45 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
         title: const Text('User Profile'),
         actions: [
           if (user != null && !isCurrentUser)
-            IconButton(
-              onPressed: () => ReportDialog.show(
-                context,
-                targetType: ReportTargetType.user,
-                targetId: user.id,
-              ),
-              icon: const Icon(Icons.flag_outlined),
-              tooltip: 'Report user',
+            PopupMenuButton<String>(
+              tooltip: 'Profile options',
+              onSelected: (value) {
+                if (value == 'report') {
+                  ReportDialog.show(
+                    context,
+                    targetType: ReportTargetType.user,
+                    targetId: user.id,
+                  );
+                }
+                if (value == 'block') {
+                  _confirmBlock(user.id);
+                }
+                if (value == 'unblock') {
+                  _confirmUnblock(user.id);
+                }
+              },
+              itemBuilder: (context) => [
+                const PopupMenuItem(
+                  value: 'report',
+                  child: Row(
+                    children: [
+                      Icon(Icons.flag_outlined),
+                      SizedBox(width: 8),
+                      Text('Report user'),
+                    ],
+                  ),
+                ),
+                PopupMenuItem(
+                  value: user.isBlockedByMe ? 'unblock' : 'block',
+                  child: Row(
+                    children: [
+                      Icon(user.isBlockedByMe ? Icons.lock_open : Icons.block),
+                      const SizedBox(width: 8),
+                      Text(user.isBlockedByMe ? 'Unblock user' : 'Block user'),
+                    ],
+                  ),
+                ),
+              ],
             ),
         ],
       ),
@@ -133,6 +167,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                                 '/messages/${conversation.id}',
                                 extra: conversation,
                               );
+                            } else if (context.mounted) {
+                              final message = context
+                                  .read<ConversationsProvider>()
+                                  .errorMessage;
+                              if (message != null) {
+                                SnackbarHelper.showError(context, message);
+                              }
                             }
                           },
                     onFollowersTap: () =>
@@ -141,29 +182,82 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         context.push('/users/${user.id}/following'),
                   ),
                   const SizedBox(height: AppSizes.paddingLarge),
-                  ProfileStoriesSection(
-                    stories: profileProvider.profileStories,
-                    isLoading: profileProvider.isLoadingStories,
-                    errorMessage: profileProvider.storiesErrorMessage,
-                  ),
-                  const SizedBox(height: AppSizes.paddingLarge),
-                  ProfilePostsSection(
-                    posts: profileProvider.profilePosts,
-                    isOwnProfile: isCurrentUser,
-                    isLoading: profileProvider.isLoadingPosts,
-                    isLoadingMore: profileProvider.isLoadingMorePosts,
-                    hasMore: profileProvider.hasMorePosts,
-                    currentSort: profileProvider.currentPostsSort,
-                    onSortChanged: (sort) {
-                      profileProvider.changePostsSort(sort);
-                    },
-                    onLoadMore: () =>
-                        profileProvider.loadMoreProfilePosts(user.id),
-                  ),
+                  if (!user.isBlockedByMe && !user.hasBlockedMe) ...[
+                    ProfileStoriesSection(
+                      stories: profileProvider.profileStories,
+                      isLoading: profileProvider.isLoadingStories,
+                      errorMessage: profileProvider.storiesErrorMessage,
+                    ),
+                    const SizedBox(height: AppSizes.paddingLarge),
+                    ProfilePostsSection(
+                      posts: profileProvider.profilePosts,
+                      isOwnProfile: isCurrentUser,
+                      isLoading: profileProvider.isLoadingPosts,
+                      isLoadingMore: profileProvider.isLoadingMorePosts,
+                      hasMore: profileProvider.hasMorePosts,
+                      currentSort: profileProvider.currentPostsSort,
+                      onSortChanged: (sort) {
+                        profileProvider.changePostsSort(sort);
+                      },
+                      onLoadMore: () =>
+                          profileProvider.loadMoreProfilePosts(user.id),
+                    ),
+                  ],
                 ],
               ),
       ),
     );
+  }
+
+  Future<void> _confirmBlock(int userId) async {
+    final confirmed = await showConfirmationDialog(
+      context: context,
+      title: 'Block this user?',
+      message:
+          'They will not be able to follow or message you, and their posts will be hidden.',
+      confirmLabel: 'Block',
+      isDestructive: true,
+    );
+
+    if (!confirmed || !mounted) return;
+
+    final success = await context.read<ProfileProvider>().blockUser(userId);
+    if (!mounted) return;
+
+    if (success) {
+      SnackbarHelper.showSuccess(context, 'User blocked.');
+    } else {
+      SnackbarHelper.showError(
+        context,
+        context.read<ProfileProvider>().errorMessage ??
+            'Unable to block this user.',
+      );
+    }
+  }
+
+  Future<void> _confirmUnblock(int userId) async {
+    final confirmed = await showConfirmationDialog(
+      context: context,
+      title: 'Unblock this user?',
+      message: 'They may be able to follow or message you again.',
+      confirmLabel: 'Unblock',
+    );
+
+    if (!confirmed || !mounted) return;
+
+    final success = await context.read<ProfileProvider>().unblockUser(userId);
+    if (!mounted) return;
+
+    if (success) {
+      SnackbarHelper.showSuccess(context, 'User unblocked.');
+      await _refresh();
+    } else {
+      SnackbarHelper.showError(
+        context,
+        context.read<ProfileProvider>().errorMessage ??
+            'Unable to unblock this user.',
+      );
+    }
   }
 }
 

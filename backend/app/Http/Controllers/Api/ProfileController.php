@@ -68,6 +68,7 @@ class ProfileController extends Controller
         $authUser = $request->user();
 
         $users = User::query()
+            ->whereNotIn('id', $authUser->blockedUserIds())
             ->with('setting')
             ->withCount(['posts', 'followers', 'following'])
             ->withExists([
@@ -100,6 +101,8 @@ class ProfileController extends Controller
         $user->is_followed_by_me = $user->followers()
             ->where('follower_id', $request->user()->id)
             ->exists();
+        $user->is_blocked_by_me = $request->user()->hasBlocked($user);
+        $user->has_blocked_me = $user->hasBlocked($request->user());
 
         return ApiResponse::success('User profile retrieved successfully', [
             'user' => UserResource::make($user),
@@ -131,6 +134,10 @@ class ProfileController extends Controller
                 'likes as liked_by_me' => fn ($query) => $query->where('user_id', $request->user()->id),
                 'savedPosts as saved_by_me' => fn ($query) => $query->where('user_id', $request->user()->id),
             ]);
+
+        if ($request->user()->isBlockingOrBlockedBy($user)) {
+            $postsQuery->whereRaw('1 = 0');
+        }
 
         if ($sort === 'popular') {
             $postsQuery

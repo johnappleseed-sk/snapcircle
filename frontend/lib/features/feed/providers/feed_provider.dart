@@ -347,6 +347,12 @@ class FeedProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void removePostsByUser(int userId) {
+    _posts = _posts.where((post) => post.user.id != userId).toList();
+    _updateLatestLoadedPost();
+    notifyListeners();
+  }
+
   bool isNewerThanCurrentFeed(FeedStatusModel status) {
     final latestPostId = status.latestPostId;
     if (latestPostId == null || _posts.isEmpty) {

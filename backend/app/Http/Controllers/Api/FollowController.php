@@ -22,6 +22,10 @@ class FollowController extends Controller
             return ApiResponse::error('You cannot follow yourself', [], 422);
         }
 
+        if ($request->user()->isBlockingOrBlockedBy($user)) {
+            return ApiResponse::error('You cannot follow this user.', [], 422);
+        }
+
         $follow = Follow::query()->firstOrCreate([
             'follower_id' => $request->user()->id,
             'following_id' => $user->id,
@@ -55,6 +59,7 @@ class FollowController extends Controller
     public function followers(Request $request, User $user): JsonResponse
     {
         $followers = $user->followers()
+            ->whereNotIn('users.id', $request->user()->blockedUserIds())
             ->with('setting')
             ->withCount(['posts', 'followers', 'following'])
             ->withExists([
@@ -74,6 +79,7 @@ class FollowController extends Controller
     public function following(Request $request, User $user): JsonResponse
     {
         $following = $user->following()
+            ->whereNotIn('users.id', $request->user()->blockedUserIds())
             ->with('setting')
             ->withCount(['posts', 'followers', 'following'])
             ->withExists([

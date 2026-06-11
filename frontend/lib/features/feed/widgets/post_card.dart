@@ -23,6 +23,7 @@ class PostCard extends StatelessWidget {
   final VoidCallback? onTap;
   final Future<bool> Function()? onSaveTap;
   final VoidCallback? onShareTap;
+  final VoidCallback? onBlockUser;
 
   const PostCard({
     super.key,
@@ -34,6 +35,7 @@ class PostCard extends StatelessWidget {
     this.onTap,
     this.onSaveTap,
     this.onShareTap,
+    this.onBlockUser,
   });
 
   @override
@@ -49,9 +51,10 @@ class PostCard extends StatelessWidget {
       DateFormatter.timeAgo(post.createdAt),
     ].join(' - ');
     final imageFill = Theme.of(context).colorScheme.surfaceContainerHighest;
-    final mediaCacheWidth = (MediaQuery.sizeOf(context).width *
-            MediaQuery.devicePixelRatioOf(context))
-        .round();
+    final mediaCacheWidth =
+        (MediaQuery.sizeOf(context).width *
+                MediaQuery.devicePixelRatioOf(context))
+            .round();
 
     return AppCard(
       onTap: onTap,
@@ -106,9 +109,9 @@ class PostCard extends StatelessWidget {
             const SizedBox(height: AppSizes.paddingMedium),
             Text(
               post.content!,
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                height: 1.4,
-              ),
+              style: Theme.of(
+                context,
+              ).textTheme.bodyLarge?.copyWith(height: 1.4),
             ),
           ],
           if (hasImage) ...[
@@ -246,7 +249,7 @@ class PostCard extends StatelessWidget {
                       onDelete?.call();
                     },
                   ),
-                if (!post.isOwner)
+                if (!post.isOwner && onBlockUser != null)
                   ListTile(
                     leading: const Icon(Icons.flag_outlined),
                     title: const Text('Report post'),
@@ -257,6 +260,15 @@ class PostCard extends StatelessWidget {
                         targetType: ReportTargetType.post,
                         targetId: post.id,
                       );
+                    },
+                  ),
+                if (!post.isOwner)
+                  ListTile(
+                    leading: const Icon(Icons.block),
+                    title: const Text('Block user'),
+                    onTap: () {
+                      Navigator.of(sheetContext).pop();
+                      onBlockUser?.call();
                     },
                   ),
               ],

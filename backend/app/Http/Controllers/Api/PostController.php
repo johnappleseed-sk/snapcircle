@@ -27,6 +27,7 @@ class PostController extends Controller
         $mode = $validated['mode'] ?? 'all';
         $perPage = Pagination::perPage($request);
         $authUser = $request->user();
+        $blockedUserIds = $authUser->blockedUserIds();
 
         $posts = Post::query()
             ->with('user.setting')
@@ -35,6 +36,7 @@ class PostController extends Controller
                 'likes as liked_by_me' => fn ($query) => $query->where('user_id', $authUser->id),
                 'savedPosts as saved_by_me' => fn ($query) => $query->where('user_id', $authUser->id),
             ])
+            ->whereNotIn('user_id', $blockedUserIds)
             ->when($mode === 'following', function ($query) use ($authUser): void {
                 $followingIds = $authUser->following()->pluck('users.id')->push($authUser->id);
 
@@ -85,6 +87,10 @@ class PostController extends Controller
 
     public function show(Request $request, Post $post): JsonResponse
     {
+        if ($request->user()->isBlockingOrBlockedBy($post->user)) {
+            return ApiResponse::error('This post is not available.', [], 404);
+        }
+
         $post->load('user.setting')->loadCount(['likes', 'comments', 'savedPosts']);
         $post->liked_by_me = $post->likes()
             ->where('user_id', $request->user()->id)

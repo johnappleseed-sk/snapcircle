@@ -124,6 +124,65 @@ class User extends Authenticatable
         return $this->morphMany(Report::class, 'reportable');
     }
 
+    public function blocks(): HasMany
+    {
+        return $this->hasMany(UserBlock::class, 'blocker_id');
+    }
+
+    public function blockedBy(): HasMany
+    {
+        return $this->hasMany(UserBlock::class, 'blocked_id');
+    }
+
+    public function blockedUsers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'user_blocks', 'blocker_id', 'blocked_id')
+            ->withTimestamps();
+    }
+
+    public function blockedByUsers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'user_blocks', 'blocked_id', 'blocker_id')
+            ->withTimestamps();
+    }
+
+    public function hasBlocked(User $user): bool
+    {
+        return $this->blocks()
+            ->where('blocked_id', $user->id)
+            ->exists();
+    }
+
+    public function isBlockingOrBlockedBy(User $user): bool
+    {
+        return UserBlock::query()
+            ->where(function ($query) use ($user): void {
+                $query->where('blocker_id', $this->id)
+                    ->where('blocked_id', $user->id);
+            })
+            ->orWhere(function ($query) use ($user): void {
+                $query->where('blocker_id', $user->id)
+                    ->where('blocked_id', $this->id);
+            })
+            ->exists();
+    }
+
+    /**
+     * @return array<int, int>
+     */
+    public function blockedUserIds(): array
+    {
+        $blocked = $this->blocks()->pluck('blocked_id');
+        $blockedBy = $this->blockedBy()->pluck('blocker_id');
+
+        return $blocked
+            ->merge($blockedBy)
+            ->unique()
+            ->values()
+            ->map(fn ($id) => (int) $id)
+            ->all();
+    }
+
     public function setting(): HasOne
     {
         return $this->hasOne(UserSetting::class);

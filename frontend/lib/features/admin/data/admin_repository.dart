@@ -17,7 +17,8 @@ class AdminException implements Exception {
 class AdminRepository {
   final ApiClient _apiClient;
 
-  AdminRepository({ApiClient? apiClient}) : _apiClient = apiClient ?? ApiClient();
+  AdminRepository({ApiClient? apiClient})
+    : _apiClient = apiClient ?? ApiClient();
 
   Future<AdminDashboardModel> getDashboard() async {
     final result = await _apiClient.get(ApiEndpoints.adminDashboard);
@@ -44,6 +45,20 @@ class AdminRepository {
       fallbackPage: page,
       fallbackPerPage: 15,
     ).items;
+  }
+
+  Future<ReportModel> getReport(int reportId) async {
+    final result = await _apiClient.get(ApiEndpoints.adminReportById(reportId));
+    final response = _read(result.data?.data, result.error);
+    final data = response['data'];
+    final source = data is Map<String, dynamic> ? data : response;
+    final report = source['report'];
+
+    if (report is! Map<String, dynamic>) {
+      throw const AdminException('Invalid report response from API.');
+    }
+
+    return ReportModel.fromJson(report);
   }
 
   Future<void> updateReportStatus(
@@ -124,5 +139,4 @@ class AdminRepository {
     }
     return responseData;
   }
-
 }

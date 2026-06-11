@@ -6,6 +6,7 @@ use App\Helpers\ApiResponse;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\ReportResource;
 use App\Models\Comment;
+use App\Models\Message;
 use App\Models\Post;
 use App\Models\Report;
 use App\Models\User;
@@ -20,7 +21,7 @@ class AdminReportController extends Controller
     {
         $validated = $request->validate([
             'status' => ['sometimes', 'string', Rule::in(Report::statuses())],
-            'type' => ['sometimes', 'string', Rule::in(['post', 'comment', 'user'])],
+            'type' => ['sometimes', 'string', Rule::in(['post', 'comment', 'user', 'message'])],
             'reason' => ['sometimes', 'string', Rule::in(Report::reasons())],
             'page' => ['sometimes', 'integer', 'min:1'],
             'per_page' => ['sometimes', 'integer', 'min:1'],
@@ -85,6 +86,7 @@ class AdminReportController extends Controller
             'post' => Post::class,
             'comment' => Comment::class,
             'user' => User::class,
+            'message' => Message::class,
         };
     }
 
@@ -98,6 +100,10 @@ class AdminReportController extends Controller
 
             if ($reportable instanceof Post || $reportable instanceof Comment) {
                 $reportable->loadMissing('user.setting');
+            }
+
+            if ($reportable instanceof Message) {
+                $reportable->loadMissing('sender.setting');
             }
         }
     }

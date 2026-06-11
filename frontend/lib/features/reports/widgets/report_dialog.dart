@@ -38,10 +38,12 @@ class _ReportDialogState extends State<ReportDialog> {
 
   static const _reasons = [
     ('spam', 'Spam'),
-    ('harassment', 'Harassment'),
-    ('inappropriate_content', 'Inappropriate content'),
-    ('fake_account', 'Fake account'),
-    ('violence', 'Violence'),
+    ('harassment', 'Harassment or bullying'),
+    ('hate', 'Hate speech'),
+    ('violence', 'Violence or threat'),
+    ('nudity', 'Nudity or sexual content'),
+    ('scam', 'Scam or fraud'),
+    ('misinformation', 'False information'),
     ('other', 'Other'),
   ];
 
@@ -79,7 +81,7 @@ class _ReportDialogState extends State<ReportDialog> {
 
     if (success) {
       Navigator.of(context).pop();
-      SnackbarHelper.showSuccess(context, 'Report submitted for review.');
+      SnackbarHelper.showSuccess(context, "Thanks. We'll review this report.");
       return;
     }
 

@@ -18,10 +18,16 @@ class Report extends Model
 
     public const REASON_SPAM = 'spam';
     public const REASON_HARASSMENT = 'harassment';
+    public const REASON_HATE = 'hate';
+    public const REASON_VIOLENCE = 'violence';
+    public const REASON_NUDITY = 'nudity';
+    public const REASON_SCAM = 'scam';
+    public const REASON_MISINFORMATION = 'misinformation';
+    public const REASON_OTHER = 'other';
+
+    // Kept for compatibility with older mobile clients.
     public const REASON_INAPPROPRIATE = 'inappropriate_content';
     public const REASON_FAKE_ACCOUNT = 'fake_account';
-    public const REASON_VIOLENCE = 'violence';
-    public const REASON_OTHER = 'other';
 
     protected $fillable = [
         'reporter_id',
@@ -51,10 +57,14 @@ class Report extends Model
         return [
             self::REASON_SPAM,
             self::REASON_HARASSMENT,
+            self::REASON_HATE,
+            self::REASON_VIOLENCE,
+            self::REASON_NUDITY,
+            self::REASON_SCAM,
+            self::REASON_MISINFORMATION,
+            self::REASON_OTHER,
             self::REASON_INAPPROPRIATE,
             self::REASON_FAKE_ACCOUNT,
-            self::REASON_VIOLENCE,
-            self::REASON_OTHER,
         ];
     }
 

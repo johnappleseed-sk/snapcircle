@@ -1,6 +1,51 @@
 # SnapCircle Frontend Improvement Summary
 
-Last updated: 2026-06-07
+Last updated: 2026-06-11
+
+## Safety And Moderation Pass
+
+Date: 2026-06-11
+
+Scope:
+
+- Added real user blocking and stronger safety workflows without adding large unrelated product features.
+- Kept the existing Provider, Dio, go_router, Laravel REST API, and admin/report architecture.
+
+Backend safety improvements:
+
+- Added `user_blocks` storage, `UserBlock` model, and `BlockController`.
+- Added block routes for listing blocked users, block, unblock, and status checks.
+- Removed follow relationships in both directions when a user is blocked.
+- Filtered blocked/blocking users from feed, explore, profile discovery, follow lists, notifications, comments, and conversations.
+- Prevented blocked follow attempts, conversation starts, message sends, and comments on blocked-owner content.
+- Expanded report reasons and added generic `POST /reports` support for future report targets.
+- Added message-report preview support in admin report resources.
+
+Flutter safety improvements:
+
+- Added block state to `UserModel`.
+- Added profile provider/repository calls for block, unblock, and blocked-users list.
+- Added profile menu block/unblock actions and blocked-state UI.
+- Added feed post "Block user" action that removes that user's posts from the visible feed.
+- Added Settings > Blocked users with unblock support.
+- Updated report reason picker to spam, harassment, hate, violence, nudity, scam, misinformation, and other.
+- Added admin report detail screen with report metadata and status update actions.
+
+Verification:
+
+- `php artisan migrate`: passed.
+- `php artisan route:list --path=api`: passed and showed 84 API routes.
+- `php artisan test`: passed, 137 tests and 507 assertions.
+- `flutter pub get`: passed.
+- `flutter analyze`: passed with no issues.
+- `flutter test`: passed.
+- `flutter build apk --debug --dart-define=SNAPCIRCLE_API_BASE_URL=http://10.0.2.2:8000/api`: passed.
+
+Known limitations:
+
+- No physical Android phone was connected during this pass, so real-device manual QA is still required.
+- Conversation deletion remains an MVP limitation.
+- Admin user detail and admin post/comment moderation screens remain future UI work.
 
 ## Android Demo Readiness Pass
 
@@ -60,7 +105,7 @@ Release-packaging checks:
 
 - Confirmed Flutter doctor reports a healthy Android toolchain.
 - Confirmed `flutter analyze` passes with no issues.
-- Confirmed active LAN IP for this machine is `192.168.1.30`.
+- Confirmed active LAN IP for this machine is `172.20.10.3`.
 - Confirmed Laravel health endpoint is reachable locally and over LAN while served with `--host=0.0.0.0`.
 - Confirmed Android app name is `SnapCircle`.
 - Confirmed Android application id is `com.snapcircle.app`.
@@ -76,7 +121,7 @@ Documentation added:
 Current physical-device API URL:
 
 ```txt
-http://192.168.1.30:8000/api
+http://172.20.10.3:8000/api
 ```
 
 Physical-device QA status:

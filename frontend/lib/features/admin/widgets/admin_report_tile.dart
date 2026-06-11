@@ -7,16 +7,19 @@ import '../models/report_model.dart';
 class AdminReportTile extends StatelessWidget {
   final ReportModel report;
   final ValueChanged<String> onStatusSelected;
+  final VoidCallback? onTap;
 
   const AdminReportTile({
     super.key,
     required this.report,
     required this.onStatusSelected,
+    this.onTap,
   });
 
   @override
   Widget build(BuildContext context) {
     return AppCard(
+      onTap: onTap,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -25,9 +28,9 @@ class AdminReportTile extends StatelessWidget {
               Expanded(
                 child: Text(
                   '${report.type.toUpperCase()} - ${report.reason}',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    fontWeight: FontWeight.w800,
-                  ),
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w800),
                 ),
               ),
               PopupMenuButton<String>(

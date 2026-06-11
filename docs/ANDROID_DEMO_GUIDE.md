@@ -34,13 +34,13 @@ http://127.0.0.1:8000/api/health
 Current detected LAN IP for this machine:
 
 ```txt
-192.168.1.30
+172.20.10.3
 ```
 
 Physical Android devices should use:
 
 ```txt
-http://192.168.1.30:8000/api
+http://172.20.10.3:8000/api
 ```
 
 If the Wi-Fi network changes, find the new LAN IP before running the app.
@@ -89,21 +89,21 @@ flutter build apk --debug --dart-define=SNAPCIRCLE_API_BASE_URL=http://10.0.2.2:
 5. Open the backend health URL in the phone browser:
 
 ```txt
-http://192.168.1.30:8000/api/health
+http://172.20.10.3:8000/api/health
 ```
 
 Run on a connected Android phone:
 
 ```bash
 cd frontend
-flutter run -d android --dart-define=SNAPCIRCLE_API_BASE_URL=http://192.168.1.30:8000/api
+flutter run -d android --dart-define=SNAPCIRCLE_API_BASE_URL=http://172.20.10.3:8000/api
 ```
 
 Build a physical-device debug APK:
 
 ```bash
 cd frontend
-flutter build apk --debug --dart-define=SNAPCIRCLE_API_BASE_URL=http://192.168.1.30:8000/api
+flutter build apk --debug --dart-define=SNAPCIRCLE_API_BASE_URL=http://172.20.10.3:8000/api
 ```
 
 ## Install A Debug APK
@@ -155,15 +155,19 @@ Use this checklist for emulator or real-device smoke testing:
 9. Save and unsave a post.
 10. Explore/search.
 11. View another user profile.
-12. Edit own profile.
-13. Upload avatar.
-14. View notifications.
-15. Open chat.
-16. Send message.
-17. Open settings.
-18. Logout.
-19. Login again.
-20. Confirm token persistence by closing and reopening the app while logged in.
+12. Report a user or post with a specific reason.
+13. Block a user from the profile menu or feed post menu.
+14. Confirm blocked user's posts are hidden and follow/message actions are unavailable.
+15. Open Settings > Blocked users and unblock the user.
+16. Edit own profile.
+17. Upload avatar.
+18. View notifications.
+19. Open chat.
+20. Send message.
+21. Open settings.
+22. Logout.
+23. Login again.
+24. Confirm token persistence by closing and reopening the app while logged in.
 
 ## Troubleshooting
 
@@ -193,6 +197,17 @@ App stuck loading:
 - Confirm backend health endpoint works.
 - Log out and log in again if the token is stale.
 
+Blocked user still appears:
+
+- Pull to refresh the feed, explore screen, profile, or notifications.
+- Confirm the block action completed and the app is connected to the same backend used by the test account.
+- Existing historical records are not deleted; the app hides blocked users from core discovery and interaction surfaces.
+
+Report submission fails:
+
+- Select a supported reason: spam, harassment, hate, violence, nudity, scam, misinformation, or other.
+- Duplicate pending reports for the same target are rejected until an admin reviews the original report.
+
 Cleartext HTTP issue:
 
 - Local HTTP is allowed for Android debug/profile builds.
@@ -211,3 +226,4 @@ Phone and computer not on same Wi-Fi:
 - The debug APK is for local demo/testing, not Play Store release.
 - Release signing is not configured for production distribution.
 - Physical-device testing still depends on the phone being able to reach the developer machine over Wi-Fi.
+- Blocking and reporting are ready for demo, but manual real-device QA should still confirm feed filtering, profile state, chat prevention, and blocked-users settings on the target phone.

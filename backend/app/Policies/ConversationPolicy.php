@@ -9,7 +9,8 @@ class ConversationPolicy
 {
     public function view(User $user, Conversation $conversation): bool
     {
-        return $this->isParticipant($user, $conversation);
+        return $this->isParticipant($user, $conversation)
+            && ! $this->hasBlockedRelationship($user, $conversation);
     }
 
     public function delete(User $user, Conversation $conversation): bool
@@ -19,7 +20,8 @@ class ConversationPolicy
 
     public function sendMessage(User $user, Conversation $conversation): bool
     {
-        return $this->isParticipant($user, $conversation);
+        return $this->isParticipant($user, $conversation)
+            && ! $this->hasBlockedRelationship($user, $conversation);
     }
 
     private function isParticipant(User $user, Conversation $conversation): bool
@@ -27,5 +29,16 @@ class ConversationPolicy
         return $conversation->users()
             ->where('users.id', $user->id)
             ->exists();
+    }
+
+    private function hasBlockedRelationship(User $user, Conversation $conversation): bool
+    {
+        $otherUsers = $conversation->users()
+            ->where('users.id', '!=', $user->id)
+            ->get();
+
+        return $otherUsers->contains(
+            fn (User $otherUser) => $user->isBlockingOrBlockedBy($otherUser)
+        );
     }
 }

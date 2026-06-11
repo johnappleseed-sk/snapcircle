@@ -20,6 +20,9 @@ class ConversationController extends Controller
 
         $conversations = Conversation::query()
             ->whereHas('users', fn ($query) => $query->where('users.id', $request->user()->id))
+            ->whereDoesntHave('users', function ($query) use ($request): void {
+                $query->whereIn('users.id', $request->user()->blockedUserIds());
+            })
             ->with(['users.setting', 'latestMessage.sender.setting'])
             ->withCount([
                 'messages as unread_count' => fn ($query) => $query
@@ -41,6 +44,11 @@ class ConversationController extends Controller
     {
         $authUserId = $request->user()->id;
         $otherUserId = (int) $request->integer('user_id');
+        $otherUser = \App\Models\User::query()->findOrFail($otherUserId);
+
+        if ($request->user()->isBlockingOrBlockedBy($otherUser)) {
+            return ApiResponse::error('You cannot message this user.', [], 422);
+        }
 
         $conversation = $this->findOneToOneConversation($authUserId, $otherUserId);
         if ($conversation === null) {

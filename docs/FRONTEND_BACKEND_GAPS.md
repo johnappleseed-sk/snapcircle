@@ -1,6 +1,6 @@
 # SnapCircle Frontend / Backend Gaps
 
-Last updated: 2026-06-07
+Last updated: 2026-06-11
 
 This file records feature gaps and mismatches found while connecting the Flutter frontend to the existing Laravel API. The frontend should only call routes that exist in `backend/routes/api.php`.
 
@@ -12,7 +12,6 @@ This file records feature gaps and mismatches found while connecting the Flutter
 ## Backend Routes Present But Incomplete Or Not Fully Surfaced
 
 - `DELETE /conversations/{conversation}` exists, but `ConversationController::destroy` returns "Conversation delete is not implemented for the MVP". The frontend should not expose conversation deletion as a real feature yet.
-- `GET /admin/reports/{report}` exists but is not surfaced in Flutter UI.
 - `GET /admin/users/{user}` exists but is not surfaced in Flutter UI.
 - `GET /admin/posts`, `DELETE /admin/posts/{post}`, `GET /admin/comments`, and `DELETE /admin/comments/{comment}` exist but are not surfaced in Flutter UI.
 
@@ -26,7 +25,7 @@ This file records feature gaps and mismatches found while connecting the Flutter
 
 ## Frontend Follow-Ups
 
-- Add admin report detail and admin user detail screens if needed.
+- Add admin user detail screens if needed.
 - Add admin posts/comments moderation screens if needed.
 - Improve unauthorized handling so stale tokens are cleared consistently and the router returns users to login.
 
@@ -116,6 +115,25 @@ Remaining gaps:
 
 - Refresh-token rotation is still not implemented; the app continues to use Sanctum bearer tokens and session-expired handling.
 - `DELETE /conversations/{conversation}` remains an MVP limitation until the backend implements real deletion.
-- Block/unblock user APIs are still not present in `routes/api.php`; report and admin moderation flows remain the current safety tools.
 - Multiple-image posts and video uploads are not implemented; the current post flow supports text plus one image.
-- Admin report detail, admin user detail, and admin post/comment moderation screens remain future Flutter work.
+- Admin user detail and admin post/comment moderation screens remain future Flutter work.
+
+## Safety And Moderation Pass
+
+Date: 2026-06-11
+
+Bugs/gaps resolved:
+
+- Added real block/unblock backend APIs and a `user_blocks` table.
+- Added Flutter block/unblock actions on user profiles and feed post menus.
+- Added Settings > Blocked users so users can review and unblock accounts.
+- Added block-state fields to user responses so the profile UI can hide posts/stories and disable follow/message actions when either side has blocked the other.
+- Added backend blocking checks to feed, explore, profile discovery, follow lists, notifications, comments, follow actions, conversation start, and message authorization.
+- Expanded report reasons to include hate, nudity, scam, and misinformation while preserving existing reasons for old clients/data.
+- Added admin report detail UI using the existing `GET /admin/reports/{report}` route.
+
+Remaining gaps:
+
+- `DELETE /conversations/{conversation}` remains an MVP limitation until the backend implements real deletion.
+- Admin user detail and admin post/comment moderation screens are still future UI work.
+- Blocked users are filtered from the core surfaces, but existing historical conversations are hidden rather than deleted.

@@ -19,6 +19,7 @@ class ApiEndpoints {
   static const String deleteAccount = '/account';
   static const String feedStatus = '/feed/status';
   static const String notifications = '/notifications';
+  static const String blocks = '/blocks';
   static const String notificationUnreadCount = '/notifications/unread-count';
   static const String markAllNotificationsRead = '/notifications/read-all';
   static const String conversations = '/conversations';
@@ -33,6 +34,9 @@ class ApiEndpoints {
   static String userById(int id) => '/users/$id';
   static String userByUsername(String username) => '/users/username/$username';
   static String userPosts(int userId) => '/users/$userId/posts';
+  static String blockUser(int id) => '/users/$id/block';
+  static String unblockUser(int id) => '/users/$id/block';
+  static String blockStatus(int id) => '/users/$id/block-status';
   static String followUser(int id) => '/users/$id/follow';
   static String unfollowUser(int id) => '/users/$id/follow';
   static String likePost(int postId) => '/posts/$postId/like';
@@ -60,6 +64,7 @@ class ApiEndpoints {
   static String reportPost(int postId) => '/posts/$postId/report';
   static String reportComment(int commentId) => '/comments/$commentId/report';
   static String reportUser(int userId) => '/users/$userId/report';
+  static const String reports = '/reports';
 
   static const String adminDashboard = '/admin/dashboard';
   static const String adminReports = '/admin/reports';

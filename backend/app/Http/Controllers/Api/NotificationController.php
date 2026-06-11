@@ -25,6 +25,7 @@ class NotificationController extends Controller
 
         $notifications = Notification::query()
             ->where('user_id', $request->user()->id)
+            ->whereNotIn('actor_id', $request->user()->blockedUserIds())
             ->with(['actor.setting', 'post.user.setting', 'comment.user.setting'])
             ->when($filter === 'unread', fn ($query) => $query->whereNull('read_at'))
             ->when($filter === 'read', fn ($query) => $query->whereNotNull('read_at'))
@@ -46,6 +47,7 @@ class NotificationController extends Controller
         return ApiResponse::success('Unread notification count fetched successfully', [
             'unread_count' => Notification::query()
                 ->where('user_id', $request->user()->id)
+                ->whereNotIn('actor_id', $request->user()->blockedUserIds())
                 ->whereNull('read_at')
                 ->count(),
         ]);
