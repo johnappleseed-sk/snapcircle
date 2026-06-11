@@ -62,6 +62,71 @@ class AuthProvider extends ChangeNotifier {
     return _login(() => _authRepository.signInWithDemo());
   }
 
+  Future<bool> loginWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    return _login(
+      () => _authRepository.signInWithEmail(email: email, password: password),
+    );
+  }
+
+  Future<bool> registerWithEmail({
+    required String name,
+    required String email,
+    required String password,
+  }) async {
+    return _login(
+      () => _authRepository.registerWithEmail(
+        name: name,
+        email: email,
+        password: password,
+      ),
+    );
+  }
+
+  Future<String?> forgotPassword(String email) async {
+    _setLoading(true);
+    _errorMessage = null;
+
+    try {
+      return await _authRepository.forgotPassword(email);
+    } on AuthException catch (error) {
+      _errorMessage = error.message;
+      return null;
+    } catch (_) {
+      _errorMessage = 'Password reset request failed. Please try again.';
+      return null;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<String?> resetPassword({
+    required String email,
+    required String token,
+    required String password,
+  }) async {
+    _setLoading(true);
+    _errorMessage = null;
+
+    try {
+      return await _authRepository.resetPassword(
+        email: email,
+        token: token,
+        password: password,
+      );
+    } on AuthException catch (error) {
+      _errorMessage = error.message;
+      return null;
+    } catch (_) {
+      _errorMessage = 'Password reset failed. Please try again.';
+      return null;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   Future<void> logout() async {
     _setLoading(true);
     _errorMessage = null;

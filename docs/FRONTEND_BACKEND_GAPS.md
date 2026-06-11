@@ -6,9 +6,7 @@ This file records feature gaps and mismatches found while connecting the Flutter
 
 ## Backend Routes Missing For Requested Product Flows
 
-- Email/password login is not present in `routes/api.php`.
-- User registration is not present in `routes/api.php`.
-- Forgot password or password reset is not present in `routes/api.php`.
+- None for core email authentication after the 2026-06-11 completion pass.
 - Refresh-token rotation is not present. Laravel Sanctum bearer tokens are issued by social/demo login and are revoked on logout/account changes.
 
 ## Backend Routes Present But Incomplete Or Not Fully Surfaced
@@ -34,7 +32,6 @@ This file records feature gaps and mismatches found while connecting the Flutter
 
 ## Backend Follow-Ups For Future Versions
 
-- Add email/password auth routes if non-social login/register/forgot password are required.
 - Implement conversation deletion or remove the route from product expectations.
 - Add refresh-token/session introspection if long-lived mobile sessions need token refresh instead of forced re-login.
 
@@ -55,7 +52,6 @@ Bugs fixed during QA:
 
 Remaining backend/frontend gaps:
 
-- Email/password login, registration, and forgot password still require backend routes before UI can be added.
 - Conversation deletion remains backend-not-implemented for MVP.
 - Admin report detail, admin user detail, and admin post/comment moderation screens are still future UI work.
 
@@ -71,7 +67,6 @@ New findings:
 
 Remaining limitations:
 
-- Email/password login, registration, and forgot password still require backend implementation before corresponding Flutter screens should be added.
 - Conversation deletion remains unavailable because the existing backend route reports the MVP limitation.
 - Admin report detail, admin user detail, and admin post/comment moderation UI are still not exposed in Flutter.
 
@@ -87,9 +82,6 @@ New findings:
 
 Features not implemented because backend support is still missing:
 
-- Email/password login.
-- User registration.
-- Forgot password or password reset.
 - Real conversation deletion.
 - Admin report detail, admin user detail, and admin post/comment moderation screens.
 
@@ -105,6 +97,25 @@ New findings:
 
 Remaining backend limitations:
 
-- Email/password login, registration, and forgot password are still backend-missing.
 - Conversation deletion remains unavailable because the current backend route reports the MVP limitation.
 - Deeper admin detail/moderation screens remain future UI work.
+
+## Full Product Feature Completion Pass
+
+Date: 2026-06-11
+
+Bugs/gaps resolved:
+
+- Email/password login is now available at `POST /auth/login`.
+- User registration is now available at `POST /auth/register`.
+- Forgot password is now available at `POST /auth/forgot-password`.
+- Password reset is now available at `POST /auth/reset-password`.
+- Flutter now surfaces email login, registration, forgot password, and reset password without replacing Google, Facebook, or demo login.
+
+Remaining gaps:
+
+- Refresh-token rotation is still not implemented; the app continues to use Sanctum bearer tokens and session-expired handling.
+- `DELETE /conversations/{conversation}` remains an MVP limitation until the backend implements real deletion.
+- Block/unblock user APIs are still not present in `routes/api.php`; report and admin moderation flows remain the current safety tools.
+- Multiple-image posts and video uploads are not implemented; the current post flow supports text plus one image.
+- Admin report detail, admin user detail, and admin post/comment moderation screens remain future Flutter work.

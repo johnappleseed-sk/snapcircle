@@ -130,6 +130,73 @@ class AuthRepository {
     );
   }
 
+  Future<AuthResponse> signInWithEmail({
+    required String email,
+    required String password,
+  }) async {
+    return _loginWithCredentials(
+      endpoint: ApiEndpoints.authLogin,
+      data: {'email': email, 'password': password},
+    );
+  }
+
+  Future<AuthResponse> registerWithEmail({
+    required String name,
+    required String email,
+    required String password,
+  }) async {
+    return _loginWithCredentials(
+      endpoint: ApiEndpoints.authRegister,
+      data: {
+        'name': name,
+        'email': email,
+        'password': password,
+        'password_confirmation': password,
+      },
+    );
+  }
+
+  Future<String> forgotPassword(String email) async {
+    final result = await _apiClient.post(
+      ApiEndpoints.authForgotPassword,
+      data: {'email': email},
+    );
+
+    if (!result.isSuccess || result.data == null) {
+      throw AuthException(result.error ?? 'Unable to request a reset email.');
+    }
+
+    return _messageFromResponse(
+      result.data!.data,
+      fallback: 'Password reset instructions were sent if the email exists.',
+    );
+  }
+
+  Future<String> resetPassword({
+    required String email,
+    required String token,
+    required String password,
+  }) async {
+    final result = await _apiClient.post(
+      ApiEndpoints.authResetPassword,
+      data: {
+        'email': email,
+        'token': token,
+        'password': password,
+        'password_confirmation': password,
+      },
+    );
+
+    if (!result.isSuccess || result.data == null) {
+      throw AuthException(result.error ?? 'Unable to reset password.');
+    }
+
+    return _messageFromResponse(
+      result.data!.data,
+      fallback: 'Password reset successful.',
+    );
+  }
+
   Future<UserModel> getCurrentUser() async {
     final result = await _apiClient.get(ApiEndpoints.user);
 
@@ -171,9 +238,19 @@ class AuthRepository {
     required String endpoint,
     required String accessToken,
   }) async {
+    return _loginWithCredentials(
+      endpoint: endpoint,
+      data: {'access_token': accessToken},
+    );
+  }
+
+  Future<AuthResponse> _loginWithCredentials({
+    required String endpoint,
+    required Map<String, dynamic> data,
+  }) async {
     final result = await _apiClient.post(
       endpoint,
-      data: {'access_token': accessToken},
+      data: data,
     );
 
     if (!result.isSuccess || result.data == null) {
@@ -192,6 +269,17 @@ class AuthRepository {
     } on FormatException catch (error) {
       throw AuthException(error.message);
     }
+  }
+
+  String _messageFromResponse(dynamic responseData, {required String fallback}) {
+    if (responseData is Map<String, dynamic>) {
+      final message = responseData['message']?.toString().trim();
+      if (message != null && message.isNotEmpty) {
+        return message;
+      }
+    }
+
+    return fallback;
   }
 
   Map<String, dynamic>? _extractUserJson(dynamic responseData) {

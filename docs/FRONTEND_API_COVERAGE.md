@@ -2,7 +2,7 @@
 
 Last updated: 2026-06-07
 
-This document tracks Laravel API routes discovered in `backend/routes/api.php` and how the Flutter frontend currently uses them. Email/password login, register, and forgot password routes are not present in the backend route file, so the frontend must not invent those flows.
+This document tracks Laravel API routes discovered in `backend/routes/api.php` and how the Flutter frontend currently uses them. Email/password login, registration, forgot password, and reset password are now implemented through the Laravel API and surfaced in Flutter.
 
 Status legend:
 
@@ -19,9 +19,10 @@ Status legend:
 | POST | `/auth/google` | Used | `AuthRepository.signInWithGoogle`, `AuthProvider`, `LoginScreen`. |
 | POST | `/auth/facebook` | Used | `AuthRepository.signInWithFacebook`, `AuthProvider`, `LoginScreen`. |
 | POST | `/auth/demo` | Used | Debug local demo login in `LoginScreen`. |
-| POST | `/auth/login` | Backend missing | Email/password login is not defined in Laravel routes. |
-| POST | `/auth/register` | Backend missing | Registration is not defined in Laravel routes. |
-| POST | `/auth/forgot-password` | Backend missing | Forgot password is not defined in Laravel routes. |
+| POST | `/auth/login` | Used | Email/password login in `LoginScreen` through `AuthRepository.signInWithEmail`. |
+| POST | `/auth/register` | Used | `RegisterScreen` creates an email account and stores the returned Sanctum token. |
+| POST | `/auth/forgot-password` | Used | `ForgotPasswordScreen` requests a reset email. |
+| POST | `/auth/reset-password` | Used | `ResetPasswordScreen` submits email, token, and new password. |
 
 ## Authenticated User And Account
 
@@ -144,7 +145,7 @@ Findings:
 
 - Endpoint paths and HTTP methods used by Flutter match Laravel routes for the reviewed user-facing flows.
 - Multipart field names match backend requests: post `image`, profile `avatar` and `cover_image`, story `media`.
-- Social auth uses the backend-supported `access_token` payload. Email/password auth remains backend-missing and is not surfaced.
+- Social auth uses the backend-supported `access_token` payload. Email/password auth now uses Laravel validation requests and standard `{ success, message, data }` responses.
 - Pagination response parsing now supports both direct Laravel list payloads and `ApiResponse::paginated` named-list payloads.
 - Conversation deletion remains intentionally not surfaced because the backend MVP route returns a not-implemented message.
 
@@ -200,3 +201,19 @@ Result:
 
 - Backend API coverage status is unchanged.
 - No backend routes were invented.
+
+## Full Product Feature Completion Pass
+
+Date: 2026-06-11
+
+API coverage update:
+
+- Added backend routes for `POST /auth/register`, `POST /auth/login`, `POST /auth/forgot-password`, and `POST /auth/reset-password`.
+- Added Flutter endpoint constants, repository calls, provider methods, and public auth routes for email login, registration, forgot password, and reset password.
+- Existing Google, Facebook, demo login, Sanctum token persistence, `/user`, and `/logout` flows remain unchanged.
+- `php artisan route:list` passed and listed 84 routes after the auth additions.
+
+Remaining API coverage gaps:
+
+- Conversation deletion remains partially used because the backend MVP route still reports delete as not implemented.
+- Admin report detail, admin user detail, and admin post/comment moderation routes still need deeper Flutter screens if required for a complete moderator workflow.

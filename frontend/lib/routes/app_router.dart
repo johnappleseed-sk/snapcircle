@@ -5,8 +5,11 @@ import '../features/admin/screens/admin_dashboard_screen.dart';
 import '../features/admin/screens/admin_reports_screen.dart';
 import '../features/admin/screens/admin_users_screen.dart';
 import '../features/auth/providers/auth_provider.dart';
+import '../features/auth/screens/forgot_password_screen.dart';
 import '../features/auth/screens/login_screen.dart';
 import '../features/auth/screens/onboarding_screen.dart';
+import '../features/auth/screens/register_screen.dart';
+import '../features/auth/screens/reset_password_screen.dart';
 import '../features/auth/screens/splash_screen.dart';
 import '../features/chat/models/conversation_model.dart';
 import '../features/chat/screens/chat_detail_screen.dart';
@@ -37,6 +40,9 @@ class AppRouter {
   static const String splash = '/';
   static const String onboarding = '/onboarding';
   static const String login = '/login';
+  static const String register = '/register';
+  static const String forgotPassword = '/forgot-password';
+  static const String resetPassword = '/reset-password';
   static const String home = '/home';
   static const String createPost = '/create-post';
 
@@ -49,6 +55,9 @@ class AppRouter {
         final isSplash = location == splash;
         final isOnboarding = location == onboarding;
         final isLogin = location == login;
+        final isPublicAuthRoute =
+            isLogin || location == register || location == forgotPassword ||
+            location == resetPassword;
         final isAdminRoute = location.startsWith('/admin');
         final userRole = authProvider.user?.role;
         final canAccessAdmin = userRole == 'admin' || userRole == 'moderator';
@@ -57,11 +66,11 @@ class AppRouter {
           return null;
         }
 
-        if (!authProvider.isAuthenticated && !isLogin) {
+        if (!authProvider.isAuthenticated && !isPublicAuthRoute) {
           return login;
         }
 
-        if (authProvider.isAuthenticated && isLogin) {
+        if (authProvider.isAuthenticated && isPublicAuthRoute) {
           return home;
         }
 
@@ -81,6 +90,18 @@ class AppRouter {
           builder: (context, state) => const OnboardingScreen(),
         ),
         GoRoute(path: login, builder: (context, state) => const LoginScreen()),
+        GoRoute(
+          path: register,
+          builder: (context, state) => const RegisterScreen(),
+        ),
+        GoRoute(
+          path: forgotPassword,
+          builder: (context, state) => const ForgotPasswordScreen(),
+        ),
+        GoRoute(
+          path: resetPassword,
+          builder: (context, state) => const ResetPasswordScreen(),
+        ),
         GoRoute(
           path: home,
           builder: (context, state) =>

@@ -4,6 +4,8 @@ SnapCircle is a full-stack social media mobile application built as an academic 
 
 ## Features
 
+- Email/password registration and login
+- Forgot password and reset password API flow
 - Google and Facebook social login
 - Laravel Sanctum API token authentication
 - User profiles with avatar and bio
@@ -95,7 +97,7 @@ flutter run --dart-define=SNAPCIRCLE_API_BASE_URL=http://YOUR_COMPUTER_LAN_IP:80
 
 ## Demo Flow
 
-1. Login with demo/social authentication.
+1. Login with email, demo, or social authentication.
 2. View and refresh the home feed.
 3. Create a post with text and optional image.
 4. Like, comment, save, and share posts.
@@ -157,7 +159,7 @@ Required screenshot placeholders include login, home feed, create post, comments
 
 ## Assignment Summary
 
-SnapCircle demonstrates a modern full-stack mobile application architecture. Flutter communicates with Laravel through REST JSON endpoints, Laravel uses Eloquent ORM to manage MySQL data, and Sanctum tokens secure protected API requests after Google or Facebook authentication.
+SnapCircle demonstrates a modern full-stack mobile application architecture. Flutter communicates with Laravel through REST JSON endpoints, Laravel uses Eloquent ORM to manage MySQL data, and Sanctum tokens secure protected API requests after email, demo, Google, or Facebook authentication.
 
 This project is for academic assignment purposes. A real production deployment would require stronger security configuration, production OAuth credentials, HTTPS, cloud storage, monitoring, and server deployment hardening.
 

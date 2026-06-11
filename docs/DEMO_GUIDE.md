@@ -42,6 +42,8 @@ flutter run --dart-define=SNAPCIRCLE_API_BASE_URL=http://192.168.1.25:8000/api
 
 ## 3. Demo Login Options
 
+- Email login/register: uses `POST /api/auth/login` and `POST /api/auth/register`.
+- Forgot/reset password: uses `POST /api/auth/forgot-password` and `POST /api/auth/reset-password`; email delivery depends on local mail configuration.
 - Demo login: uses `POST /api/auth/demo` and is the fastest route for presentation.
 - Google login: requires valid backend OAuth configuration.
 - Facebook login: requires valid backend OAuth configuration.
@@ -50,7 +52,7 @@ Do not commit real OAuth secrets or local `.env` files.
 
 ## 4. Main Demo Flow
 
-1. Login with the demo button.
+1. Register or login with email, or use the demo button for the fastest presentation path.
 2. View the home feed and pull to refresh.
 3. Create a post with text and optionally an image.
 4. Like, comment, save, and share a post.
@@ -63,8 +65,9 @@ Do not commit real OAuth secrets or local `.env` files.
 
 ## 5. Known Limitations
 
-- Email/password login, registration, and forgot password routes are not implemented by the backend yet.
 - Conversation deletion is intentionally not exposed because the backend route is MVP-limited.
+- Password reset email delivery requires mail settings in `backend/.env`.
+- Mobile reset deep links are not wired yet; use the reset-token screen for local testing.
 - Some admin detail/moderation screens remain future UI work.
 - Local social login needs real OAuth credentials in `backend/.env`.
 - Flutter verification requires Flutter to be installed and available on PATH.

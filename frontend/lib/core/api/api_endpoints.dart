@@ -3,6 +3,10 @@ class ApiEndpoints {
   static const String authGoogle = '/auth/google';
   static const String authFacebook = '/auth/facebook';
   static const String authDemo = '/auth/demo';
+  static const String authRegister = '/auth/register';
+  static const String authLogin = '/auth/login';
+  static const String authForgotPassword = '/auth/forgot-password';
+  static const String authResetPassword = '/auth/reset-password';
   static const String logout = '/logout';
   static const String user = '/user';
   static const String profile = '/profile';

@@ -73,7 +73,6 @@ Last updated: 2026-06-07
 
 ## Known Limitations
 
-- Email/password login, registration, and forgot password are backend gaps.
 - Conversation deletion is not implemented by the backend MVP even though a route exists.
 - Admin report detail, admin user detail, and admin content moderation routes exist but are not yet surfaced in Flutter UI.
 
@@ -129,7 +128,7 @@ Remaining warnings:
 
 - Run `flutter pub get`, `flutter analyze`, and `flutter test` on a machine or shell where Flutter is on PATH.
 - Add admin report/user detail and admin content moderation screens if those workflows are required for submission.
-- Consider implementing backend email/password auth routes before adding register/forgot-password UI.
+- Perform a device smoke test for email login, registration, forgot password, and reset password against a seeded Laravel backend.
 
 ## Startup Product Polish Pass
 
@@ -173,7 +172,7 @@ Commands run and results:
 Known limitations:
 
 - Onboarding and recent search history are local-only product polish features and do not call backend APIs.
-- Email/password auth, registration, forgot password, conversation deletion, and deeper admin detail screens remain backend/UI follow-ups already documented in the gaps file.
+- Conversation deletion and deeper admin detail screens remain backend/UI follow-ups already documented in the gaps file.
 
 Recommended next step:
 
@@ -227,7 +226,7 @@ Known limitations:
 
 - The UI is inspired by modern social apps but does not copy proprietary branding, logos, or assets.
 - Flutter formatter/analyzer/tests/build still need to be rerun in an environment where Flutter is available on PATH.
-- Missing backend features remain unchanged: email/password auth, registration, forgot password, conversation deletion, and deeper admin detail/moderation screens.
+- Missing or incomplete features remain unchanged: conversation deletion, block/unblock users, multiple media/video posts, and deeper admin detail/moderation screens.
 
 Next recommended step:
 
@@ -354,7 +353,65 @@ Known limitations:
 
 - Flutter and APK verification still need to run in a configured Flutter environment.
 - Backend route/test verification may require PHP dependencies, `.env`, app key, and a local database.
-- Email/password auth, registration, forgot password, conversation deletion, and deeper admin detail/moderation UI remain future work.
+- Conversation deletion, block/unblock users, multiple media/video posts, and deeper admin detail/moderation UI remain future work.
+
+## Full Product Feature Completion Pass
+
+Date: 2026-06-11
+
+Improvements completed:
+
+- Added backend email registration, login, forgot password, and reset password routes using Laravel validation requests and standard API responses.
+- Added Sanctum token issuance for email registration/login without changing Google, Facebook, or demo login.
+- Added Flutter endpoint constants, auth repository methods, provider methods, and public routes for email auth.
+- Reworked the login screen to support email/password while preserving social and local demo login.
+- Added register, forgot password, and reset password screens with validation, loading states, and backend error messages.
+- Updated API coverage, backend gap, demo, and README documentation so email auth is no longer listed as missing.
+
+Files changed:
+
+- `backend/routes/api.php`
+- `backend/app/Http/Controllers/Api/AuthController.php`
+- `backend/app/Http/Requests/LoginRequest.php`
+- `backend/app/Http/Requests/RegisterRequest.php`
+- `backend/app/Http/Requests/ForgotPasswordRequest.php`
+- `backend/app/Http/Requests/ResetPasswordRequest.php`
+- `frontend/lib/core/api/api_endpoints.dart`
+- `frontend/lib/features/auth/data/auth_repository.dart`
+- `frontend/lib/features/auth/providers/auth_provider.dart`
+- `frontend/lib/features/auth/screens/login_screen.dart`
+- `frontend/lib/features/auth/screens/register_screen.dart`
+- `frontend/lib/features/auth/screens/forgot_password_screen.dart`
+- `frontend/lib/features/auth/screens/reset_password_screen.dart`
+- `frontend/lib/routes/app_router.dart`
+- `docs/FRONTEND_API_COVERAGE.md`
+- `docs/FRONTEND_BACKEND_GAPS.md`
+- `docs/FRONTEND_IMPROVEMENT_SUMMARY.md`
+- `docs/DEMO_GUIDE.md`
+- `README.md`
+
+Verification commands:
+
+- `php -l backend/app/Http/Controllers/Api/AuthController.php`: passed.
+- `php -l` for the four new auth request classes: passed.
+- `php artisan route:list`: passed and listed 84 routes including the new email auth routes.
+- `php artisan test`: failed because the PHP `mbstring` extension is not available.
+- `php artisan migrate --force`: failed because the configured SQLite PDO driver is not available.
+- `php artisan db:seed --force`: failed because the configured SQLite PDO driver is not available.
+- `git diff --check`: passed with Windows LF/CRLF notices only.
+- `dart format`: failed because `dart` is not available on PATH in this shell.
+- `flutter pub get`, `flutter analyze`, `flutter test`, and `flutter build apk --debug`: blocked because `flutter` is not available on PATH in this shell.
+
+Known limitations:
+
+- Password reset email delivery depends on the backend mail configuration in `.env`.
+- Reset-token entry is surfaced manually in Flutter; production mobile deep links are a future polish item.
+- Local database verification requires enabling the configured PDO driver.
+- Refresh-token rotation, block/unblock users, multiple media/video posts, conversation deletion, and deeper admin detail/moderation screens remain future work.
+
+Recommended next step:
+
+- Run the Flutter toolchain on a configured machine and smoke test email register/login/reset plus the existing social/demo login flows against a migrated and seeded backend.
 
 Recommended next step:
 
