@@ -141,7 +141,13 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
       ),
       body: SafeArea(
         child: ListView(
-          padding: const EdgeInsets.all(AppSizes.paddingMedium),
+          keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
+          padding: EdgeInsets.fromLTRB(
+            AppSizes.paddingMedium,
+            AppSizes.paddingMedium,
+            AppSizes.paddingMedium,
+            AppSizes.paddingLarge + MediaQuery.viewInsetsOf(context).bottom,
+          ),
           children: [
             AppCard(
               child: Column(

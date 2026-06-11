@@ -7,11 +7,11 @@ import '../../../core/utils/snackbar_helper.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
-import '../../../core/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/feed_provider.dart';
 import '../providers/saved_posts_provider.dart';
 import '../widgets/post_card.dart';
+import '../widgets/post_skeleton_card.dart';
 
 class SavedPostsScreen extends StatefulWidget {
   const SavedPostsScreen({super.key});
@@ -59,7 +59,18 @@ class _SavedPostsBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (provider.isLoading && provider.posts.isEmpty) {
-      return const LoadingView(message: 'Loading saved posts...');
+      return ListView.separated(
+        padding: const EdgeInsets.fromLTRB(
+          AppSizes.paddingMedium,
+          AppSizes.paddingMedium,
+          AppSizes.paddingMedium,
+          AppSizes.paddingXL,
+        ),
+        itemCount: 3,
+        separatorBuilder: (context, index) =>
+            const SizedBox(height: AppSizes.paddingMedium),
+        itemBuilder: (context, index) => const PostSkeletonCard(),
+      );
     }
 
     if (provider.errorMessage != null && provider.posts.isEmpty) {
@@ -83,7 +94,7 @@ class _SavedPostsBody extends StatelessWidget {
           EmptyView(
             icon: Icons.bookmark_border_outlined,
             title: 'No saved posts yet',
-            subtitle: 'Save posts you want to revisit later.',
+            subtitle: 'Tap the bookmark on posts you want to revisit later.',
           ),
         ],
       );

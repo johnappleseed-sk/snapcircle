@@ -8,6 +8,7 @@ import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/loading_view.dart';
+import '../../../core/widgets/skeleton_box.dart';
 import '../providers/explore_provider.dart';
 import '../widgets/explore_post_grid_item.dart';
 import '../widgets/explore_search_bar.dart';
@@ -60,10 +61,7 @@ class _ExploreScreenState extends State<ExploreScreen> {
             ],
             const SizedBox(height: AppSizes.paddingMedium),
             if (provider.isLoading && provider.explorePosts.isEmpty)
-              const Padding(
-                padding: EdgeInsets.only(top: 96),
-                child: LoadingView(message: 'Loading Explore...'),
-              )
+              const _ExploreSkeleton()
             else if (provider.errorMessage != null &&
                 provider.explorePosts.isEmpty)
               Padding(
@@ -87,6 +85,45 @@ class _ExploreScreenState extends State<ExploreScreen> {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _ExploreSkeleton extends StatelessWidget {
+  const _ExploreSkeleton();
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SizedBox(
+          height: 188,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: 3,
+            separatorBuilder: (context, index) =>
+                const SizedBox(width: AppSizes.paddingSmall),
+            itemBuilder: (context, index) => const SizedBox(
+              width: 150,
+              child: SkeletonBox(height: 188),
+            ),
+          ),
+        ),
+        const SizedBox(height: AppSizes.paddingLarge),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: 4,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 2,
+            crossAxisSpacing: AppSizes.paddingSmall,
+            mainAxisSpacing: AppSizes.paddingSmall,
+            childAspectRatio: 0.82,
+          ),
+          itemBuilder: (context, index) => const SkeletonBox(height: 180),
+        ),
+      ],
     );
   }
 }

@@ -232,3 +232,77 @@ Known limitations:
 Next recommended step:
 
 - Run the Flutter toolchain locally and do a device visual QA pass across light and dark mode on feed, profile, create post, comments, notifications, and chat.
+
+## Micro-Interactions and Premium UX Pass
+
+Date: 2026-06-11
+
+Animations added:
+
+- Added scale/tap feedback and animated loading/state swaps for feed post like, comment, share, and save actions.
+- Added bottom-sheet post actions for edit, delete, and report.
+- Added fade/slide route transitions for post detail, create/edit post, saved posts, notifications, chat, comments, edit profile, and user profile routes.
+
+Loading states improved:
+
+- Replaced full-screen profile loading with skeleton profile layouts.
+- Replaced saved-posts spinner with feed-style post skeleton cards.
+- Added Explore skeleton cards and grid placeholders.
+- Reused the dark-mode-aware shared `SkeletonBox` in feed skeletons.
+
+Empty/error states improved:
+
+- Improved feed empty copy with clearer action direction.
+- Improved saved posts empty copy.
+- Kept retry-capable error states on feed, explore, profile, saved posts, notifications, conversations, and comments.
+
+Responsiveness improvements:
+
+- Added keyboard drag-dismiss behavior on create post, comments, and chat lists.
+- Preserved safe-area padding on composer surfaces.
+- Kept repeated action tap targets at comfortable sizes with tooltip/semantic labels.
+
+Accessibility improvements:
+
+- Added semantic labels and tooltips for feed post action controls.
+- Kept post menu actions in a larger bottom sheet for easier mobile tapping.
+- Maintained visible loading indicators for in-flight like/save actions.
+
+Performance cleanup:
+
+- Reused existing provider duplicate-request guards for like/save/follow/pagination.
+- Reused cached network image widgets and existing constrained image layouts.
+- Reused shared skeleton widgets instead of adding heavier loading packages.
+
+Files changed:
+
+- `frontend/lib/routes/app_router.dart`
+- `frontend/lib/features/feed/widgets/post_card.dart`
+- `frontend/lib/features/feed/widgets/post_skeleton_card.dart`
+- `frontend/lib/features/feed/screens/home_screen.dart`
+- `frontend/lib/features/feed/screens/saved_posts_screen.dart`
+- `frontend/lib/features/explore/screens/explore_screen.dart`
+- `frontend/lib/features/profile/screens/profile_screen.dart`
+- `frontend/lib/features/profile/screens/user_profile_screen.dart`
+- `frontend/lib/features/post/screens/create_post_screen.dart`
+- `frontend/lib/features/comments/screens/comments_screen.dart`
+- `frontend/lib/features/chat/screens/chat_detail_screen.dart`
+
+Verification commands:
+
+- `git diff --check`: passed, with Windows LF/CRLF notices only.
+- `flutter pub get`: failed because `flutter` is not available on PATH in this shell.
+- `flutter analyze`: failed because `flutter` is not available on PATH in this shell.
+- `flutter test`: failed because `flutter` is not available on PATH in this shell.
+- `flutter build apk --debug`: failed because `flutter` is not available on PATH in this shell.
+- Full Flutter verification remains environment-blocked until Flutter is available on PATH.
+
+Known limitations:
+
+- No backend APIs were changed or added.
+- Device-level animation smoothness still needs emulator/physical-device visual QA.
+- Flutter formatter/analyzer/tests/build still need to be rerun in a configured Flutter environment.
+
+Recommended next step:
+
+- Run the Flutter toolchain and device QA, then tune animation durations and skeleton spacing from screenshots or screen recordings.

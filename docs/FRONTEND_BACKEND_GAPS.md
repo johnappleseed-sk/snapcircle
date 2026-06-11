@@ -92,3 +92,19 @@ Features not implemented because backend support is still missing:
 - Forgot password or password reset.
 - Real conversation deletion.
 - Admin report detail, admin user detail, and admin post/comment moderation screens.
+
+## Micro-Interactions and Premium UX Pass
+
+Date: 2026-06-11
+
+New findings:
+
+- No new frontend/backend gaps were introduced.
+- Micro-interactions, route transitions, skeleton loading, empty-state copy, accessibility labels, and keyboard behavior are frontend-only.
+- Existing providers already guard duplicate like/save/follow/pagination requests, so no backend throttling route changes were required.
+
+Remaining backend limitations:
+
+- Email/password login, registration, and forgot password are still backend-missing.
+- Conversation deletion remains unavailable because the current backend route reports the MVP limitation.
+- Deeper admin detail/moderation screens remain future UI work.

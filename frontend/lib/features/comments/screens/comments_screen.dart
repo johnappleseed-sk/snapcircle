@@ -176,6 +176,7 @@ class _CommentsBody extends StatelessWidget {
     }
 
     return ListView.separated(
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: const EdgeInsets.fromLTRB(
         AppSizes.paddingMedium,
         AppSizes.paddingMedium,

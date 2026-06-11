@@ -3,9 +3,11 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_sizes.dart';
+import '../../../core/utils/snackbar_helper.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
-import '../../../core/widgets/loading_view.dart';
+import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/skeleton_box.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../chat/providers/conversations_provider.dart';
 import '../../reports/widgets/report_dialog.dart';
@@ -74,7 +76,7 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
       body: RefreshIndicator(
         onRefresh: _refresh,
         child: profileProvider.isLoading && user == null
-            ? const LoadingView(message: 'Loading user profile...')
+            ? const _UserProfileSkeletonList()
             : profileProvider.errorMessage != null && user == null
             ? ErrorView(
                 message: profileProvider.errorMessage!,
@@ -96,11 +98,29 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                     onEdit: isCurrentUser
                         ? () => context.push('/profile/edit')
                         : null,
-                    onFollow: () {
-                      profileProvider.followUser(user.id);
+                    onFollow: () async {
+                      final followed = await profileProvider.followUser(
+                        user.id,
+                      );
+                      if (!followed && context.mounted) {
+                        SnackbarHelper.showError(
+                          context,
+                          profileProvider.errorMessage ??
+                              'Unable to follow this profile.',
+                        );
+                      }
                     },
-                    onUnfollow: () {
-                      profileProvider.unfollowUser(user.id);
+                    onUnfollow: () async {
+                      final unfollowed = await profileProvider.unfollowUser(
+                        user.id,
+                      );
+                      if (!unfollowed && context.mounted) {
+                        SnackbarHelper.showError(
+                          context,
+                          profileProvider.errorMessage ??
+                              'Unable to unfollow this profile.',
+                        );
+                      }
                     },
                     onMessage: isCurrentUser
                         ? null
@@ -143,6 +163,51 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                 ],
               ),
       ),
+    );
+  }
+}
+
+class _UserProfileSkeletonList extends StatelessWidget {
+  const _UserProfileSkeletonList();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+      children: const [
+        AppCard(
+          padding: EdgeInsets.zero,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SkeletonBox(height: 150),
+              Padding(
+                padding: EdgeInsets.fromLTRB(16, 14, 16, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        SkeletonBox(
+                          height: 72,
+                          width: 72,
+                          borderRadius: BorderRadius.all(Radius.circular(99)),
+                        ),
+                        SizedBox(width: AppSizes.paddingMedium),
+                        Expanded(child: SkeletonBox(height: 18)),
+                      ],
+                    ),
+                    SizedBox(height: AppSizes.paddingMedium),
+                    SkeletonBox(height: 14, width: 160),
+                    SizedBox(height: AppSizes.paddingSmall),
+                    SkeletonBox(height: 14),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

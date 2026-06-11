@@ -301,7 +301,7 @@ class _FeedBody extends StatelessWidget {
       'following' => 'No posts from people you follow.',
       'popular' => 'No popular posts yet.',
       'mine' => 'You have not posted yet.',
-      _ => 'No posts yet.',
+      _ => 'Your feed is quiet right now.',
     };
   }
 
@@ -310,7 +310,7 @@ class _FeedBody extends StatelessWidget {
       'following' => 'Find users to follow and build your circle.',
       'popular' => 'Like and comment on posts to make them trend.',
       'mine' => 'Share your first SnapCircle moment.',
-      _ => 'Follow people or create your first post.',
+      _ => 'Explore people to follow or share your first SnapCircle moment.',
     };
   }
 

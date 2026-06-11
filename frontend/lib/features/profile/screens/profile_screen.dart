@@ -5,8 +5,9 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
-import '../../../core/widgets/loading_view.dart';
 import '../../../core/widgets/confirmation_dialog.dart';
+import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/skeleton_box.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../providers/profile_provider.dart';
 import '../widgets/profile_header.dart';
@@ -82,7 +83,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
       body: RefreshIndicator(
         onRefresh: _refresh,
         child: profileProvider.isLoading && profile == null
-            ? const LoadingView(message: 'Loading your profile...')
+            ? const _ProfileSkeletonList()
             : profileProvider.errorMessage != null && profile == null
             ? ErrorView(
                 message: profileProvider.errorMessage!,
@@ -104,7 +105,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     onFollowersTap: () =>
                         context.push('/users/${profile.id}/followers'),
                     onFollowingTap: () =>
-                      context.push('/users/${profile.id}/following'),
+                        context.push('/users/${profile.id}/following'),
                   ),
                   const SizedBox(height: AppSizes.paddingMedium),
                   ProfileCompletionCard(
@@ -155,6 +156,71 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ],
               ),
       ),
+    );
+  }
+}
+
+class _ProfileSkeletonList extends StatelessWidget {
+  const _ProfileSkeletonList();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 32),
+      children: const [
+        AppCard(
+          padding: EdgeInsets.zero,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SkeletonBox(height: 150),
+              Padding(
+                padding: EdgeInsets.fromLTRB(16, 14, 16, 16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        SkeletonBox(
+                          height: 72,
+                          width: 72,
+                          borderRadius: BorderRadius.all(Radius.circular(99)),
+                        ),
+                        SizedBox(width: AppSizes.paddingMedium),
+                        Expanded(child: SkeletonBox(height: 18)),
+                      ],
+                    ),
+                    SizedBox(height: AppSizes.paddingMedium),
+                    SkeletonBox(height: 14, width: 180),
+                    SizedBox(height: AppSizes.paddingSmall),
+                    SkeletonBox(height: 14),
+                    SizedBox(height: AppSizes.paddingLarge),
+                    Row(
+                      children: [
+                        Expanded(child: SkeletonBox(height: 44)),
+                        SizedBox(width: AppSizes.paddingSmall),
+                        Expanded(child: SkeletonBox(height: 44)),
+                        SizedBox(width: AppSizes.paddingSmall),
+                        Expanded(child: SkeletonBox(height: 44)),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        SizedBox(height: AppSizes.paddingLarge),
+        Row(
+          children: [
+            Expanded(child: SkeletonBox(height: 112)),
+            SizedBox(width: 3),
+            Expanded(child: SkeletonBox(height: 112)),
+            SizedBox(width: 3),
+            Expanded(child: SkeletonBox(height: 112)),
+          ],
+        ),
+      ],
     );
   }
 }

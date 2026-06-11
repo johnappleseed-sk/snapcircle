@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/admin/screens/admin_dashboard_screen.dart';
@@ -97,35 +98,50 @@ class AppRouter {
         ),
         GoRoute(
           path: createPost,
-          builder: (context, state) => const CreatePostScreen(),
+          pageBuilder: (context, state) => _fadeSlidePage(
+            state: state,
+            child: const CreatePostScreen(),
+          ),
         ),
         GoRoute(
           path: '/posts/:postId/edit',
-          builder: (context, state) {
+          pageBuilder: (context, state) {
             final postId = int.tryParse(state.pathParameters['postId'] ?? '');
             final post = state.extra is PostModel
                 ? state.extra as PostModel
                 : null;
             if (post == null) {
-              return PostDetailScreen(postId: postId ?? 0);
+              return _fadeSlidePage(
+                state: state,
+                child: PostDetailScreen(postId: postId ?? 0),
+              );
             }
-            return CreatePostScreen(initialPost: post);
+            return _fadeSlidePage(
+              state: state,
+              child: CreatePostScreen(initialPost: post),
+            );
           },
         ),
         GoRoute(
           path: '/posts/:postId',
-          builder: (context, state) {
+          pageBuilder: (context, state) {
             final postId = int.tryParse(state.pathParameters['postId'] ?? '');
             final post = state.extra is PostModel
                 ? state.extra as PostModel
                 : null;
 
-            return PostDetailScreen(postId: postId ?? 0, initialPost: post);
+            return _fadeSlidePage(
+              state: state,
+              child: PostDetailScreen(postId: postId ?? 0, initialPost: post),
+            );
           },
         ),
         GoRoute(
           path: '/saved-posts',
-          builder: (context, state) => const SavedPostsScreen(),
+          pageBuilder: (context, state) => _fadeSlidePage(
+            state: state,
+            child: const SavedPostsScreen(),
+          ),
         ),
         GoRoute(
           path: '/stories/create',
@@ -147,8 +163,13 @@ class AppRouter {
         ),
         GoRoute(
           path: '/notifications',
-          builder: (context, state) =>
-              const AppShell(currentIndex: 3, child: NotificationsScreen()),
+          pageBuilder: (context, state) => _fadeSlidePage(
+            state: state,
+            child: const AppShell(
+              currentIndex: 3,
+              child: NotificationsScreen(),
+            ),
+          ),
         ),
         GoRoute(
           path: '/settings',
@@ -180,11 +201,14 @@ class AppRouter {
         ),
         GoRoute(
           path: '/messages',
-          builder: (context, state) => const ConversationsScreen(),
+          pageBuilder: (context, state) => _fadeSlidePage(
+            state: state,
+            child: const ConversationsScreen(),
+          ),
         ),
         GoRoute(
           path: '/messages/:conversationId',
-          builder: (context, state) {
+          pageBuilder: (context, state) {
             final conversationId = int.tryParse(
               state.pathParameters['conversationId'] ?? '',
             );
@@ -192,21 +216,27 @@ class AppRouter {
                 ? state.extra as ConversationModel
                 : null;
 
-            return ChatDetailScreen(
-              conversationId: conversationId ?? 0,
-              initialConversation: conversation,
+            return _fadeSlidePage(
+              state: state,
+              child: ChatDetailScreen(
+                conversationId: conversationId ?? 0,
+                initialConversation: conversation,
+              ),
             );
           },
         ),
         GoRoute(
           path: '/posts/:postId/comments',
-          builder: (context, state) {
+          pageBuilder: (context, state) {
             final postId = int.tryParse(state.pathParameters['postId'] ?? '');
             final post = state.extra is PostModel
                 ? state.extra as PostModel
                 : null;
 
-            return CommentsScreen(postId: postId ?? 0, post: post);
+            return _fadeSlidePage(
+              state: state,
+              child: CommentsScreen(postId: postId ?? 0, post: post),
+            );
           },
         ),
         GoRoute(
@@ -216,20 +246,29 @@ class AppRouter {
         ),
         GoRoute(
           path: '/profile/edit',
-          builder: (context, state) => const EditProfileScreen(),
+          pageBuilder: (context, state) => _fadeSlidePage(
+            state: state,
+            child: const EditProfileScreen(),
+          ),
         ),
         GoRoute(
           path: '/users/:userId',
-          builder: (context, state) {
+          pageBuilder: (context, state) {
             final userId = int.tryParse(state.pathParameters['userId'] ?? '');
-            return UserProfileScreen(userId: userId ?? 0);
+            return _fadeSlidePage(
+              state: state,
+              child: UserProfileScreen(userId: userId ?? 0),
+            );
           },
         ),
         GoRoute(
           path: '/u/:username',
-          builder: (context, state) {
-            return UserProfileScreen(
-              username: state.pathParameters['username'],
+          pageBuilder: (context, state) {
+            return _fadeSlidePage(
+              state: state,
+              child: UserProfileScreen(
+                username: state.pathParameters['username'],
+              ),
             );
           },
         ),
@@ -260,6 +299,35 @@ class AppRouter {
           redirect: (context, state) => '/explore',
         ),
       ],
+    );
+  }
+
+  static CustomTransitionPage<void> _fadeSlidePage({
+    required GoRouterState state,
+    required Widget child,
+  }) {
+    return CustomTransitionPage<void>(
+      key: state.pageKey,
+      child: child,
+      transitionDuration: const Duration(milliseconds: 220),
+      reverseTransitionDuration: const Duration(milliseconds: 180),
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        final curved = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeOutCubic,
+          reverseCurve: Curves.easeInCubic,
+        );
+        return FadeTransition(
+          opacity: curved,
+          child: SlideTransition(
+            position: Tween<Offset>(
+              begin: const Offset(0.04, 0.02),
+              end: Offset.zero,
+            ).animate(curved),
+            child: child,
+          ),
+        );
+      },
     );
   }
 }

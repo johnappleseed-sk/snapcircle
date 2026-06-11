@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/skeleton_box.dart';
 
 class PostSkeletonCard extends StatelessWidget {
   const PostSkeletonCard({super.key});
@@ -34,7 +34,7 @@ class PostSkeletonCard extends StatelessWidget {
           SizedBox(height: AppSizes.paddingSmall),
           _SkeletonLine(widthFactor: 0.72),
           SizedBox(height: AppSizes.paddingMedium),
-          _SkeletonBox(height: 170),
+          SkeletonBox(height: 170),
           SizedBox(height: AppSizes.paddingMedium),
           Row(
             children: [
@@ -56,13 +56,10 @@ class _SkeletonCircle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SkeletonBox(
       height: size,
       width: size,
-      decoration: BoxDecoration(
-        color: AppColors.surfaceMuted,
-        shape: BoxShape.circle,
-      ),
+      borderRadius: BorderRadius.circular(999),
     );
   }
 }
@@ -76,24 +73,7 @@ class _SkeletonLine extends StatelessWidget {
   Widget build(BuildContext context) {
     return FractionallySizedBox(
       widthFactor: widthFactor,
-      child: const _SkeletonBox(height: 12),
-    );
-  }
-}
-
-class _SkeletonBox extends StatelessWidget {
-  final double height;
-
-  const _SkeletonBox({required this.height});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: height,
-      decoration: BoxDecoration(
-        color: AppColors.surfaceMuted,
-        borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
-      ),
+      child: const SkeletonBox(height: 12),
     );
   }
 }

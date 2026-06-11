@@ -202,6 +202,7 @@ class _MessagesBody extends StatelessWidget {
 
     return ListView.separated(
       reverse: true,
+      keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
       padding: const EdgeInsets.fromLTRB(
         AppSizes.paddingMedium,
         AppSizes.paddingMedium,

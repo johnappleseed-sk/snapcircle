@@ -185,3 +185,18 @@ Result:
 - Backend API coverage status is unchanged.
 - No backend routes were invented.
 - Existing backend gaps remain documented in `FRONTEND_BACKEND_GAPS.md`.
+
+## Micro-Interactions and Premium UX Pass
+
+Date: 2026-06-11
+
+API coverage review:
+
+- This pass did not add, remove, or rename any backend API calls.
+- Like, unlike, save, unsave, follow, unfollow, delete post, report, comments, notifications, chat, and profile flows continue using the previously documented endpoints.
+- Route transitions, skeleton loading, bottom-sheet menus, semantic labels, and keyboard behavior are frontend-only changes.
+
+Result:
+
+- Backend API coverage status is unchanged.
+- No backend routes were invented.

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -45,7 +47,7 @@ class PostCard extends StatelessWidget {
     final subtitle = [
       if (username != null && username.isNotEmpty) '@$username',
       DateFormatter.timeAgo(post.createdAt),
-    ].join(' · ');
+    ].join(' - ');
     final imageFill = Theme.of(context).colorScheme.surfaceContainerHighest;
 
     return AppCard(
@@ -72,8 +74,8 @@ class PostCard extends StatelessWidget {
                           ? 'SnapCircle User'
                           : post.user.name,
                       maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w900,
                       ),
                     ),
@@ -90,59 +92,10 @@ class PostCard extends StatelessWidget {
                 ),
               ),
               if (canDelete || post.canUpdate || !post.isOwner)
-                PopupMenuButton<String>(
-                  tooltip: 'Post options',
+                IconButton(
+                  onPressed: () => _showPostActions(context),
                   icon: const Icon(Icons.more_horiz),
-                  onSelected: (value) {
-                    if (value == 'delete') {
-                      onDelete?.call();
-                    }
-                    if (value == 'edit') {
-                      onEdit?.call();
-                    }
-                    if (value == 'report') {
-                      ReportDialog.show(
-                        context,
-                        targetType: ReportTargetType.post,
-                        targetId: post.id,
-                      );
-                    }
-                  },
-                  itemBuilder: (context) => [
-                    if (post.canUpdate)
-                      const PopupMenuItem(
-                        value: 'edit',
-                        child: Row(
-                          children: [
-                            Icon(Icons.edit_outlined),
-                            SizedBox(width: 8),
-                            Text('Edit'),
-                          ],
-                        ),
-                      ),
-                    if (canDelete)
-                      const PopupMenuItem(
-                        value: 'delete',
-                        child: Row(
-                          children: [
-                            Icon(Icons.delete_outline, color: AppColors.danger),
-                            SizedBox(width: 8),
-                            Text('Delete'),
-                          ],
-                        ),
-                      ),
-                    if (!post.isOwner)
-                      const PopupMenuItem(
-                        value: 'report',
-                        child: Row(
-                          children: [
-                            Icon(Icons.flag_outlined),
-                            SizedBox(width: 8),
-                            Text('Report'),
-                          ],
-                        ),
-                      ),
-                  ],
+                  tooltip: 'Post options',
                 ),
             ],
           ),
@@ -191,6 +144,7 @@ class PostCard extends StatelessWidget {
                 label: post.likesCount.toString(),
                 color: post.likedByMe ? AppColors.danger : null,
                 isLoading: isLikeUpdating,
+                semanticLabel: post.likedByMe ? 'Unlike post' : 'Like post',
                 onTap: isLikeUpdating
                     ? null
                     : () async {
@@ -210,11 +164,13 @@ class PostCard extends StatelessWidget {
               _PostAction(
                 icon: Icons.chat_bubble_outline,
                 label: post.commentsCount.toString(),
+                semanticLabel: 'Open comments',
                 onTap: onCommentsTap,
               ),
               _PostAction(
                 icon: Icons.ios_share_outlined,
                 label: 'Share',
+                semanticLabel: 'Share post',
                 onTap:
                     onShareTap ??
                     () => context.read<FeedProvider>().sharePost(post),
@@ -227,6 +183,7 @@ class PostCard extends StatelessWidget {
                 label: post.savesCount.toString(),
                 color: post.savedByMe ? AppColors.primary : null,
                 isLoading: isSaveUpdating,
+                semanticLabel: post.savedByMe ? 'Unsave post' : 'Save post',
                 onTap: isSaveUpdating
                     ? null
                     : () async {
@@ -251,51 +208,149 @@ class PostCard extends StatelessWidget {
       ),
     );
   }
+
+  Future<void> _showPostActions(BuildContext context) async {
+    await showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      builder: (sheetContext) {
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (post.canUpdate)
+                  ListTile(
+                    leading: const Icon(Icons.edit_outlined),
+                    title: const Text('Edit post'),
+                    onTap: () {
+                      Navigator.of(sheetContext).pop();
+                      onEdit?.call();
+                    },
+                  ),
+                if (canDelete)
+                  ListTile(
+                    leading: const Icon(
+                      Icons.delete_outline,
+                      color: AppColors.danger,
+                    ),
+                    title: const Text('Delete post'),
+                    textColor: AppColors.danger,
+                    onTap: () {
+                      Navigator.of(sheetContext).pop();
+                      onDelete?.call();
+                    },
+                  ),
+                if (!post.isOwner)
+                  ListTile(
+                    leading: const Icon(Icons.flag_outlined),
+                    title: const Text('Report post'),
+                    onTap: () {
+                      Navigator.of(sheetContext).pop();
+                      ReportDialog.show(
+                        context,
+                        targetType: ReportTargetType.post,
+                        targetId: post.id,
+                      );
+                    },
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
 }
 
-class _PostAction extends StatelessWidget {
+class _PostAction extends StatefulWidget {
   final IconData icon;
   final String label;
   final Color? color;
   final bool isLoading;
-  final VoidCallback? onTap;
+  final String semanticLabel;
+  final FutureOr<void> Function()? onTap;
 
   const _PostAction({
     required this.icon,
     required this.label,
+    required this.semanticLabel,
     this.color,
     this.isLoading = false,
     this.onTap,
   });
 
   @override
+  State<_PostAction> createState() => _PostActionState();
+}
+
+class _PostActionState extends State<_PostAction> {
+  bool _isPressed = false;
+
+  Future<void> _handleTap() async {
+    final onTap = widget.onTap;
+    if (onTap == null || widget.isLoading) {
+      return;
+    }
+
+    setState(() => _isPressed = true);
+    await Future<void>.delayed(const Duration(milliseconds: 90));
+    if (mounted) {
+      setState(() => _isPressed = false);
+    }
+    await onTap();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final foreground = color ?? AppColors.mutedText;
-    return InkWell(
-      borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
-      onTap: onTap,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-        child: isLoading
-            ? const SizedBox(
-                height: 20,
-                width: 20,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              )
-            : Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(icon, size: 22, color: foreground),
-                  const SizedBox(width: 5),
-                  Text(
-                    label,
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      color: foreground,
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                ],
+    final foreground = widget.color ?? AppColors.mutedText;
+    return Semantics(
+      button: true,
+      label: widget.semanticLabel,
+      child: Tooltip(
+        message: widget.semanticLabel,
+        child: AnimatedScale(
+          scale: _isPressed ? 0.86 : 1,
+          duration: const Duration(milliseconds: 110),
+          curve: Curves.easeOutCubic,
+          child: InkWell(
+            borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
+            onTap: widget.isLoading || widget.onTap == null ? null : _handleTap,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 160),
+                transitionBuilder: (child, animation) {
+                  return ScaleTransition(scale: animation, child: child);
+                },
+                child: widget.isLoading
+                    ? const SizedBox(
+                        key: ValueKey('loading'),
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Row(
+                        key: ValueKey('${widget.icon}-${widget.label}'),
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(widget.icon, size: 22, color: foreground),
+                          const SizedBox(width: 5),
+                          Text(
+                            widget.label,
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: foreground,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                          ),
+                        ],
+                      ),
               ),
+            ),
+          ),
+        ),
       ),
     );
   }
