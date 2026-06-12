@@ -28,11 +28,12 @@ class CreatePostScreen extends StatefulWidget {
 
 class _CreatePostScreenState extends State<CreatePostScreen> {
   static const _maxPostLength = 1000;
+  static const _maxImages = 10;
 
   final _contentController = TextEditingController();
   final _imagePicker = ImagePicker();
 
-  File? _selectedImage;
+  final List<File> _selectedImages = [];
   String? _localError;
   bool get _isEditing => widget.initialPost != null;
 
@@ -48,18 +49,29 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     super.dispose();
   }
 
-  Future<void> _pickImage() async {
-    final pickedImage = await _imagePicker.pickImage(
-      source: ImageSource.gallery,
-      imageQuality: 85,
-    );
+  Future<void> _pickImages() async {
+    final pickedImages = await _imagePicker.pickMultiImage(imageQuality: 85);
 
-    if (pickedImage == null) {
+    if (pickedImages.isEmpty) {
+      return;
+    }
+
+    final nextImages = [
+      ..._selectedImages,
+      ...pickedImages.map((image) => File(image.path)),
+    ];
+
+    if (nextImages.length > _maxImages) {
+      setState(() {
+        _localError = 'Choose up to $_maxImages images for one post.';
+      });
       return;
     }
 
     setState(() {
-      _selectedImage = File(pickedImage.path);
+      _selectedImages
+        ..clear()
+        ..addAll(nextImages);
       _localError = null;
     });
   }
@@ -67,9 +79,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   Future<void> _submitPost() async {
     final content = _contentController.text.trim();
     final hasExistingImage =
-        _isEditing && widget.initialPost?.imageUrl?.isNotEmpty == true;
+        _isEditing && widget.initialPost?.media.isNotEmpty == true;
 
-    if (content.isEmpty && _selectedImage == null && !hasExistingImage) {
+    if (content.isEmpty && _selectedImages.isEmpty && !hasExistingImage) {
       setState(() {
         _localError = 'Add some text or choose an image before posting.';
       });
@@ -88,12 +100,15 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         ? await feedProvider.updatePost(
             widget.initialPost!.id,
             content: content,
-            image: _selectedImage,
+            images: _selectedImages,
           )
         : null;
     final created = _isEditing
         ? updatedPost != null
-        : await feedProvider.createPost(content: content, image: _selectedImage);
+        : await feedProvider.createPost(
+            content: content,
+            images: _selectedImages,
+          );
 
     if (!mounted) {
       return;
@@ -123,10 +138,10 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     final user = context.watch<AuthProvider>().user;
     final contentLength = _contentController.text.trim().length;
     final hasExistingImage =
-        _isEditing && widget.initialPost?.imageUrl?.isNotEmpty == true;
+        _isEditing && widget.initialPost?.media.isNotEmpty == true;
     final canSubmit =
         !feedProvider.isCreating &&
-        (_selectedImage != null || hasExistingImage || contentLength > 0) &&
+        (_selectedImages.isNotEmpty || hasExistingImage || contentLength > 0) &&
         contentLength <= _maxPostLength;
 
     return Scaffold(
@@ -213,19 +228,26 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
                     ),
                   ),
                   const SizedBox(height: AppSizes.paddingMedium),
-                  if (_selectedImage == null)
+                  if (_selectedImages.isEmpty)
                     _ImagePickerArea(
                       isDisabled: feedProvider.isCreating,
-                      onPick: _pickImage,
-                      existingImageUrl: widget.initialPost?.imageUrl,
+                      onPick: _pickImages,
+                      existingImageUrls: widget.initialPost?.media
+                          .map((item) => item.url)
+                          .toList(),
                     )
                   else
-                    _SelectedImagePreview(
-                      image: _selectedImage!,
+                    _SelectedImagePreviewGrid(
+                      images: _selectedImages,
+                      onAdd: _selectedImages.length >= _maxImages
+                          ? null
+                          : _pickImages,
                       onRemove: feedProvider.isCreating
                           ? null
-                          : () {
-                              setState(() => _selectedImage = null);
+                          : (index) {
+                              setState(() {
+                                _selectedImages.removeAt(index);
+                              });
                             },
                     ),
                 ],
@@ -252,27 +274,34 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 class _ImagePickerArea extends StatelessWidget {
   final bool isDisabled;
   final VoidCallback onPick;
-  final String? existingImageUrl;
+  final List<String>? existingImageUrls;
 
   const _ImagePickerArea({
     required this.isDisabled,
     required this.onPick,
-    this.existingImageUrl,
+    this.existingImageUrls,
   });
 
   @override
   Widget build(BuildContext context) {
+    final existingImages =
+        existingImageUrls?.where((url) => url.isNotEmpty).toList() ??
+        const <String>[];
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (existingImageUrl != null && existingImageUrl!.isNotEmpty) ...[
+        if (existingImages.isNotEmpty) ...[
           ClipRRect(
             borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
             child: AspectRatio(
               aspectRatio: 4 / 3,
-              child: CachedNetworkImage(
-                imageUrl: existingImageUrl!,
-                fit: BoxFit.cover,
+              child: PageView.builder(
+                itemCount: existingImages.length,
+                itemBuilder: (context, index) => CachedNetworkImage(
+                  imageUrl: existingImages[index],
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
           ),
@@ -290,10 +319,10 @@ class _ImagePickerArea extends StatelessWidget {
               children: [
                 const Icon(Icons.add_photo_alternate_outlined, size: 34),
                 const SizedBox(height: AppSizes.paddingSmall),
-                Text(existingImageUrl == null ? 'Add image' : 'Replace image'),
+                Text(existingImages.isEmpty ? 'Add images' : 'Replace images'),
                 const SizedBox(height: 3),
                 Text(
-                  'Photos make posts stand out in the feed',
+                  'Choose up to 10 photos for a carousel post',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: AppColors.textSecondary,
                   ),
@@ -307,30 +336,86 @@ class _ImagePickerArea extends StatelessWidget {
   }
 }
 
-class _SelectedImagePreview extends StatelessWidget {
-  final File image;
-  final VoidCallback? onRemove;
+class _SelectedImagePreviewGrid extends StatelessWidget {
+  final List<File> images;
+  final VoidCallback? onAdd;
+  final ValueChanged<int>? onRemove;
 
-  const _SelectedImagePreview({required this.image, required this.onRemove});
+  const _SelectedImagePreviewGrid({
+    required this.images,
+    required this.onAdd,
+    required this.onRemove,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
-          child: AspectRatio(
-            aspectRatio: 4 / 3,
-            child: Image.file(image, fit: BoxFit.cover),
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: images.length,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: 8,
+            mainAxisSpacing: 8,
           ),
+          itemBuilder: (context, index) {
+            return ClipRRect(
+              borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+              child: Stack(
+                fit: StackFit.expand,
+                children: [
+                  Image.file(images[index], fit: BoxFit.cover),
+                  Positioned(
+                    top: 4,
+                    right: 4,
+                    child: IconButton.filled(
+                      visualDensity: VisualDensity.compact,
+                      onPressed: onRemove == null
+                          ? null
+                          : () => onRemove!(index),
+                      icon: const Icon(Icons.close, size: 18),
+                      tooltip: 'Remove image',
+                    ),
+                  ),
+                  Positioned(
+                    left: 6,
+                    bottom: 6,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Colors.black.withValues(alpha: 0.58),
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 7,
+                          vertical: 3,
+                        ),
+                        child: Text(
+                          '${index + 1}',
+                          style: Theme.of(context).textTheme.labelSmall
+                              ?.copyWith(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w900,
+                              ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
         ),
-        Positioned(
-          top: 8,
-          right: 8,
-          child: IconButton.filled(
-            onPressed: onRemove,
-            icon: const Icon(Icons.close),
-            tooltip: 'Remove image',
+        const SizedBox(height: AppSizes.paddingSmall),
+        OutlinedButton.icon(
+          onPressed: onAdd,
+          icon: const Icon(Icons.add_photo_alternate_outlined),
+          label: Text('Add more (${images.length}/10)'),
+          style: OutlinedButton.styleFrom(
+            side: BorderSide(color: Theme.of(context).dividerColor),
           ),
         ),
       ],

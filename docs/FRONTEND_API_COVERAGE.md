@@ -1,6 +1,6 @@
 # SnapCircle Frontend API Coverage
 
-Last updated: 2026-06-11
+Last updated: 2026-06-12
 
 This document tracks Laravel API routes discovered in `backend/routes/api.php` and how the Flutter frontend currently uses them. Email/password login, registration, forgot password, and reset password are now implemented through the Laravel API and surfaced in Flutter.
 
@@ -72,7 +72,7 @@ Status legend:
 | --- | --- | --- | --- |
 | GET | `/feed/status` | Used | `RealtimeRepository`, feed polling banner. |
 | GET | `/posts` | Used | Home feed, pagination, search/modes. |
-| POST | `/posts` | Used | Create post screen with multipart image support. |
+| POST | `/posts` | Used | Create post screen with multipart text, single-image, and multiple-image carousel support. |
 | GET | `/posts/{post}` | Used | Post detail screen. |
 | PUT | `/posts/{post}` | Used | Owner-only edit action opens edit post UI and updates feed/detail state. |
 | DELETE | `/posts/{post}` | Used | Owner delete actions in feed/detail. |
@@ -241,3 +241,26 @@ Remaining API coverage gaps:
 
 - Conversation deletion remains partially used because the backend MVP route still reports delete as not implemented.
 - Admin user detail and admin post/comment moderation screens are still not surfaced in Flutter.
+
+## Multiple Image Posts Feature Pass
+
+Date: 2026-06-12
+
+API coverage update:
+
+- `POST /posts` now accepts legacy `image` and new `images[]` multipart fields.
+- `PUT /posts/{post}` also accepts replacement media through `image` or `images[]` when editing a post.
+- Post responses now include a `media` array with `id`, `url`, `path`, `type`, and `sort_order`.
+- `image_url` remains present and points to the first media item so older single-image UI remains compatible.
+- Feed, saved posts, explore, profile posts, admin posts, and post detail responses eager-load media records.
+
+Flutter coverage update:
+
+- Create post uses `image_picker.pickMultiImage` on Android and sends multiple files as `images[]`.
+- Feed and post detail render the returned `media` array through a swipeable carousel.
+- Profile and explore grids use the first media item as the thumbnail and show a multiple-image indicator.
+
+Known limitations:
+
+- Multiple image upload supports images only; video posts are still a future feature.
+- Existing edit flow can replace media but does not expose a separate "remove all existing images" action.

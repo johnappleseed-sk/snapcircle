@@ -1,9 +1,42 @@
 import '../../auth/models/user_model.dart';
 
+class PostMediaModel {
+  final int? id;
+  final String url;
+  final String type;
+  final int sortOrder;
+
+  const PostMediaModel({
+    required this.url,
+    this.id,
+    this.type = 'image',
+    this.sortOrder = 0,
+  });
+
+  factory PostMediaModel.fromJson(Map<String, dynamic> json) {
+    return PostMediaModel(
+      id: json['id'] == null ? null : PostModel._parseInt(json['id']),
+      url: (json['url'] ?? json['image_url'] ?? json['path'] ?? '').toString(),
+      type: (json['type'] ?? 'image').toString(),
+      sortOrder: PostModel._parseInt(json['sort_order']),
+    );
+  }
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'url': url,
+      'type': type,
+      'sort_order': sortOrder,
+    };
+  }
+}
+
 class PostModel {
   final int id;
   final String? content;
   final String? imageUrl;
+  final List<PostMediaModel> media;
   final int likesCount;
   final int commentsCount;
   final int savesCount;
@@ -20,6 +53,7 @@ class PostModel {
     required this.user,
     this.content,
     this.imageUrl,
+    this.media = const [],
     this.likesCount = 0,
     this.commentsCount = 0,
     this.savesCount = 0,
@@ -34,10 +68,14 @@ class PostModel {
   factory PostModel.fromJson(Map<String, dynamic> json) {
     final userJson = json['user'];
 
+    final media = _parseMedia(json);
+    final imageUrl = media.isNotEmpty ? media.first.url : _parseImageUrl(json);
+
     return PostModel(
       id: _parseInt(json['id']),
       content: json['content']?.toString(),
-      imageUrl: _parseImageUrl(json),
+      imageUrl: imageUrl,
+      media: media,
       likesCount: _parseInt(json['likes_count']),
       commentsCount: _parseInt(json['comments_count']),
       savesCount: _parseInt(json['saves_count']),
@@ -58,6 +96,7 @@ class PostModel {
       'id': id,
       'content': content,
       'image_url': imageUrl,
+      'media': media.map((item) => item.toJson()).toList(),
       'likes_count': likesCount,
       'comments_count': commentsCount,
       'saves_count': savesCount,
@@ -75,6 +114,7 @@ class PostModel {
     int? id,
     String? content,
     String? imageUrl,
+    List<PostMediaModel>? media,
     int? likesCount,
     int? commentsCount,
     int? savesCount,
@@ -90,6 +130,7 @@ class PostModel {
       id: id ?? this.id,
       content: content ?? this.content,
       imageUrl: imageUrl ?? this.imageUrl,
+      media: media ?? this.media,
       likesCount: likesCount ?? this.likesCount,
       commentsCount: commentsCount ?? this.commentsCount,
       savesCount: savesCount ?? this.savesCount,
@@ -107,6 +148,32 @@ class PostModel {
     final image = json['image_url'] ?? json['image_path'] ?? json['image'];
     final imageUrl = image?.toString();
     return imageUrl == null || imageUrl.isEmpty ? null : imageUrl;
+  }
+
+  static List<PostMediaModel> _parseMedia(Map<String, dynamic> json) {
+    final rawMedia = json['media'];
+    if (rawMedia is! List) {
+      final imageUrl = _parseImageUrl(json);
+      return imageUrl == null
+          ? const []
+          : [PostMediaModel(url: imageUrl, sortOrder: 0)];
+    }
+
+    final media = rawMedia
+        .whereType<Map>()
+        .map((item) => PostMediaModel.fromJson(Map<String, dynamic>.from(item)))
+        .where((item) => item.url.isNotEmpty)
+        .toList()
+      ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+
+    if (media.isNotEmpty) {
+      return media;
+    }
+
+    final imageUrl = _parseImageUrl(json);
+    return imageUrl == null
+        ? const []
+        : [PostMediaModel(url: imageUrl, sortOrder: 0)];
   }
 
   static int _parseInt(dynamic value) {

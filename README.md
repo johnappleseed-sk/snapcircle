@@ -10,7 +10,7 @@ SnapCircle is a full-stack social media mobile application built as an academic 
 - Laravel Sanctum API token authentication
 - User profiles with avatar and bio
 - Create, update, delete, and view posts
-- Upload post images
+- Upload single-image and multiple-image carousel posts
 - Like and unlike posts
 - Add, edit, and delete comments
 - Follow and unfollow users
@@ -153,7 +153,7 @@ Full Android install, APK, and real-device QA details are in [Android Demo Guide
 
 1. Login with email, demo, or social authentication.
 2. View and refresh the home feed.
-3. Create a post with text and optional image.
+3. Create a post with text, one image, or multiple images.
 4. Like, comment, save, and share posts.
 5. Explore/search users and posts.
 6. Report or block a user/post, then review blocked users in Settings.
@@ -168,6 +168,19 @@ Full Android install, APK, and real-device QA details are in [Android Demo Guide
 - Use `backend/.env.example` as the template.
 - Add real Google and Facebook OAuth credentials only in local `.env` files.
 - Production deployment would require production OAuth apps, HTTPS, secure database credentials, cloud file storage, and stricter server configuration.
+
+## Multiple Image Posts Feature Pass
+
+SnapCircle supports Android-first carousel posts without removing single-image compatibility.
+
+- Backend storage uses a `post_media` table with ordered image records.
+- Create/update post accepts multipart `images[]`; legacy `image` remains supported.
+- Post JSON returns `media` and keeps `image_url` as the first image for older clients.
+- Flutter create post supports multi-select, previews, per-image removal, a 10-image limit, and disabled submit while uploading.
+- Feed and post detail show swipeable carousels with page indicators.
+- Profile and Explore grids show the first image and a multiple-image badge.
+
+Known limitations: image-only media for this pass, no video upload yet, and edit-post media removal is handled through replacement rather than a dedicated clear-all action.
 
 ## Documentation
 

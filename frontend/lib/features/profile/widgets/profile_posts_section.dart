@@ -15,6 +15,7 @@ class ProfilePostsSection extends StatelessWidget {
   final String currentSort;
   final ValueChanged<String> onSortChanged;
   final VoidCallback onLoadMore;
+  final ValueChanged<PostModel> onPostTap;
 
   const ProfilePostsSection({
     super.key,
@@ -26,6 +27,7 @@ class ProfilePostsSection extends StatelessWidget {
     required this.currentSort,
     required this.onSortChanged,
     required this.onLoadMore,
+    required this.onPostTap,
   });
 
   @override
@@ -82,7 +84,10 @@ class ProfilePostsSection extends StatelessWidget {
               mainAxisSpacing: 3,
             ),
             itemBuilder: (context, index) {
-              return _ProfilePostPreview(post: posts[index]);
+              return _ProfilePostPreview(
+                post: posts[index],
+                onTap: () => onPostTap(posts[index]),
+              );
             },
           ),
           const SizedBox(height: AppSizes.paddingMedium),
@@ -129,97 +134,122 @@ class _SortChip extends StatelessWidget {
 
 class _ProfilePostPreview extends StatelessWidget {
   final PostModel post;
+  final VoidCallback onTap;
 
-  const _ProfilePostPreview({required this.post});
+  const _ProfilePostPreview({required this.post, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     final cacheWidth =
-        (MediaQuery.sizeOf(context).width / 3 * MediaQuery.devicePixelRatioOf(context))
+        (MediaQuery.sizeOf(context).width /
+                3 *
+                MediaQuery.devicePixelRatioOf(context))
             .round();
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(3),
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          post.imageUrl == null
-              ? Container(
-                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
-                  alignment: Alignment.center,
-                  child: Padding(
-                    padding: const EdgeInsets.all(AppSizes.paddingSmall),
-                    child: Text(
-                      post.content?.trim().isNotEmpty == true
-                          ? post.content!
-                          : 'Text post',
-                      maxLines: 4,
-                      overflow: TextOverflow.ellipsis,
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: AppColors.textSecondary,
-                        fontWeight: FontWeight.w700,
+    final thumbnailUrl = post.media.isNotEmpty
+        ? post.media.first.url
+        : post.imageUrl;
+
+    return InkWell(
+      onTap: onTap,
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(3),
+        child: Stack(
+          fit: StackFit.expand,
+          children: [
+            thumbnailUrl == null
+                ? Container(
+                    color: Theme.of(
+                      context,
+                    ).colorScheme.surfaceContainerHighest,
+                    alignment: Alignment.center,
+                    child: Padding(
+                      padding: const EdgeInsets.all(AppSizes.paddingSmall),
+                      child: Text(
+                        post.content?.trim().isNotEmpty == true
+                            ? post.content!
+                            : 'Text post',
+                        maxLines: 4,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.textSecondary,
+                          fontWeight: FontWeight.w700,
+                        ),
                       ),
                     ),
+                  )
+                : CachedNetworkImage(
+                    imageUrl: thumbnailUrl,
+                    fit: BoxFit.cover,
+                    memCacheWidth: cacheWidth,
                   ),
-                )
-              : CachedNetworkImage(
-                  imageUrl: post.imageUrl!,
-                  fit: BoxFit.cover,
-                  memCacheWidth: cacheWidth,
-                ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: DecoratedBox(
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withValues(alpha: 0.58),
-                  ],
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
+            if (post.media.length > 1)
+              const Positioned(
+                top: 6,
+                right: 6,
+                child: Icon(
+                  Icons.collections_outlined,
+                  size: 18,
+                  color: Colors.white,
+                  shadows: [Shadow(blurRadius: 4)],
                 ),
               ),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(6, 14, 6, 6),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(
-                      Icons.favorite,
-                      size: 14,
-                      color: Colors.white,
-                    ),
-                    const SizedBox(width: 3),
-                    Text(
-                      '${post.likesCount}',
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: DecoratedBox(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      Colors.transparent,
+                      Colors.black.withValues(alpha: 0.58),
+                    ],
+                    begin: Alignment.topCenter,
+                    end: Alignment.bottomCenter,
+                  ),
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(6, 14, 6, 6),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.favorite,
+                        size: 14,
                         color: Colors.white,
-                        fontWeight: FontWeight.w900,
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Icon(
-                      Icons.chat_bubble,
-                      size: 13,
-                      color: Colors.white,
-                    ),
-                    const SizedBox(width: 3),
-                    Text(
-                      '${post.commentsCount}',
-                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      const SizedBox(width: 3),
+                      Text(
+                        '${post.likesCount}',
+                        style: Theme.of(context).textTheme.labelSmall
+                            ?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                            ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(
+                        Icons.chat_bubble,
+                        size: 13,
                         color: Colors.white,
-                        fontWeight: FontWeight.w900,
                       ),
-                    ),
-                  ],
+                      const SizedBox(width: 3),
+                      Text(
+                        '${post.commentsCount}',
+                        style: Theme.of(context).textTheme.labelSmall
+                            ?.copyWith(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w900,
+                            ),
+                      ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

@@ -8,9 +8,12 @@ use App\Http\Requests\StorePostRequest;
 use App\Http\Requests\UpdatePostRequest;
 use App\Http\Resources\PostResource;
 use App\Models\Post;
+use App\Models\PostMedia;
 use App\Support\Pagination;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
@@ -30,7 +33,7 @@ class PostController extends Controller
         $blockedUserIds = $authUser->blockedUserIds();
 
         $posts = Post::query()
-            ->with('user.setting')
+            ->with(['user.setting', 'media'])
             ->withCount(['likes', 'comments', 'savedPosts'])
             ->withExists([
                 'likes as liked_by_me' => fn ($query) => $query->where('user_id', $authUser->id),
@@ -70,13 +73,21 @@ class PostController extends Controller
 
     public function store(StorePostRequest $request): JsonResponse
     {
-        $post = Post::query()->create([
-            'user_id' => $request->user()->id,
-            'content' => $request->input('content'),
-            'image_path' => $request->file('image')?->store('posts', 'public'),
-        ]);
+        $post = DB::transaction(function () use ($request): Post {
+            $mediaPaths = $this->storeUploadedMedia($request);
 
-        $post->load('user.setting')->loadCount(['likes', 'comments', 'savedPosts']);
+            $post = Post::query()->create([
+                'user_id' => $request->user()->id,
+                'content' => $request->input('content'),
+                'image_path' => $mediaPaths[0] ?? null,
+            ]);
+
+            $this->syncMediaRecords($post, $mediaPaths);
+
+            return $post;
+        });
+
+        $post->load(['user.setting', 'media'])->loadCount(['likes', 'comments', 'savedPosts']);
         $post->liked_by_me = false;
         $post->saved_by_me = false;
 
@@ -91,7 +102,7 @@ class PostController extends Controller
             return ApiResponse::error('This post is not available.', [], 404);
         }
 
-        $post->load('user.setting')->loadCount(['likes', 'comments', 'savedPosts']);
+        $post->load(['user.setting', 'media'])->loadCount(['likes', 'comments', 'savedPosts']);
         $post->liked_by_me = $post->likes()
             ->where('user_id', $request->user()->id)
             ->exists();
@@ -108,24 +119,24 @@ class PostController extends Controller
     {
         $this->authorize('update', $post);
 
-        $content = $request->exists('content') ? $request->input('content') : $post->content;
-        $imagePath = $post->image_path;
+        DB::transaction(function () use ($request, $post): void {
+            $content = $request->exists('content') ? $request->input('content') : $post->content;
+            $imagePath = $post->image_path;
 
-        if ($request->hasFile('image')) {
-            if ($post->image_path) {
-                // Post images are stored locally in the public disk; external URLs are never deleted.
-                Storage::disk('public')->delete($post->image_path);
+            if ($request->hasFile('image') || $request->hasFile('images')) {
+                $this->deleteStoredMedia($post);
+                $mediaPaths = $this->storeUploadedMedia($request);
+                $imagePath = $mediaPaths[0] ?? null;
+                $this->syncMediaRecords($post, $mediaPaths);
             }
 
-            $imagePath = $request->file('image')->store('posts', 'public');
-        }
+            $post->update([
+                'content' => $content,
+                'image_path' => $imagePath,
+            ]);
+        });
 
-        $post->update([
-            'content' => $content,
-            'image_path' => $imagePath,
-        ]);
-
-        $post->load('user.setting')->loadCount(['likes', 'comments', 'savedPosts']);
+        $post->load(['user.setting', 'media'])->loadCount(['likes', 'comments', 'savedPosts']);
         $post->liked_by_me = $post->likes()
             ->where('user_id', $request->user()->id)
             ->exists();
@@ -142,8 +153,66 @@ class PostController extends Controller
     {
         $this->authorize('delete', $post);
 
+        $this->deleteStoredMedia($post);
         $post->delete();
 
         return ApiResponse::success('Post deleted');
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function storeUploadedMedia(Request $request): array
+    {
+        return collect($this->uploadedImages($request))
+            ->map(fn (UploadedFile $file): string => $file->store('posts', 'public'))
+            ->values()
+            ->all();
+    }
+
+    /**
+     * @return list<UploadedFile>
+     */
+    private function uploadedImages(Request $request): array
+    {
+        $files = [];
+
+        if ($request->hasFile('images')) {
+            $images = $request->file('images');
+            $files = is_array($images) ? $images : [$images];
+        }
+
+        if ($request->hasFile('image')) {
+            $files[] = $request->file('image');
+        }
+
+        return array_values(array_filter($files, fn ($file): bool => $file instanceof UploadedFile));
+    }
+
+    /**
+     * @param  list<string>  $mediaPaths
+     */
+    private function syncMediaRecords(Post $post, array $mediaPaths): void
+    {
+        foreach ($mediaPaths as $index => $path) {
+            PostMedia::query()->create([
+                'post_id' => $post->id,
+                'path' => $path,
+                'type' => 'image',
+                'sort_order' => $index,
+            ]);
+        }
+    }
+
+    private function deleteStoredMedia(Post $post): void
+    {
+        $paths = $post->media()->pluck('path')
+            ->when($post->image_path, fn ($collection) => $collection->push($post->image_path))
+            ->filter(fn (?string $path): bool => filled($path) && ! str_starts_with($path, 'http'))
+            ->unique()
+            ->values();
+
+        Storage::disk('public')->delete($paths->all());
+        $post->media()->delete();
     }
 }

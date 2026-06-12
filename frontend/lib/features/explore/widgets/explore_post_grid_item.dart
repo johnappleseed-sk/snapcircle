@@ -18,6 +18,9 @@ class ExplorePostGridItem extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final cacheWidth = (180 * MediaQuery.devicePixelRatioOf(context)).round();
+    final thumbnailUrl = post.media.isNotEmpty
+        ? post.media.first.url
+        : post.imageUrl;
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
@@ -26,9 +29,9 @@ class ExplorePostGridItem extends StatelessWidget {
         child: Stack(
           fit: StackFit.expand,
           children: [
-            if (post.imageUrl != null)
+            if (thumbnailUrl != null)
               CachedNetworkImage(
-                imageUrl: post.imageUrl!,
+                imageUrl: thumbnailUrl,
                 fit: BoxFit.cover,
                 memCacheWidth: cacheWidth,
                 placeholder: (_, _) => Container(color: AppColors.border),
@@ -36,6 +39,17 @@ class ExplorePostGridItem extends StatelessWidget {
               )
             else
               _TextPreview(post: post),
+            if (post.media.length > 1)
+              const Positioned(
+                top: 8,
+                right: 8,
+                child: Icon(
+                  Icons.collections_outlined,
+                  color: Colors.white,
+                  size: 19,
+                  shadows: [Shadow(blurRadius: 4)],
+                ),
+              ),
             Positioned(
               left: 8,
               right: 8,

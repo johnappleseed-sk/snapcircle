@@ -1,6 +1,40 @@
 # SnapCircle Frontend Improvement Summary
 
-Last updated: 2026-06-11
+Last updated: 2026-06-12
+
+## Multiple Image Posts Feature Pass
+
+Date: 2026-06-12
+
+Backend improvements:
+
+- Added `post_media` database storage with ordered image records.
+- Added `PostMedia` model and `Post::media()` relationship.
+- Backfilled existing `posts.image_path` values into media records during migration.
+- Updated post create/update to accept both `image` and `images[]`, validate image type/count/size, store files under `posts/`, and return ordered media URLs.
+- Preserved single-image compatibility through `image_path` and `image_url`.
+- Added media cleanup on user/admin post deletion.
+
+Flutter improvements:
+
+- Added `PostMediaModel` and tolerant parsing for both `media` and legacy `image_url`.
+- Updated create/edit post to select multiple images, preview them, remove individual selections, cap selections at 10, and disable submit while uploading.
+- Updated multipart upload to send new carousel posts as `images[]`.
+- Added reusable feed/post-detail carousel with page dots, rounded corners, and loading/error states.
+- Updated profile and explore grids to use the first image as a thumbnail and show a multiple-image indicator.
+
+Verification:
+
+- `php -l` passed for the new/changed PHP post media files.
+- `php artisan route:list` passed and listed 89 routes.
+- `php artisan migrate` and `php artisan test` are blocked in this shell because PHP cannot load the configured SQLite PDO driver.
+- `dart format`, `flutter pub get`, `flutter analyze`, `flutter test`, and Android APK build are blocked because `dart`/`flutter` are not available on PATH in this shell.
+
+Known limitations:
+
+- Video posts are not included in this pass.
+- Edit post supports media replacement when new images are selected, but not a separate clear-all-media action.
+- Demo seed media paths may need real image files for a fully polished visual walkthrough.
 
 ## Safety And Moderation Pass
 

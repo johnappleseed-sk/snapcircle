@@ -151,7 +151,7 @@ class ExploreController extends Controller
         $authUser = $request->user();
 
         return Post::query()
-            ->with('user.setting')
+            ->with(['user.setting', 'media'])
             ->withCount(['likes', 'comments', 'savedPosts'])
             ->withExists([
                 'likes as liked_by_me' => fn ($query) => $query->where('user_id', $authUser->id),

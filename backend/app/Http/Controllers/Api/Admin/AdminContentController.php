@@ -11,13 +11,14 @@ use App\Models\Post;
 use App\Support\Pagination;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class AdminContentController extends Controller
 {
     public function posts(Request $request): JsonResponse
     {
         $posts = Post::query()
-            ->with('user.setting')
+            ->with(['user.setting', 'media'])
             ->withCount(['likes', 'comments', 'savedPosts', 'reports'])
             ->latest()
             ->paginate(Pagination::perPage($request))
@@ -36,6 +37,14 @@ class AdminContentController extends Controller
 
     public function deletePost(Post $post): JsonResponse
     {
+        $paths = $post->media()->pluck('path')
+            ->when($post->image_path, fn ($collection) => $collection->push($post->image_path))
+            ->filter(fn (?string $path): bool => filled($path) && ! str_starts_with($path, 'http'))
+            ->unique()
+            ->values();
+
+        Storage::disk('public')->delete($paths->all());
+        $post->media()->delete();
         $post->delete();
 
         return ApiResponse::success('Post deleted by moderation.');

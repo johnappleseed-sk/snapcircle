@@ -1,6 +1,6 @@
 # SnapCircle Frontend / Backend Gaps
 
-Last updated: 2026-06-11
+Last updated: 2026-06-12
 
 This file records feature gaps and mismatches found while connecting the Flutter frontend to the existing Laravel API. The frontend should only call routes that exist in `backend/routes/api.php`.
 
@@ -115,7 +115,7 @@ Remaining gaps:
 
 - Refresh-token rotation is still not implemented; the app continues to use Sanctum bearer tokens and session-expired handling.
 - `DELETE /conversations/{conversation}` remains an MVP limitation until the backend implements real deletion.
-- Multiple-image posts and video uploads are not implemented; the current post flow supports text plus one image.
+- Video uploads are not implemented; the post flow now supports text, one image, or multiple image carousel posts.
 - Admin user detail and admin post/comment moderation screens remain future Flutter work.
 
 ## Safety And Moderation Pass
@@ -137,3 +137,21 @@ Remaining gaps:
 - `DELETE /conversations/{conversation}` remains an MVP limitation until the backend implements real deletion.
 - Admin user detail and admin post/comment moderation screens are still future UI work.
 - Blocked users are filtered from the core surfaces, but existing historical conversations are hidden rather than deleted.
+
+## Multiple Image Posts Feature Pass
+
+Date: 2026-06-12
+
+Bugs/gaps resolved:
+
+- Added real backend storage for multiple post images with a `post_media` table and `PostMedia` model.
+- Preserved `posts.image_path` and `image_url` compatibility by mirroring the first media item.
+- Added `images[]` multipart upload support while keeping legacy `image` support.
+- Added Flutter multi-image picking, removable previews, duplicate-submit protection through existing provider loading state, and feed refresh/upsert behavior after create/update.
+- Added carousel media rendering for feed and post detail, plus first-image thumbnails and carousel badges in profile/explore grids.
+
+Remaining gaps:
+
+- Video posts remain future work.
+- Post editing replaces media when new images are selected; it does not yet include a dedicated clear-media action.
+- Seeded demo media paths are lightweight sample paths and may require real files or uploaded content for polished visual demos.

@@ -113,7 +113,7 @@ Do not commit real OAuth secrets or local `.env` files.
 
 1. Register or login with email, or use the demo button for the fastest presentation path.
 2. View the home feed and pull to refresh.
-3. Create a post with text and optionally an image.
+3. Create a post with text, one image, or multiple images.
 4. Like, comment, save, and share a post.
 5. Open Explore, search for people/posts, and use recent searches.
 6. Open a user profile from Explore.
@@ -135,6 +135,28 @@ Do not commit real OAuth secrets or local `.env` files.
 - Blocking hides and prevents core interactions with blocked users, but it does not delete historical data.
 - Local social login needs real OAuth credentials in `backend/.env`.
 - Physical Android device QA still requires a connected phone on the same Wi-Fi as the backend host.
+
+## Multiple Image Posts Feature Pass
+
+SnapCircle now supports carousel-style image posts for Android-first demos.
+
+Backend/API:
+
+- Run `php artisan migrate` so the `post_media` table exists.
+- Create/update posts can send multipart files as `images[]`; old clients can still send `image`.
+- Post responses include `media: [{ id, url, type, sort_order }]` and still include `image_url` for the first image.
+
+Flutter demo behavior:
+
+- Create Post lets users select up to 10 images, preview the selected set, and remove individual images before posting.
+- Feed and post detail show swipeable image carousels with page dots.
+- Profile and Explore grids show the first image with a small multiple-image indicator.
+
+Android test notes:
+
+- Use `10.0.2.2` for emulator API calls and a LAN IP for a physical phone.
+- Run `php artisan storage:link` and make sure `APP_URL` or the served host is reachable from Android so returned media URLs load.
+- Test text-only, single-image, and multiple-image posts before the demo.
 
 ## 6. Troubleshooting
 

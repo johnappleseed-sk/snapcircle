@@ -128,7 +128,7 @@ class ProfileController extends Controller
         $sort = $request->string('sort')->toString();
 
         $postsQuery = $user->posts()
-            ->with('user.setting')
+            ->with(['user.setting', 'media'])
             ->withCount(['likes', 'comments', 'savedPosts'])
             ->withExists([
                 'likes as liked_by_me' => fn ($query) => $query->where('user_id', $request->user()->id),

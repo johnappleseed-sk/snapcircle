@@ -1,6 +1,5 @@
 import 'dart:async';
 
-import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -13,6 +12,7 @@ import '../../../core/utils/date_formatter.dart';
 import '../../reports/widgets/report_dialog.dart';
 import '../models/post_model.dart';
 import '../providers/feed_provider.dart';
+import 'post_media_carousel.dart';
 
 class PostCard extends StatelessWidget {
   final PostModel post;
@@ -41,7 +41,7 @@ class PostCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final hasContent = post.content != null && post.content!.trim().isNotEmpty;
-    final hasImage = post.imageUrl != null && post.imageUrl!.isNotEmpty;
+    final hasMedia = post.media.isNotEmpty;
     final feedProvider = context.watch<FeedProvider>();
     final isLikeUpdating = feedProvider.isLikeUpdating(post.id);
     final isSaveUpdating = feedProvider.isSaveUpdating(post.id);
@@ -50,11 +50,6 @@ class PostCard extends StatelessWidget {
       if (username != null && username.isNotEmpty) '@$username',
       DateFormatter.timeAgo(post.createdAt),
     ].join(' - ');
-    final imageFill = Theme.of(context).colorScheme.surfaceContainerHighest;
-    final mediaCacheWidth =
-        (MediaQuery.sizeOf(context).width *
-                MediaQuery.devicePixelRatioOf(context))
-            .round();
 
     return AppCard(
       onTap: onTap,
@@ -114,32 +109,9 @@ class PostCard extends StatelessWidget {
               ).textTheme.bodyLarge?.copyWith(height: 1.4),
             ),
           ],
-          if (hasImage) ...[
+          if (hasMedia) ...[
             const SizedBox(height: AppSizes.paddingMedium),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
-              child: AspectRatio(
-                aspectRatio: 4 / 3,
-                child: CachedNetworkImage(
-                  imageUrl: post.imageUrl!,
-                  fit: BoxFit.cover,
-                  memCacheWidth: mediaCacheWidth,
-                  placeholder: (context, url) => Container(
-                    color: imageFill,
-                    alignment: Alignment.center,
-                    child: const CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    color: imageFill,
-                    alignment: Alignment.center,
-                    child: const Icon(
-                      Icons.broken_image_outlined,
-                      color: AppColors.mutedText,
-                    ),
-                  ),
-                ),
-              ),
-            ),
+            PostMediaCarousel(media: post.media),
           ],
           const SizedBox(height: AppSizes.paddingMedium),
           Row(

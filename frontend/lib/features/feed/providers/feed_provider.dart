@@ -179,7 +179,11 @@ class FeedProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> createPost({String? content, File? image}) async {
+  Future<bool> createPost({
+    String? content,
+    File? image,
+    List<File> images = const [],
+  }) async {
     _isCreating = true;
     _errorMessage = null;
     notifyListeners();
@@ -188,6 +192,7 @@ class FeedProvider extends ChangeNotifier {
       final post = await _feedRepository.createPost(
         content: content,
         image: image,
+        images: images,
       );
       if (_currentMode == 'all' || _currentMode == 'mine') {
         _posts = [post, ..._posts];
@@ -210,6 +215,7 @@ class FeedProvider extends ChangeNotifier {
     int postId, {
     String? content,
     File? image,
+    List<File> images = const [],
   }) async {
     _isCreating = true;
     _errorMessage = null;
@@ -220,6 +226,7 @@ class FeedProvider extends ChangeNotifier {
         postId,
         content: content,
         image: image,
+        images: images,
       );
       upsertPost(post);
       return post;

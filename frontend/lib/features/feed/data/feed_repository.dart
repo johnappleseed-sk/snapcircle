@@ -55,10 +55,14 @@ class FeedRepository {
     );
   }
 
-  Future<PostModel> createPost({String? content, File? image}) async {
+  Future<PostModel> createPost({
+    String? content,
+    File? image,
+    List<File> images = const [],
+  }) async {
     final result = await _apiClient.post(
       ApiEndpoints.createPost,
-      data: await _buildPostData(content: content, image: image),
+      data: await _buildPostData(content: content, image: image, images: images),
     );
 
     return _parsePostResponse(result.data?.data, result.error);
@@ -73,10 +77,11 @@ class FeedRepository {
     int postId, {
     String? content,
     File? image,
+    List<File> images = const [],
   }) async {
     final result = await _apiClient.put(
       ApiEndpoints.postById(postId),
-      data: await _buildPostData(content: content, image: image),
+      data: await _buildPostData(content: content, image: image, images: images),
     );
 
     return _parsePostResponse(result.data?.data, result.error);
@@ -89,7 +94,11 @@ class FeedRepository {
     }
   }
 
-  Future<FormData> _buildPostData({String? content, File? image}) async {
+  Future<FormData> _buildPostData({
+    String? content,
+    File? image,
+    List<File> images = const [],
+  }) async {
     final data = <String, dynamic>{};
     final trimmedContent = content?.trim();
 
@@ -97,11 +106,27 @@ class FeedRepository {
       data['content'] = trimmedContent;
     }
 
-    if (image != null) {
+    final uploadImages = images.isNotEmpty
+        ? images
+        : (image == null ? const <File>[] : [image]);
+
+    if (uploadImages.length == 1 && image != null && images.isEmpty) {
       final uploadImage = await _imageCompressor.compressPostImage(image);
       data['image'] = await MultipartFile.fromFile(
         uploadImage.path,
         filename: uploadImage.path.split(Platform.pathSeparator).last,
+      );
+    } else if (uploadImages.isNotEmpty) {
+      data['images[]'] = await Future.wait(
+        uploadImages.map((selectedImage) async {
+          final uploadImage = await _imageCompressor.compressPostImage(
+            selectedImage,
+          );
+          return MultipartFile.fromFile(
+            uploadImage.path,
+            filename: uploadImage.path.split(Platform.pathSeparator).last,
+          );
+        }),
       );
     }
 

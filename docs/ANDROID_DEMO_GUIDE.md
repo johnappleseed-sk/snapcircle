@@ -150,24 +150,29 @@ Use this checklist for emulator or real-device smoke testing:
 4. Pull to refresh feed.
 5. Create text post.
 6. Create image post.
-7. Like and unlike a post.
-8. Comment on a post.
-9. Save and unsave a post.
-10. Explore/search.
-11. View another user profile.
-12. Report a user or post with a specific reason.
-13. Block a user from the profile menu or feed post menu.
-14. Confirm blocked user's posts are hidden and follow/message actions are unavailable.
-15. Open Settings > Blocked users and unblock the user.
-16. Edit own profile.
-17. Upload avatar.
-18. View notifications.
-19. Open chat.
-20. Send message.
-21. Open settings.
-22. Logout.
-23. Login again.
-24. Confirm token persistence by closing and reopening the app while logged in.
+7. Create multiple-image post.
+8. Remove one selected image before posting.
+9. Swipe carousel in feed.
+10. Open post detail and swipe carousel.
+11. Confirm profile grid shows the first image and multiple-image indicator.
+12. Like and unlike a post.
+13. Comment on a post.
+14. Save and unsave a post.
+15. Explore/search.
+16. View another user profile.
+17. Report a user or post with a specific reason.
+18. Block a user from the profile menu or feed post menu.
+19. Confirm blocked user's posts are hidden and follow/message actions are unavailable.
+20. Open Settings > Blocked users and unblock the user.
+21. Edit own profile.
+22. Upload avatar.
+23. View notifications.
+24. Open chat.
+25. Send message.
+26. Open settings.
+27. Logout.
+28. Login again.
+29. Confirm token persistence by closing and reopening the app while logged in.
 
 ## Troubleshooting
 
@@ -227,3 +232,14 @@ Phone and computer not on same Wi-Fi:
 - Release signing is not configured for production distribution.
 - Physical-device testing still depends on the phone being able to reach the developer machine over Wi-Fi.
 - Blocking and reporting are ready for demo, but manual real-device QA should still confirm feed filtering, profile state, chat prevention, and blocked-users settings on the target phone.
+
+## Multiple Image Posts Feature Pass
+
+Android-specific notes:
+
+- The create post screen uses Android's system photo picker through `image_picker.pickMultiImage`.
+- Users can select up to 10 images; the Laravel API validates the same maximum and 4 MB per image.
+- Multiple images are uploaded as multipart `images[]`; legacy single-image uploads with `image` still work.
+- Feed and post detail use a horizontal carousel with page dots.
+- Profile and Explore grids use the first image as the thumbnail and show a stacked-image indicator when a post has multiple images.
+- Returned media URLs require `php artisan storage:link` and a backend host reachable from the Android emulator or phone.

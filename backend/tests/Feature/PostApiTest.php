@@ -5,6 +5,8 @@ namespace Tests\Feature;
 use App\Models\Post;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Storage;
 use Laravel\Sanctum\Sanctum;
 use Tests\TestCase;
 
@@ -169,6 +171,35 @@ class PostApiTest extends TestCase
             'user_id' => $user->id,
             'content' => 'A clean text-only post.',
         ]);
+    }
+
+    public function test_authenticated_user_can_create_post_with_multiple_images(): void
+    {
+        Storage::fake('public');
+        $user = User::factory()->create();
+
+        Sanctum::actingAs($user);
+
+        $this->post('/api/posts', [
+            'content' => 'Photo carousel',
+            'images' => [
+                UploadedFile::fake()->image('first.jpg'),
+                UploadedFile::fake()->image('second.png'),
+            ],
+        ])
+            ->assertCreated()
+            ->assertJsonPath('success', true)
+            ->assertJsonPath('data.post.content', 'Photo carousel')
+            ->assertJsonCount(2, 'data.post.media')
+            ->assertJsonPath('data.post.media.0.type', 'image')
+            ->assertJsonPath('data.post.media.0.sort_order', 0)
+            ->assertJsonPath('data.post.media.1.sort_order', 1);
+
+        $post = Post::query()->where('content', 'Photo carousel')->firstOrFail();
+
+        $this->assertDatabaseCount('post_media', 2);
+        $this->assertSame($post->image_path, $post->media()->first()?->path);
+        Storage::disk('public')->assertExists($post->image_path);
     }
 
     public function test_guest_cannot_create_post(): void

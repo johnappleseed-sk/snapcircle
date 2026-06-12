@@ -152,6 +152,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     },
                     onLoadMore: () =>
                         profileProvider.loadMoreProfilePosts(profile.id),
+                    onPostTap: (post) =>
+                        context.push('/posts/${post.id}', extra: post),
                   ),
                 ],
               ),

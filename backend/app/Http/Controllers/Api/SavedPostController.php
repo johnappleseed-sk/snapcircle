@@ -25,7 +25,7 @@ class SavedPostController extends Controller
 
         $savedPosts = Post::query()
             ->whereHas('savedPosts', fn ($query) => $query->where('user_id', $authUser->id))
-            ->with('user.setting')
+            ->with(['user.setting', 'media'])
             ->withCount(['likes', 'comments', 'savedPosts'])
             ->withExists([
                 'likes as liked_by_me' => fn ($query) => $query->where('user_id', $authUser->id),

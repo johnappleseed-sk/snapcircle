@@ -92,6 +92,26 @@ class DatabaseSeeder extends Seeder
             ],
         ])->map(fn (array $post) => Post::query()->create($post));
 
+        $posts->each(function (Post $post): void {
+            if (! $post->image_path) {
+                return;
+            }
+
+            $paths = $post->content === 'Small photo dump from the weekend market.'
+                ? [
+                    'posts/weekend-market.jpg',
+                    'posts/weekend-market-2.jpg',
+                    'posts/weekend-market-3.jpg',
+                ]
+                : [$post->image_path];
+
+            collect($paths)->each(fn (string $path, int $index) => $post->media()->create([
+                'path' => $path,
+                'type' => 'image',
+                'sort_order' => $index,
+            ]));
+        });
+
         collect([
             ['user_id' => $users[1]->id, 'post_id' => $posts[0]->id, 'comment' => 'That photo looks peaceful.'],
             ['user_id' => $users[2]->id, 'post_id' => $posts[0]->id, 'comment' => 'The colors are so good.'],
