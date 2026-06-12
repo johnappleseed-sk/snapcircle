@@ -14,6 +14,7 @@ SnapCircle is a full-stack social media mobile application built as an academic 
 - Like and unlike posts
 - Add, edit, and delete comments
 - Follow and unfollow users
+- Private accounts and follow request approval
 - Block and unblock users
 - Report posts, comments, users, and messages for moderation review
 - Admin report review and moderation status updates
@@ -157,10 +158,11 @@ Full Android install, APK, and real-device QA details are in [Android Demo Guide
 4. Like, comment, save, and share posts.
 5. Explore/search users and posts.
 6. Report or block a user/post, then review blocked users in Settings.
-7. View and edit profile details.
-8. Review notifications.
-9. Send a chat message.
-10. Review settings and logout.
+7. Turn on Private account, approve/reject follow requests, and confirm private posts are protected.
+8. View and edit profile details.
+9. Review notifications.
+10. Send a chat message.
+11. Review settings and logout.
 
 ## Environment Variable Notes
 
@@ -181,6 +183,21 @@ SnapCircle supports Android-first carousel posts without removing single-image c
 - Profile and Explore grids show the first image and a multiple-image badge.
 
 Known limitations: image-only media for this pass, no video upload yet, and edit-post media removal is handled through replacement rather than a dedicated clear-all action.
+
+## Private Account and Follow Requests Feature Pass
+
+SnapCircle now supports private-account social behavior:
+
+- Existing `users.is_private` is enforced by backend visibility rules.
+- `follows.status` supports `pending` and `accepted`.
+- Public accounts accept follows immediately.
+- Private accounts create follow requests that owners can approve or reject.
+- Feed, Explore, profile posts, stories, post detail, comments, likes, and saves respect private content access.
+- Flutter Privacy Settings includes a Private account toggle.
+- Flutter includes a Follow Requests screen with approve/reject controls.
+- Profile/search/explore UI shows Follow, Requested, Following, Blocked, and private lock states.
+
+Known limitations: follower removal is available in the API but not yet exposed in a dedicated Flutter follower-management screen, and existing followers remain approved when an account turns private.
 
 ## Documentation
 

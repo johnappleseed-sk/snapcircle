@@ -14,11 +14,13 @@ class ProfileProvider extends ChangeNotifier {
   List<PostModel> _profilePosts = [];
   List<StoryModel> _profileStories = [];
   List<UserModel> _blockedUsers = [];
+  List<UserModel> _followRequests = [];
   bool _isLoading = false;
   bool _isUpdating = false;
   bool _isFollowing = false;
   bool _isBlocking = false;
   bool _isLoadingBlockedUsers = false;
+  bool _isLoadingFollowRequests = false;
   bool _isLoadingPosts = false;
   bool _isLoadingMorePosts = false;
   bool _isLoadingStories = false;
@@ -37,11 +39,13 @@ class ProfileProvider extends ChangeNotifier {
   List<PostModel> get profilePosts => List.unmodifiable(_profilePosts);
   List<StoryModel> get profileStories => List.unmodifiable(_profileStories);
   List<UserModel> get blockedUsers => List.unmodifiable(_blockedUsers);
+  List<UserModel> get followRequests => List.unmodifiable(_followRequests);
   bool get isLoading => _isLoading;
   bool get isUpdating => _isUpdating;
   bool get isFollowing => _isFollowing;
   bool get isBlocking => _isBlocking;
   bool get isLoadingBlockedUsers => _isLoadingBlockedUsers;
+  bool get isLoadingFollowRequests => _isLoadingFollowRequests;
   bool get isLoadingPosts => _isLoadingPosts;
   bool get isLoadingMorePosts => _isLoadingMorePosts;
   bool get isLoadingStories => _isLoadingStories;
@@ -258,6 +262,32 @@ class ProfileProvider extends ChangeNotifier {
     return _setFollowStatus(userId, shouldFollow: false);
   }
 
+  Future<void> fetchFollowRequests() async {
+    _isLoadingFollowRequests = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await _profileRepository.getFollowRequests();
+      _followRequests = response.items;
+    } on ProfileException catch (error) {
+      _errorMessage = error.message;
+    } catch (_) {
+      _errorMessage = 'Unable to load follow requests. Please try again.';
+    } finally {
+      _isLoadingFollowRequests = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> approveFollowRequest(int userId) async {
+    return _handleFollowRequest(userId, shouldApprove: true);
+  }
+
+  Future<bool> rejectFollowRequest(int userId) async {
+    return _handleFollowRequest(userId, shouldApprove: false);
+  }
+
   Future<void> fetchBlockedUsers() async {
     _isLoadingBlockedUsers = true;
     _errorMessage = null;
@@ -289,6 +319,12 @@ class ProfileProvider extends ChangeNotifier {
     notifyListeners();
   }
 
+  void clearPrivateProfileContent() {
+    _profilePosts = [];
+    _profileStories = [];
+    notifyListeners();
+  }
+
   Future<bool> _setFollowStatus(
     int userId, {
     required bool shouldFollow,
@@ -308,13 +344,23 @@ class ProfileProvider extends ChangeNotifier {
 
       final user = _selectedUser;
       if (user != null && user.id == userId) {
+        final followStatus =
+            response['follow_status']?.toString() ??
+            (shouldFollow ? 'following' : 'not_following');
+        final isFollowed = response['is_followed_by_me'] is bool
+            ? response['is_followed_by_me'] as bool
+            : followStatus == 'following';
+        final hasRequested = response['has_requested_follow'] is bool
+            ? response['has_requested_follow'] as bool
+            : followStatus == 'requested';
+
         _selectedUser = user.copyWith(
-          isFollowedByMe: response['is_followed_by_me'] is bool
-              ? response['is_followed_by_me'] as bool
-              : shouldFollow,
+          isFollowedByMe: isFollowed,
+          hasRequestedFollow: hasRequested,
+          followStatus: followStatus,
           followersCount: response['followers_count'] is int
               ? response['followers_count'] as int
-              : _optimisticFollowersCount(user, shouldFollow),
+              : _optimisticFollowersCount(user, isFollowed),
         );
       }
 
@@ -375,6 +421,47 @@ class ProfileProvider extends ChangeNotifier {
       return false;
     } finally {
       _isBlocking = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> _handleFollowRequest(
+    int userId, {
+    required bool shouldApprove,
+  }) async {
+    if (_isFollowing) {
+      return false;
+    }
+
+    _isFollowing = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      if (shouldApprove) {
+        await _profileRepository.approveFollowRequest(userId);
+      } else {
+        await _profileRepository.rejectFollowRequest(userId);
+      }
+      _followRequests = _followRequests
+          .where((user) => user.id != userId)
+          .toList();
+      if (_profile != null && shouldApprove) {
+        _profile = _profile!.copyWith(
+          followersCount: _profile!.followersCount + 1,
+        );
+      }
+      return true;
+    } on ProfileException catch (error) {
+      _errorMessage = error.message;
+      return false;
+    } catch (_) {
+      _errorMessage = shouldApprove
+          ? 'Unable to approve this request.'
+          : 'Unable to reject this request.';
+      return false;
+    } finally {
+      _isFollowing = false;
       notifyListeners();
     }
   }

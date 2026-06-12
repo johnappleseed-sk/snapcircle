@@ -73,6 +73,7 @@ class ProfileController extends Controller
             ->withCount(['posts', 'followers', 'following'])
             ->withExists([
                 'followers as is_followed_by_me' => fn ($query) => $query->where('follower_id', $authUser->id),
+                'pendingFollowRequests as has_requested_follow' => fn ($query) => $query->where('follower_id', $authUser->id),
             ])
             ->when($request->filled('search'), function ($query) use ($request): void {
                 $search = $request->string('search')->toString();
@@ -101,6 +102,13 @@ class ProfileController extends Controller
         $user->is_followed_by_me = $user->followers()
             ->where('follower_id', $request->user()->id)
             ->exists();
+        $user->follow_status = match (true) {
+            $request->user()->id === $user->id => 'own_profile',
+            $request->user()->isBlockingOrBlockedBy($user) => 'blocked',
+            $user->is_followed_by_me => 'following',
+            $user->hasPendingFollowRequestFrom($request->user()) => 'requested',
+            default => 'not_following',
+        };
         $user->is_blocked_by_me = $request->user()->hasBlocked($user);
         $user->has_blocked_me = $user->hasBlocked($request->user());
 
@@ -135,7 +143,7 @@ class ProfileController extends Controller
                 'savedPosts as saved_by_me' => fn ($query) => $query->where('user_id', $request->user()->id),
             ]);
 
-        if ($request->user()->isBlockingOrBlockedBy($user)) {
+        if (! $user->canViewPrivateContent($request->user())) {
             $postsQuery->whereRaw('1 = 0');
         }
 

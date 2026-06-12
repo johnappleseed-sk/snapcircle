@@ -84,8 +84,15 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   SettingsTile(
                     icon: Icons.lock_outline,
                     title: 'Privacy Settings',
-                    subtitle: 'Messages and profile visibility',
+                    subtitle: 'Private account, messages, and profile visibility',
                     onTap: () => context.push('/settings/privacy'),
+                  ),
+                  const SizedBox(height: AppSizes.paddingSmall),
+                  SettingsTile(
+                    icon: Icons.person_add_alt_outlined,
+                    title: 'Follow requests',
+                    subtitle: 'Approve or reject private account requests',
+                    onTap: () => context.push('/follow-requests'),
                   ),
                   const SizedBox(height: AppSizes.paddingSmall),
                   SettingsTile(

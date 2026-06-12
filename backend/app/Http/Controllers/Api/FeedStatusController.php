@@ -7,12 +7,15 @@ use App\Http\Controllers\Controller;
 use App\Models\Notification;
 use App\Models\Post;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class FeedStatusController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
         $latestPost = Post::query()
+            ->visibleTo($request->user())
+            ->whereNotIn('user_id', $request->user()->blockedUserIds())
             ->latest('id')
             ->first(['id', 'created_at']);
 
@@ -24,13 +27,20 @@ class FeedStatusController extends Controller
         return ApiResponse::success('Feed status fetched successfully', [
             'latest_post_id' => $latestPost?->id,
             'latest_post_created_at' => $latestPost?->created_at?->toJSON(),
-            'total_posts_count' => Post::query()->count(),
+            'total_posts_count' => Post::query()
+                ->visibleTo($request->user())
+                ->whereNotIn('user_id', $request->user()->blockedUserIds())
+                ->count(),
             'unread_notifications_count' => $unreadNotificationsCount,
         ]);
     }
 
     public function comments(Post $post): JsonResponse
     {
+        if (! $post->user->canViewPrivateContent(request()->user())) {
+            return ApiResponse::error('This post is not available.', [], 404);
+        }
+
         $latestComment = $post->comments()
             ->latest('id')
             ->first(['id', 'created_at']);

@@ -225,11 +225,29 @@ class ExploreProvider extends ChangeNotifier {
 
     try {
       if (user.isFollowedByMe) {
-        await _profileRepository.unfollowUser(user.id);
-        _replaceUser(user.copyWith(isFollowedByMe: false));
+        final response = await _profileRepository.unfollowUser(user.id);
+        _replaceUser(
+          user.copyWith(
+            isFollowedByMe: response['is_followed_by_me'] == true,
+            hasRequestedFollow: response['has_requested_follow'] == true,
+            followStatus:
+                response['follow_status']?.toString() ?? 'not_following',
+          ),
+        );
       } else {
-        await _profileRepository.followUser(user.id);
-        _replaceUser(user.copyWith(isFollowedByMe: true));
+        final response = await _profileRepository.followUser(user.id);
+        final followStatus =
+            response['follow_status']?.toString() ??
+            (user.isPrivate ? 'requested' : 'following');
+        _replaceUser(
+          user.copyWith(
+            isFollowedByMe: response['is_followed_by_me'] == true,
+            hasRequestedFollow:
+                response['has_requested_follow'] == true ||
+                followStatus == 'requested',
+            followStatus: followStatus,
+          ),
+        );
       }
     } catch (_) {
       _errorMessage = 'Unable to update follow status.';

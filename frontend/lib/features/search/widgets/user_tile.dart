@@ -54,7 +54,17 @@ class UserTile extends StatelessWidget {
               ],
             ),
           ),
-          if (user.isFollowedByMe) ...[
+          if (user.isPrivate) ...[
+            const SizedBox(width: 8),
+            const Icon(
+              Icons.lock_outline,
+              size: 16,
+              color: AppColors.textSecondary,
+            ),
+          ],
+          if (user.isFollowedByMe ||
+              user.hasRequestedFollow ||
+              user.followStatus == 'requested') ...[
             const SizedBox(width: 10),
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -63,7 +73,7 @@ class UserTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(999),
               ),
               child: Text(
-                'Following',
+                user.isFollowedByMe ? 'Following' : 'Requested',
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w800,

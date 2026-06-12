@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -58,5 +59,20 @@ class Post extends Model
     public function reports(): MorphMany
     {
         return $this->morphMany(Report::class, 'reportable');
+    }
+
+    public function scopeVisibleTo(Builder $query, User $viewer): Builder
+    {
+        return $query->where(function (Builder $query) use ($viewer): void {
+            $query->where('user_id', $viewer->id)
+                ->orWhereHas('user', fn (Builder $userQuery) => $userQuery->where('is_private', false))
+                ->orWhereExists(function ($subQuery) use ($viewer): void {
+                    $subQuery->selectRaw('1')
+                        ->from('follows')
+                        ->whereColumn('follows.following_id', 'posts.user_id')
+                        ->where('follows.follower_id', $viewer->id)
+                        ->where('follows.status', Follow::STATUS_ACCEPTED);
+                });
+        });
     }
 }

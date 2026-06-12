@@ -31,6 +31,8 @@ class SavedPostController extends Controller
                 'likes as liked_by_me' => fn ($query) => $query->where('user_id', $authUser->id),
                 'savedPosts as saved_by_me' => fn ($query) => $query->where('user_id', $authUser->id),
             ])
+            ->visibleTo($authUser)
+            ->whereNotIn('user_id', $authUser->blockedUserIds())
             ->orderByDesc(
                 SavedPost::query()
                     ->select('created_at')
@@ -52,6 +54,10 @@ class SavedPostController extends Controller
 
     public function store(Request $request, Post $post): JsonResponse
     {
+        if (! $post->user->canViewPrivateContent($request->user())) {
+            return ApiResponse::error('This post is not available.', [], 404);
+        }
+
         $savedPost = SavedPost::query()->firstOrCreate([
             'user_id' => $request->user()->id,
             'post_id' => $post->id,

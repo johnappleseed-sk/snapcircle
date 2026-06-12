@@ -7,6 +7,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Follow extends Model
 {
+    public const STATUS_PENDING = 'pending';
+    public const STATUS_ACCEPTED = 'accepted';
+
     /**
      * The attributes that are mass assignable.
      *
@@ -15,6 +18,7 @@ class Follow extends Model
     protected $fillable = [
         'follower_id',
         'following_id',
+        'status',
     ];
 
     public function follower(): BelongsTo

@@ -16,6 +16,10 @@ class LikeController extends Controller
 
     public function store(Request $request, Post $post): JsonResponse
     {
+        if (! $post->user->canViewPrivateContent($request->user())) {
+            return ApiResponse::error('This post is not available.', [], 404);
+        }
+
         $like = Like::query()->firstOrCreate([
             'user_id' => $request->user()->id,
             'post_id' => $post->id,
@@ -37,6 +41,10 @@ class LikeController extends Controller
 
     public function destroy(Request $request, Post $post): JsonResponse
     {
+        if (! $post->user->canViewPrivateContent($request->user())) {
+            return ApiResponse::error('This post is not available.', [], 404);
+        }
+
         $deleted = Like::query()
             ->where('user_id', $request->user()->id)
             ->where('post_id', $post->id)

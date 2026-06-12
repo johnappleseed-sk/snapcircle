@@ -74,6 +74,44 @@ class NotificationService
         });
     }
 
+    public function createFollowRequestedNotification(User $actor, User $requestedUser): void
+    {
+        if ($actor->id === $requestedUser->id) {
+            return;
+        }
+
+        $this->safeCreate(function () use ($actor, $requestedUser): void {
+            Notification::query()->firstOrCreate([
+                'user_id' => $requestedUser->id,
+                'actor_id' => $actor->id,
+                'type' => Notification::TYPE_FOLLOW_REQUESTED,
+                'read_at' => null,
+            ], [
+                'data' => [
+                    'actor_name' => $actor->name,
+                ],
+            ]);
+        });
+    }
+
+    public function createFollowRequestApprovedNotification(User $owner, User $follower): void
+    {
+        if ($owner->id === $follower->id) {
+            return;
+        }
+
+        $this->safeCreate(function () use ($owner, $follower): void {
+            Notification::query()->create([
+                'user_id' => $follower->id,
+                'actor_id' => $owner->id,
+                'type' => Notification::TYPE_FOLLOW_REQUEST_APPROVED,
+                'data' => [
+                    'actor_name' => $owner->name,
+                ],
+            ]);
+        });
+    }
+
     private function preview(?string $value): ?string
     {
         if (! $value) {

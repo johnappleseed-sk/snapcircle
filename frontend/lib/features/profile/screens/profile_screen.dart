@@ -118,6 +118,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     children: [
                       Expanded(
                         child: OutlinedButton.icon(
+                          onPressed: () => context.push('/follow-requests'),
+                          icon: const Icon(Icons.person_add_alt_outlined),
+                          label: const Text('Requests'),
+                        ),
+                      ),
+                      const SizedBox(width: AppSizes.paddingSmall),
+                      Expanded(
+                        child: OutlinedButton.icon(
                           onPressed: () => context.push('/saved-posts'),
                           icon: const Icon(Icons.bookmark_outline),
                           label: const Text('Saved Posts'),
@@ -133,6 +141,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       ),
                     ],
                   ),
+                  if (profile.isPrivate) ...[
+                    const SizedBox(height: AppSizes.paddingSmall),
+                    OutlinedButton.icon(
+                      onPressed: () => context.push('/settings/privacy'),
+                      icon: const Icon(Icons.lock_outline),
+                      label: const Text('Private account is on'),
+                    ),
+                  ],
                   const SizedBox(height: AppSizes.paddingLarge),
                   ProfileStoriesSection(
                     stories: profileProvider.profileStories,

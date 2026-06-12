@@ -164,15 +164,22 @@ Use this checklist for emulator or real-device smoke testing:
 18. Block a user from the profile menu or feed post menu.
 19. Confirm blocked user's posts are hidden and follow/message actions are unavailable.
 20. Open Settings > Blocked users and unblock the user.
-21. Edit own profile.
-22. Upload avatar.
-23. View notifications.
-24. Open chat.
-25. Send message.
-26. Open settings.
-27. Logout.
-28. Login again.
-29. Confirm token persistence by closing and reopening the app while logged in.
+21. Turn Private account on.
+22. Send a follow request from another account.
+23. Approve a follow request.
+24. Reject a follow request.
+25. Cancel a pending request from the requesting account.
+26. Confirm approved followers can see private posts.
+27. Turn Private account off and confirm normal follow behavior.
+28. Edit own profile.
+29. Upload avatar.
+30. View notifications.
+31. Open chat.
+32. Send message.
+33. Open settings.
+34. Logout.
+35. Login again.
+36. Confirm token persistence by closing and reopening the app while logged in.
 
 ## Troubleshooting
 
@@ -243,3 +250,26 @@ Android-specific notes:
 - Feed and post detail use a horizontal carousel with page dots.
 - Profile and Explore grids use the first image as the thumbnail and show a stacked-image indicator when a post has multiple images.
 - Returned media URLs require `php artisan storage:link` and a backend host reachable from the Android emulator or phone.
+
+## Private Account and Follow Requests Feature Pass
+
+Android-specific notes:
+
+- Settings > Privacy Settings includes a Private account toggle with confirmation.
+- Private accounts require follow approval before posts and stories are visible.
+- Follow Requests is available from Profile and Settings.
+- Pending requests show as Requested on private profiles and can be cancelled by tapping Requested.
+- Follow request notifications open the Follow Requests screen.
+- Backend filters private content in feed, Explore, profile posts, stories, post detail, comments, likes, and saves.
+
+Manual Android checklist:
+
+1. Login as the private account owner.
+2. Enable Private account.
+3. Login as a second user.
+4. Send a follow request.
+5. Confirm the private profile shows the locked message and Requested button.
+6. Login as the owner.
+7. Approve the request from Follow Requests.
+8. Login as the second user and confirm private posts are visible.
+9. Repeat with reject and cancel request paths.

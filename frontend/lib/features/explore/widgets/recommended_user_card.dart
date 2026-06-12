@@ -51,6 +51,14 @@ class RecommendedUserCard extends StatelessWidget {
                 context,
               ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w900),
             ),
+            if (user.isPrivate) ...[
+              const SizedBox(height: 2),
+              const Icon(
+                Icons.lock_outline,
+                size: 16,
+                color: AppColors.textSecondary,
+              ),
+            ],
             const SizedBox(height: 4),
             Text(
               subtitle,
@@ -71,8 +79,15 @@ class RecommendedUserCard extends StatelessWidget {
             ),
             const SizedBox(height: AppSizes.paddingSmall),
             AppButton(
-              label: user.isFollowedByMe ? 'Following' : 'Follow',
-              variant: user.isFollowedByMe
+              label: user.isFollowedByMe
+                  ? 'Following'
+                  : user.hasRequestedFollow || user.followStatus == 'requested'
+                  ? 'Requested'
+                  : 'Follow',
+              variant:
+                  user.isFollowedByMe ||
+                      user.hasRequestedFollow ||
+                      user.followStatus == 'requested'
                   ? AppButtonVariant.outline
                   : AppButtonVariant.primary,
               isLoading: isUpdating,

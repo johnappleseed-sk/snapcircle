@@ -45,6 +45,8 @@ class NotificationResource extends JsonResource
             Notification::TYPE_POST_LIKED => "{$actorName} liked your post.",
             Notification::TYPE_POST_COMMENTED => "{$actorName} commented on your post.",
             Notification::TYPE_USER_FOLLOWED => "{$actorName} started following you.",
+            Notification::TYPE_FOLLOW_REQUESTED => "{$actorName} requested to follow you.",
+            Notification::TYPE_FOLLOW_REQUEST_APPROVED => "{$actorName} approved your follow request.",
             default => 'You have a new notification.',
         };
     }

@@ -39,6 +39,7 @@ class PostController extends Controller
                 'likes as liked_by_me' => fn ($query) => $query->where('user_id', $authUser->id),
                 'savedPosts as saved_by_me' => fn ($query) => $query->where('user_id', $authUser->id),
             ])
+            ->visibleTo($authUser)
             ->whereNotIn('user_id', $blockedUserIds)
             ->when($mode === 'following', function ($query) use ($authUser): void {
                 $followingIds = $authUser->following()->pluck('users.id')->push($authUser->id);
@@ -98,7 +99,7 @@ class PostController extends Controller
 
     public function show(Request $request, Post $post): JsonResponse
     {
-        if ($request->user()->isBlockingOrBlockedBy($post->user)) {
+        if (! $post->user->canViewPrivateContent($request->user())) {
             return ApiResponse::error('This post is not available.', [], 404);
         }
 

@@ -16,6 +16,7 @@ class UserResource extends JsonResource
     {
         $authUser = $request->user();
         $isFollowedByMe = $this->is_followed_by_me;
+        $followStatus = $this->follow_status;
         $settings = $this->whenLoaded('setting');
         if ($settings instanceof \Illuminate\Http\Resources\MissingValue) {
             $settings = $this->setting()->first();
@@ -34,6 +35,20 @@ class UserResource extends JsonResource
         if ($authUser && $authUser->id !== $this->id) {
             $isBlockedByMe ??= $authUser->hasBlocked($this->resource);
             $hasBlockedMe ??= $this->resource->hasBlocked($authUser);
+        }
+
+        if ($followStatus === null && $authUser) {
+            $hasRequestedFollow = array_key_exists('has_requested_follow', $this->resource->getAttributes())
+                ? (bool) $this->has_requested_follow
+                : $this->hasPendingFollowRequestFrom($authUser);
+
+            $followStatus = match (true) {
+                $authUser->id === $this->id => 'own_profile',
+                (bool) $isBlockedByMe || (bool) $hasBlockedMe => 'blocked',
+                (bool) $isFollowedByMe => 'following',
+                $hasRequestedFollow => 'requested',
+                default => 'not_following',
+            };
         }
 
         return [
@@ -69,6 +84,8 @@ class UserResource extends JsonResource
                 : $this->following()->count(),
             'is_me' => $isMe,
             'is_followed_by_me' => (bool) $isFollowedByMe,
+            'has_requested_follow' => $followStatus === 'requested',
+            'follow_status' => $followStatus ?? 'not_following',
             'is_blocked_by_me' => (bool) $isBlockedByMe,
             'has_blocked_me' => (bool) $hasBlockedMe,
             'profile_completion' => $this->profileCompletion(),

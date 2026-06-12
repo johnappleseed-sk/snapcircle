@@ -5,6 +5,7 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/utils/snackbar_helper.dart';
 import '../../../core/widgets/app_card.dart';
+import '../../../core/widgets/confirmation_dialog.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/loading_view.dart';
 import '../models/settings_model.dart';
@@ -48,6 +49,40 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
     }
   }
 
+  Future<void> _updatePrivateAccount(bool value) async {
+    final confirmed = await showConfirmationDialog(
+      context: context,
+      title: value ? 'Make account private?' : 'Make account public?',
+      message: value
+          ? 'Only approved followers will be able to see your posts and stories.'
+          : 'Anyone on SnapCircle will be able to see your posts and stories.',
+      confirmLabel: value ? 'Make private' : 'Make public',
+    );
+    if (!confirmed || !mounted) {
+      return;
+    }
+
+    final success = await context.read<SettingsProvider>().updatePrivateAccount(
+      value,
+    );
+    if (!mounted) {
+      return;
+    }
+
+    if (success) {
+      SnackbarHelper.showSuccess(
+        context,
+        value ? 'Private account enabled.' : 'Your account is public.',
+      );
+    } else {
+      SnackbarHelper.showError(
+        context,
+        context.read<SettingsProvider>().errorMessage ??
+            'Unable to update account privacy.',
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<SettingsProvider>();
@@ -68,6 +103,17 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                 AppCard(
                   child: Column(
                     children: [
+                      SwitchListTile.adaptive(
+                        value: settings?.isPrivate ?? false,
+                        onChanged: provider.isSaving
+                            ? null
+                            : _updatePrivateAccount,
+                        title: const Text('Private account'),
+                        subtitle: const Text(
+                          'When your account is private, only approved followers can see your posts and stories.',
+                        ),
+                      ),
+                      const Divider(),
                       SwitchListTile.adaptive(
                         value: settings?.allowMessages ?? true,
                         onChanged: provider.isSaving
@@ -102,7 +148,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                 ),
                 const SizedBox(height: AppSizes.paddingMedium),
                 Text(
-                  'Some privacy controls will be enforced more deeply in future updates.',
+                  'Private account visibility is enforced by the SnapCircle API for feed, profile posts, stories, and direct post access.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: AppColors.textSecondary,
                   ),

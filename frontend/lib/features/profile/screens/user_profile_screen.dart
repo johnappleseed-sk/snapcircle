@@ -9,6 +9,7 @@ import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/confirmation_dialog.dart';
 import '../../../core/widgets/skeleton_box.dart';
+import '../../auth/models/user_model.dart';
 import '../../auth/providers/auth_provider.dart';
 import '../../chat/providers/conversations_provider.dart';
 import '../../reports/widgets/report_dialog.dart';
@@ -46,9 +47,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
 
     final user = profileProvider.selectedUser;
     if (user != null) {
-      if (!user.isBlockedByMe && !user.hasBlockedMe) {
+      if (_canViewPrivateContent(user)) {
         await profileProvider.fetchProfileStories(user.id, refresh: true);
         await profileProvider.fetchProfilePosts(user.id, refresh: true);
+      } else {
+        profileProvider.clearPrivateProfileContent();
       }
     }
   }
@@ -136,7 +139,19 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       final followed = await profileProvider.followUser(
                         user.id,
                       );
-                      if (!followed && context.mounted) {
+                      if (!context.mounted) {
+                        return;
+                      }
+                      final updatedUser = profileProvider.selectedUser;
+                      if (followed && updatedUser?.followStatus == 'requested') {
+                        SnackbarHelper.showSuccess(
+                          context,
+                          'Follow request sent.',
+                        );
+                      } else if (followed) {
+                        SnackbarHelper.showSuccess(context, 'Following.');
+                        await _refresh();
+                      } else {
                         SnackbarHelper.showError(
                           context,
                           profileProvider.errorMessage ??
@@ -148,7 +163,23 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                       final unfollowed = await profileProvider.unfollowUser(
                         user.id,
                       );
-                      if (!unfollowed && context.mounted) {
+                      if (!context.mounted) {
+                        return;
+                      }
+                      if (unfollowed) {
+                        SnackbarHelper.showSuccess(
+                          context,
+                          user.followStatus == 'requested'
+                              ? 'Follow request cancelled.'
+                              : 'Unfollowed.',
+                        );
+                        if (profileProvider.selectedUser != null &&
+                            !_canViewPrivateContent(
+                              profileProvider.selectedUser!,
+                            )) {
+                          profileProvider.clearPrivateProfileContent();
+                        }
+                      } else {
                         SnackbarHelper.showError(
                           context,
                           profileProvider.errorMessage ??
@@ -182,7 +213,11 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         context.push('/users/${user.id}/following'),
                   ),
                   const SizedBox(height: AppSizes.paddingLarge),
-                  if (!user.isBlockedByMe && !user.hasBlockedMe) ...[
+                  if (user.isBlockedByMe || user.hasBlockedMe)
+                    const SizedBox.shrink()
+                  else if (!_canViewPrivateContent(user))
+                    const _PrivateProfileNotice()
+                  else ...[
                     ProfileStoriesSection(
                       stories: profileProvider.profileStories,
                       isLoading: profileProvider.isLoadingStories,
@@ -209,6 +244,13 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
               ),
       ),
     );
+  }
+
+  bool _canViewPrivateContent(UserModel user) {
+    return user.isMe ||
+        !user.isPrivate ||
+        user.isFollowedByMe ||
+        user.followStatus == 'following';
   }
 
   Future<void> _confirmBlock(int userId) async {
@@ -260,6 +302,19 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
             'Unable to unblock this user.',
       );
     }
+  }
+}
+
+class _PrivateProfileNotice extends StatelessWidget {
+  const _PrivateProfileNotice();
+
+  @override
+  Widget build(BuildContext context) {
+    return const EmptyView(
+      icon: Icons.lock_outline,
+      title: 'This account is private',
+      subtitle: 'Follow this user to see their posts and stories.',
+    );
   }
 }
 

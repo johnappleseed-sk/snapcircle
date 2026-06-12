@@ -26,6 +26,7 @@ import '../core/widgets/app_shell.dart';
 import '../features/post/screens/create_post_screen.dart';
 import '../features/post/screens/create_hub_screen.dart';
 import '../features/profile/screens/edit_profile_screen.dart';
+import '../features/profile/screens/follow_requests_screen.dart';
 import '../features/profile/screens/follow_list_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
 import '../features/profile/screens/user_profile_screen.dart';
@@ -211,6 +212,10 @@ class AppRouter {
         GoRoute(
           path: '/settings/blocked-users',
           builder: (context, state) => const BlockedUsersScreen(),
+        ),
+        GoRoute(
+          path: '/follow-requests',
+          builder: (context, state) => const FollowRequestsScreen(),
         ),
         GoRoute(
           path: '/admin',

@@ -89,19 +89,12 @@ class ProfileHeader extends StatelessWidget {
                               ),
                             ),
                             const SizedBox(width: 8),
-                            user.isFollowedByMe
-                                ? OutlinedButton(
-                                    onPressed: isFollowing ? null : onUnfollow,
-                                    child: Text(
-                                      isFollowing ? 'Updating...' : 'Unfollow',
-                                    ),
-                                  )
-                                : FilledButton(
-                                    onPressed: isFollowing ? null : onFollow,
-                                    child: Text(
-                                      isFollowing ? 'Updating...' : 'Follow',
-                                    ),
-                                  ),
+                            _FollowButton(
+                              user: user,
+                              isUpdating: isFollowing,
+                              onFollow: onFollow,
+                              onUnfollow: onUnfollow,
+                            ),
                           ],
                         ),
                     ],
@@ -183,6 +176,43 @@ class ProfileHeader extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _FollowButton extends StatelessWidget {
+  final UserModel user;
+  final bool isUpdating;
+  final VoidCallback? onFollow;
+  final VoidCallback? onUnfollow;
+
+  const _FollowButton({
+    required this.user,
+    required this.isUpdating,
+    required this.onFollow,
+    required this.onUnfollow,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (user.followStatus == 'requested' || user.hasRequestedFollow) {
+      return OutlinedButton.icon(
+        onPressed: isUpdating ? null : onUnfollow,
+        icon: const Icon(Icons.hourglass_top_outlined),
+        label: Text(isUpdating ? 'Updating...' : 'Requested'),
+      );
+    }
+
+    if (user.isFollowedByMe || user.followStatus == 'following') {
+      return OutlinedButton(
+        onPressed: isUpdating ? null : onUnfollow,
+        child: Text(isUpdating ? 'Updating...' : 'Unfollow'),
+      );
+    }
+
+    return FilledButton(
+      onPressed: isUpdating ? null : onFollow,
+      child: Text(isUpdating ? 'Updating...' : 'Follow'),
     );
   }
 }

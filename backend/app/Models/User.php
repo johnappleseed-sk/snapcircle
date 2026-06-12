@@ -50,6 +50,7 @@ class User extends Authenticatable
     protected $attributes = [
         'account_status' => 'active',
         'role' => 'user',
+        'is_private' => false,
     ];
 
     public function posts(): HasMany
@@ -191,13 +192,64 @@ class User extends Authenticatable
     public function followers(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'follows', 'following_id', 'follower_id')
+            ->wherePivot('status', Follow::STATUS_ACCEPTED)
+            ->withPivot('status')
             ->withTimestamps();
     }
 
     public function following(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'follows', 'follower_id', 'following_id')
+            ->wherePivot('status', Follow::STATUS_ACCEPTED)
+            ->withPivot('status')
             ->withTimestamps();
+    }
+
+    public function pendingFollowRequests(): HasMany
+    {
+        return $this->hasMany(Follow::class, 'following_id')
+            ->where('status', Follow::STATUS_PENDING);
+    }
+
+    public function sentFollowRequests(): HasMany
+    {
+        return $this->hasMany(Follow::class, 'follower_id')
+            ->where('status', Follow::STATUS_PENDING);
+    }
+
+    public function isAcceptedFollower(User $user): bool
+    {
+        if ($this->id === $user->id) {
+            return true;
+        }
+
+        return Follow::query()
+            ->where('follower_id', $user->id)
+            ->where('following_id', $this->id)
+            ->where('status', Follow::STATUS_ACCEPTED)
+            ->exists();
+    }
+
+    public function hasPendingFollowRequestFrom(User $user): bool
+    {
+        return Follow::query()
+            ->where('follower_id', $user->id)
+            ->where('following_id', $this->id)
+            ->where('status', Follow::STATUS_PENDING)
+            ->exists();
+    }
+
+    public function canViewPrivateContent(User $viewer): bool
+    {
+        if ($this->id === $viewer->id) {
+            return true;
+        }
+
+        if ($viewer->isBlockingOrBlockedBy($this)) {
+            return false;
+        }
+
+        return ! $this->is_private || $this->isAcceptedFollower($viewer);
     }
 
     /**

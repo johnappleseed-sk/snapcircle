@@ -38,6 +38,23 @@ class SettingsController extends Controller
         ]);
     }
 
+    public function privacy(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'is_private' => ['required', 'boolean'],
+        ]);
+
+        $request->user()->update([
+            'is_private' => (bool) $validated['is_private'],
+        ]);
+
+        $settings = $this->settingsFor($request);
+
+        return ApiResponse::success('Privacy settings updated successfully', [
+            'settings' => SettingsResource::make($settings->fresh('user')),
+        ]);
+    }
+
     public function deactivate(Request $request): JsonResponse
     {
         $user = $request->user();

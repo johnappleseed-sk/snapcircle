@@ -155,3 +155,21 @@ Remaining gaps:
 - Video posts remain future work.
 - Post editing replaces media when new images are selected; it does not yet include a dedicated clear-media action.
 - Seeded demo media paths are lightweight sample paths and may require real files or uploaded content for polished visual demos.
+
+## Private Account and Follow Requests Feature Pass
+
+Date: 2026-06-12
+
+Bugs/gaps resolved:
+
+- Private accounts now create pending follow requests instead of immediate follows.
+- Accepted follows remain compatible with the existing follow/follower lists.
+- Private posts and stories are hidden from non-followers and blocked users.
+- Follow request notifications and approval notifications are backed by real notification records.
+- Flutter now has a Follow Requests screen and a real private-account settings toggle.
+
+Remaining gaps:
+
+- Follower removal is supported by the backend but not yet exposed as a dedicated Flutter action.
+- Existing accepted followers remain accepted when an account becomes private.
+- Search can still show basic private user profiles, but post/story content remains hidden.

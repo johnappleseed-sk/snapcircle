@@ -17,6 +17,7 @@ class SettingsResource extends JsonResource
             'push_notifications_enabled' => (bool) $this->push_notifications_enabled,
             'email_notifications_enabled' => (bool) $this->email_notifications_enabled,
             'marketing_emails_enabled' => (bool) $this->marketing_emails_enabled,
+            'is_private' => (bool) ($this->user?->is_private ?? false),
             'account_status' => $this->user?->account_status ?? 'active',
         ];
     }

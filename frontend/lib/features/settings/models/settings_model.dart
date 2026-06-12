@@ -4,6 +4,7 @@ class SettingsModel {
   final bool pushNotificationsEnabled;
   final bool emailNotificationsEnabled;
   final bool marketingEmailsEnabled;
+  final bool isPrivate;
   final String accountStatus;
 
   const SettingsModel({
@@ -12,6 +13,7 @@ class SettingsModel {
     this.pushNotificationsEnabled = true,
     this.emailNotificationsEnabled = false,
     this.marketingEmailsEnabled = false,
+    this.isPrivate = false,
     this.accountStatus = 'active',
   });
 
@@ -27,6 +29,7 @@ class SettingsModel {
         json['email_notifications_enabled'],
       ),
       marketingEmailsEnabled: _parseBool(json['marketing_emails_enabled']),
+      isPrivate: _parseBool(json['is_private']),
       accountStatus: json['account_status']?.toString().isNotEmpty == true
           ? json['account_status'].toString()
           : 'active',
@@ -40,6 +43,7 @@ class SettingsModel {
       'push_notifications_enabled': pushNotificationsEnabled,
       'email_notifications_enabled': emailNotificationsEnabled,
       'marketing_emails_enabled': marketingEmailsEnabled,
+      'is_private': isPrivate,
       'account_status': accountStatus,
     };
   }
@@ -60,6 +64,7 @@ class SettingsModel {
     bool? pushNotificationsEnabled,
     bool? emailNotificationsEnabled,
     bool? marketingEmailsEnabled,
+    bool? isPrivate,
     String? accountStatus,
   }) {
     return SettingsModel(
@@ -71,6 +76,7 @@ class SettingsModel {
           emailNotificationsEnabled ?? this.emailNotificationsEnabled,
       marketingEmailsEnabled:
           marketingEmailsEnabled ?? this.marketingEmailsEnabled,
+      isPrivate: isPrivate ?? this.isPrivate,
       accountStatus: accountStatus ?? this.accountStatus,
     );
   }

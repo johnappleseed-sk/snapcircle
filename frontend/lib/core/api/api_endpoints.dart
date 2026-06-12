@@ -15,6 +15,7 @@ class ApiEndpoints {
   static const String createPost = '/posts';
   static const String savedPosts = '/saved-posts';
   static const String settings = '/settings';
+  static const String privacySettings = '/settings/privacy';
   static const String deactivateAccount = '/account/deactivate';
   static const String deleteAccount = '/account';
   static const String feedStatus = '/feed/status';
@@ -39,6 +40,10 @@ class ApiEndpoints {
   static String blockStatus(int id) => '/users/$id/block-status';
   static String followUser(int id) => '/users/$id/follow';
   static String unfollowUser(int id) => '/users/$id/follow';
+  static const String followRequests = '/follow-requests';
+  static String approveFollowRequest(int id) => '/follow-requests/$id/approve';
+  static String rejectFollowRequest(int id) => '/follow-requests/$id/reject';
+  static String removeFollower(int id) => '/followers/$id';
   static String likePost(int postId) => '/posts/$postId/like';
   static String unlikePost(int postId) => '/posts/$postId/like';
   static String savePost(int postId) => '/posts/$postId/save';

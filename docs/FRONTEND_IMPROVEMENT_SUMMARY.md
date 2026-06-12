@@ -2,6 +2,37 @@
 
 Last updated: 2026-06-12
 
+## Private Account and Follow Requests Feature Pass
+
+Date: 2026-06-12
+
+Backend improvements:
+
+- Added `status` to `follows` with existing rows backfilled as `accepted`.
+- Added pending follow request behavior for private accounts.
+- Added routes for follow request list, approve, reject, follower removal, and privacy settings update.
+- Added visibility rules for feed, Explore, profile posts, stories, direct post access, comments, likes, and saves.
+- Added notification types for follow request and follow request approval.
+
+Flutter improvements:
+
+- Added `followStatus` and `hasRequestedFollow` parsing to users.
+- Added private account toggle in Privacy Settings.
+- Added Follow Requests screen with approve/reject actions.
+- Updated profile headers, search tiles, recommended user cards, and notification navigation for private/requested states.
+- Private profiles now show a locked content message instead of stale or inaccessible posts.
+
+Verification:
+
+- PHP syntax checks passed for changed backend files.
+- Full backend and Flutter verification remain dependent on local PHP extensions and Flutter PATH availability.
+
+Known limitations:
+
+- Backend follower removal exists, but Flutter does not yet expose a follower management screen.
+- Existing followers are not downgraded when an account switches to private.
+- Private user basics can still appear in search/discovery; media content remains protected.
+
 ## Multiple Image Posts Feature Pass
 
 Date: 2026-06-12

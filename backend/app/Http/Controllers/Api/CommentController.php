@@ -20,6 +20,10 @@ class CommentController extends Controller
 
     public function index(Request $request, Post $post): JsonResponse
     {
+        if (! $post->user->canViewPrivateContent($request->user())) {
+            return ApiResponse::error('This post is not available.', [], 404);
+        }
+
         $comments = $post->comments()
             ->with('user.setting')
             ->whereNotIn('user_id', $request->user()->blockedUserIds())
@@ -36,7 +40,7 @@ class CommentController extends Controller
 
     public function store(StoreCommentRequest $request, Post $post): JsonResponse
     {
-        if ($request->user()->isBlockingOrBlockedBy($post->user)) {
+        if (! $post->user->canViewPrivateContent($request->user())) {
             return ApiResponse::error('You cannot comment on this post.', [], 422);
         }
 

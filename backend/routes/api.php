@@ -51,6 +51,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
     Route::get('/settings', [SettingsController::class, 'show']);
     Route::put('/settings', [SettingsController::class, 'update']);
+    Route::put('/settings/privacy', [SettingsController::class, 'privacy']);
     Route::put('/account/deactivate', [SettingsController::class, 'deactivate'])->middleware('throttle:5,1');
     Route::delete('/account', [SettingsController::class, 'destroy'])->middleware('throttle:5,1');
 
@@ -78,6 +79,10 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
         Route::post('/users/{user}/follow', [FollowController::class, 'store'])->middleware('throttle:30,1');
         Route::delete('/users/{user}/follow', [FollowController::class, 'destroy']);
+        Route::get('/follow-requests', [FollowController::class, 'requests']);
+        Route::post('/follow-requests/{user}/approve', [FollowController::class, 'approve']);
+        Route::post('/follow-requests/{user}/reject', [FollowController::class, 'reject']);
+        Route::delete('/followers/{user}', [FollowController::class, 'removeFollower']);
         Route::get('/users/{user}/followers', [FollowController::class, 'followers']);
         Route::get('/users/{user}/following', [FollowController::class, 'following']);
 

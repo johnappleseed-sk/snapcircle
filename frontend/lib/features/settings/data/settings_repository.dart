@@ -30,6 +30,14 @@ class SettingsRepository {
     return _parseSettingsResponse(result.data?.data, result.error);
   }
 
+  Future<SettingsModel> updatePrivacySetting({required bool isPrivate}) async {
+    final result = await _apiClient.put(
+      ApiEndpoints.privacySettings,
+      data: {'is_private': isPrivate},
+    );
+    return _parseSettingsResponse(result.data?.data, result.error);
+  }
+
   Future<void> deactivateAccount() async {
     final result = await _apiClient.put(ApiEndpoints.deactivateAccount);
     _throwIfError(result.error);

@@ -120,11 +120,14 @@ Do not commit real OAuth secrets or local `.env` files.
 7. Report a post or user with a specific reason.
 8. Block a user from the profile menu or feed post menu, then confirm their content is hidden.
 9. Open Settings > Blocked users and unblock that account.
-10. Open your profile and edit profile details/avatar.
-11. Open Notifications and mark items read.
-12. Open Messages and send a chat message.
-13. If using an admin account, open Admin > Reports and review a report detail/status.
-14. Open Settings, review privacy/notification/account settings, then logout.
+10. Turn Private account on in Privacy Settings.
+11. Login as another user, send a follow request, and confirm the profile shows Requested.
+12. Return to the private account and approve or reject the request from Follow Requests.
+13. Open your profile and edit profile details/avatar.
+14. Open Notifications and mark items read.
+15. Open Messages and send a chat message.
+16. If using an admin account, open Admin > Reports and review a report detail/status.
+17. Open Settings, review privacy/notification/account settings, then logout.
 
 ## 5. Known Limitations
 
@@ -157,6 +160,35 @@ Android test notes:
 - Use `10.0.2.2` for emulator API calls and a LAN IP for a physical phone.
 - Run `php artisan storage:link` and make sure `APP_URL` or the served host is reachable from Android so returned media URLs load.
 - Test text-only, single-image, and multiple-image posts before the demo.
+
+## Private Account and Follow Requests Feature Pass
+
+Backend/API:
+
+- `users.is_private` controls account privacy.
+- `follows.status` stores `pending` or `accepted`.
+- Public accounts accept follows immediately.
+- Private accounts create pending follow requests.
+- `GET /follow-requests` lists pending requests for the authenticated user.
+- `POST /follow-requests/{user}/approve` accepts a request.
+- `POST /follow-requests/{user}/reject` rejects a request.
+- `PUT /settings/privacy` updates the private account toggle.
+
+Visibility rules:
+
+- Owners and accepted followers can see private posts and stories.
+- Non-followers and blocked users cannot see private posts or stories.
+- Profile basics can still appear for discovery and search.
+
+Android demo steps:
+
+1. Login as Maya and enable Private account in Settings > Privacy Settings.
+2. Login as Dara and open Maya's profile.
+3. Tap Follow and confirm the button changes to Requested.
+4. Login as Maya, open Follow Requests, and approve Dara.
+5. Login as Dara again and confirm Maya's posts and stories are visible.
+6. Repeat with another request and reject it.
+7. Cancel a pending request by tapping Requested.
 
 ## 6. Troubleshooting
 

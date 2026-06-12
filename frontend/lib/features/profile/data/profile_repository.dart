@@ -200,6 +200,42 @@ class ProfileRepository {
     return _parseFollowResponse(result.data?.data, result.error);
   }
 
+  Future<PaginatedResponse<UserModel>> getFollowRequests({
+    int page = 1,
+    int perPage = 15,
+  }) async {
+    final result = await _apiClient.get(
+      ApiEndpoints.followRequests,
+      queryParameters: {'page': page, 'per_page': perPage},
+    );
+
+    return _parseUsersResponse(
+      result.data?.data,
+      result.error,
+      page: page,
+      perPage: perPage,
+    );
+  }
+
+  Future<void> approveFollowRequest(int userId) async {
+    final result = await _apiClient.post(
+      ApiEndpoints.approveFollowRequest(userId),
+    );
+    _readResponse(result.data?.data, result.error);
+  }
+
+  Future<void> rejectFollowRequest(int userId) async {
+    final result = await _apiClient.post(
+      ApiEndpoints.rejectFollowRequest(userId),
+    );
+    _readResponse(result.data?.data, result.error);
+  }
+
+  Future<void> removeFollower(int userId) async {
+    final result = await _apiClient.delete(ApiEndpoints.removeFollower(userId));
+    _readResponse(result.data?.data, result.error);
+  }
+
   Future<UserModel> blockUser(int userId) async {
     final result = await _apiClient.post(ApiEndpoints.blockUser(userId));
     return _parseUserResponse(result.data?.data, result.error);
@@ -308,6 +344,10 @@ class ProfileRepository {
         'following_count': _parseInt(source['following_count']),
       if (source.containsKey('is_followed_by_me'))
         'is_followed_by_me': _parseBool(source['is_followed_by_me']),
+      if (source.containsKey('has_requested_follow'))
+        'has_requested_follow': _parseBool(source['has_requested_follow']),
+      if (source.containsKey('follow_status'))
+        'follow_status': source['follow_status']?.toString(),
     };
   }
 

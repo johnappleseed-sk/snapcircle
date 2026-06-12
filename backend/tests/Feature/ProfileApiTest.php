@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Post;
+use App\Models\Follow;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -205,6 +206,48 @@ class ProfileApiTest extends TestCase
             ->assertOk()
             ->assertJsonPath('data.posts.0.content', 'Profile post')
             ->assertJsonPath('data.posts.0.is_owner', false)
+            ->assertJsonPath('data.meta.total', 1);
+    }
+
+    public function test_private_profile_posts_are_hidden_from_non_followers(): void
+    {
+        $authUser = User::factory()->create();
+        $privateUser = User::factory()->create(['is_private' => true]);
+        Post::query()->create([
+            'user_id' => $privateUser->id,
+            'content' => 'Private post',
+        ]);
+
+        Sanctum::actingAs($authUser);
+
+        $this->getJson("/api/users/{$privateUser->id}/posts")
+            ->assertOk()
+            ->assertJsonPath('data.meta.total', 0);
+
+        $this->getJson('/api/posts')
+            ->assertOk()
+            ->assertJsonMissing(['content' => 'Private post']);
+    }
+
+    public function test_private_profile_posts_are_visible_to_approved_followers(): void
+    {
+        $authUser = User::factory()->create();
+        $privateUser = User::factory()->create(['is_private' => true]);
+        Follow::query()->create([
+            'follower_id' => $authUser->id,
+            'following_id' => $privateUser->id,
+            'status' => Follow::STATUS_ACCEPTED,
+        ]);
+        Post::query()->create([
+            'user_id' => $privateUser->id,
+            'content' => 'Private post',
+        ]);
+
+        Sanctum::actingAs($authUser);
+
+        $this->getJson("/api/users/{$privateUser->id}/posts")
+            ->assertOk()
+            ->assertJsonPath('data.posts.0.content', 'Private post')
             ->assertJsonPath('data.meta.total', 1);
     }
 

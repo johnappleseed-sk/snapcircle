@@ -23,6 +23,8 @@ class UserModel {
   final int followersCount;
   final int followingCount;
   final bool isFollowedByMe;
+  final bool hasRequestedFollow;
+  final String followStatus;
   final bool isBlockedByMe;
   final bool hasBlockedMe;
 
@@ -51,6 +53,8 @@ class UserModel {
     this.followersCount = 0,
     this.followingCount = 0,
     this.isFollowedByMe = false,
+    this.hasRequestedFollow = false,
+    this.followStatus = 'not_following',
     this.isBlockedByMe = false,
     this.hasBlockedMe = false,
   });
@@ -81,6 +85,8 @@ class UserModel {
       followersCount: _parseInt(json['followers_count']),
       followingCount: _parseInt(json['following_count']),
       isFollowedByMe: _parseBool(json['is_followed_by_me']),
+      hasRequestedFollow: _parseBool(json['has_requested_follow']),
+      followStatus: _parseString(json['follow_status']) ?? 'not_following',
       isBlockedByMe: _parseBool(json['is_blocked_by_me']),
       hasBlockedMe: _parseBool(json['has_blocked_me']),
     );
@@ -112,6 +118,8 @@ class UserModel {
       'followers_count': followersCount,
       'following_count': followingCount,
       'is_followed_by_me': isFollowedByMe,
+      'has_requested_follow': hasRequestedFollow,
+      'follow_status': followStatus,
       'is_blocked_by_me': isBlockedByMe,
       'has_blocked_me': hasBlockedMe,
     };
@@ -142,6 +150,8 @@ class UserModel {
     int? followersCount,
     int? followingCount,
     bool? isFollowedByMe,
+    bool? hasRequestedFollow,
+    String? followStatus,
     bool? isBlockedByMe,
     bool? hasBlockedMe,
   }) {
@@ -170,6 +180,8 @@ class UserModel {
       followersCount: followersCount ?? this.followersCount,
       followingCount: followingCount ?? this.followingCount,
       isFollowedByMe: isFollowedByMe ?? this.isFollowedByMe,
+      hasRequestedFollow: hasRequestedFollow ?? this.hasRequestedFollow,
+      followStatus: followStatus ?? this.followStatus,
       isBlockedByMe: isBlockedByMe ?? this.isBlockedByMe,
       hasBlockedMe: hasBlockedMe ?? this.hasBlockedMe,
     );

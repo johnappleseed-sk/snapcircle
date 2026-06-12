@@ -164,7 +164,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       return;
     }
 
-    if (notification.type == 'user_followed' && notification.actor != null) {
+    if (notification.type == 'follow_requested') {
+      context.push('/follow-requests');
+      return;
+    }
+
+    if ((notification.type == 'user_followed' ||
+            notification.type == 'follow_request_approved') &&
+        notification.actor != null) {
       context.push('/users/${notification.actor!.id}');
     }
   }

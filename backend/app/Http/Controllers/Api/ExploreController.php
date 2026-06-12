@@ -157,6 +157,7 @@ class ExploreController extends Controller
                 'likes as liked_by_me' => fn ($query) => $query->where('user_id', $authUser->id),
                 'savedPosts as saved_by_me' => fn ($query) => $query->where('user_id', $authUser->id),
             ])
+            ->visibleTo($authUser)
             ->whereNotIn('user_id', $authUser->blockedUserIds());
     }
 

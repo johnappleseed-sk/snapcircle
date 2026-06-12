@@ -66,6 +66,28 @@ class SettingsProvider extends ChangeNotifier {
     return updateSettings(next);
   }
 
+  Future<bool> updatePrivateAccount(bool isPrivate) async {
+    _isSaving = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      _settings = await _settingsRepository.updatePrivacySetting(
+        isPrivate: isPrivate,
+      );
+      return true;
+    } on SettingsException catch (error) {
+      _errorMessage = error.message;
+      return false;
+    } catch (_) {
+      _errorMessage = 'Unable to update private account setting.';
+      return false;
+    } finally {
+      _isSaving = false;
+      notifyListeners();
+    }
+  }
+
   Future<bool> updateNotifications({
     bool? pushNotificationsEnabled,
     bool? emailNotificationsEnabled,

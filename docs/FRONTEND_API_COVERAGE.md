@@ -32,6 +32,7 @@ Status legend:
 | POST | `/logout` | Used | `AuthRepository.logout`, profile/settings logout flows. |
 | GET | `/settings` | Used | `SettingsRepository`, settings screens. |
 | PUT | `/settings` | Used | Settings update screens. |
+| PUT | `/settings/privacy` | Used | Private account toggle in Privacy Settings. |
 | PUT | `/account/deactivate` | Used | Account settings screen. |
 | DELETE | `/account` | Used | Account settings screen. |
 
@@ -52,7 +53,11 @@ Status legend:
 | DELETE | `/users/{user}/block` | Used | User profile menu and blocked-users settings screen. |
 | GET | `/users/{user}/block-status` | Partially used | Endpoint exists for direct status checks; profile responses already include block state. |
 | POST | `/users/{user}/follow` | Used | Profile and explore follow actions. |
-| DELETE | `/users/{user}/follow` | Used | Profile and explore unfollow actions. |
+| DELETE | `/users/{user}/follow` | Used | Profile and explore unfollow or cancel pending request actions. |
+| GET | `/follow-requests` | Used | Follow Requests screen. |
+| POST | `/follow-requests/{user}/approve` | Used | Approve follow request action. |
+| POST | `/follow-requests/{user}/reject` | Used | Reject follow request action. |
+| DELETE | `/followers/{user}` | Partially used | Backend supports safe follower removal; no dedicated Flutter action yet. |
 | GET | `/users/{user}/followers` | Used | Follow list screen. |
 | GET | `/users/{user}/following` | Used | Follow list screen. |
 
@@ -264,3 +269,28 @@ Known limitations:
 
 - Multiple image upload supports images only; video posts are still a future feature.
 - Existing edit flow can replace media but does not expose a separate "remove all existing images" action.
+
+## Private Account and Follow Requests Feature Pass
+
+Date: 2026-06-12
+
+API coverage update:
+
+- `users.is_private` is now enforced beyond profile editing.
+- `follows.status` supports `pending` and `accepted`.
+- Public-account follows return `follow_status: following`.
+- Private-account follows return `follow_status: requested` until approved.
+- Added follow request list, approve, reject, and follower removal backend routes.
+- Added `PUT /settings/privacy` for the Privacy Settings private-account toggle.
+
+Flutter coverage update:
+
+- `UserModel` parses `follow_status` and `has_requested_follow`.
+- Privacy Settings surfaces the private account toggle with confirmation.
+- Profile UI shows Follow, Requested, Following, and Blocked states.
+- Follow Requests screen lists pending requests with approve/reject actions.
+- Notifications can open the follow request screen for follow-request notifications.
+
+Visibility:
+
+- Feed, Explore posts, profile posts, stories, direct post detail, comments, likes, and saves now rely on backend private-content checks.

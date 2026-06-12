@@ -10,6 +10,8 @@ class Notification extends Model
     public const TYPE_POST_LIKED = 'post_liked';
     public const TYPE_POST_COMMENTED = 'post_commented';
     public const TYPE_USER_FOLLOWED = 'user_followed';
+    public const TYPE_FOLLOW_REQUESTED = 'follow_requested';
+    public const TYPE_FOLLOW_REQUEST_APPROVED = 'follow_request_approved';
 
     /**
      * The attributes that are mass assignable.

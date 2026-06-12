@@ -29,6 +29,8 @@ class StoryController extends Controller
 
         $stories = Story::query()
             ->where('expires_at', '>', now())
+            ->visibleTo($authUser)
+            ->whereNotIn('user_id', $authUser->blockedUserIds())
             ->with('user.setting')
             ->withCount('views')
             ->withExists([
@@ -71,7 +73,7 @@ class StoryController extends Controller
 
     public function show(Request $request, Story $story): JsonResponse
     {
-        if ($story->expires_at->isPast()) {
+        if ($story->expires_at->isPast() || ! $story->user->canViewPrivateContent($request->user())) {
             return ApiResponse::error('Story not found or expired', [], 404);
         }
 
@@ -101,7 +103,7 @@ class StoryController extends Controller
 
     public function markAsViewed(Request $request, Story $story): JsonResponse
     {
-        if ($story->expires_at->isPast()) {
+        if ($story->expires_at->isPast() || ! $story->user->canViewPrivateContent($request->user())) {
             return ApiResponse::error('Story not found or expired', [], 404);
         }
 
@@ -128,6 +130,7 @@ class StoryController extends Controller
                 'views as viewed_by_me' => fn ($query) => $query->where('user_id', $request->user()->id),
             ])
             ->latest()
+            ->when(! $user->canViewPrivateContent($request->user()), fn ($query) => $query->whereRaw('1 = 0'))
             ->paginate($perPage);
 
         return ApiResponse::success('User stories fetched successfully', [
