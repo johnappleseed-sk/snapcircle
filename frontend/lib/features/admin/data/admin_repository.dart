@@ -2,6 +2,8 @@ import '../../../core/api/api_client.dart';
 import '../../../core/api/api_endpoints.dart';
 import '../../../core/models/paginated_response.dart';
 import '../../auth/models/user_model.dart';
+import '../../comments/models/comment_model.dart';
+import '../../feed/models/post_model.dart';
 import '../models/admin_dashboard_model.dart';
 import '../models/report_model.dart';
 
@@ -129,6 +131,66 @@ class AdminRepository {
     );
     if (!result.isSuccess) {
       throw AdminException(result.error ?? 'Unable to update user role.');
+    }
+  }
+
+  Future<UserModel> getUser(int userId) async {
+    final result = await _apiClient.get(ApiEndpoints.adminUserById(userId));
+    final response = _read(result.data?.data, result.error);
+    final data = response['data'];
+    final source = data is Map<String, dynamic> ? data : response;
+    final user = source['user'];
+
+    if (user is! Map<String, dynamic>) {
+      throw const AdminException('Invalid admin user response from API.');
+    }
+
+    return UserModel.fromJson(user);
+  }
+
+  Future<List<PostModel>> getPosts({int page = 1}) async {
+    final result = await _apiClient.get(
+      ApiEndpoints.adminPosts,
+      queryParameters: {'page': page},
+    );
+    final response = _read(result.data?.data, result.error);
+    return PaginatedResponse<PostModel>.fromApi(
+      response: response,
+      itemBuilder: PostModel.fromJson,
+      dataKey: 'posts',
+      fallbackPage: page,
+      fallbackPerPage: 15,
+    ).items;
+  }
+
+  Future<void> deletePost(int postId) async {
+    final result = await _apiClient.delete(ApiEndpoints.adminPostById(postId));
+    if (!result.isSuccess) {
+      throw AdminException(result.error ?? 'Unable to delete post.');
+    }
+  }
+
+  Future<List<CommentModel>> getComments({int page = 1}) async {
+    final result = await _apiClient.get(
+      ApiEndpoints.adminComments,
+      queryParameters: {'page': page},
+    );
+    final response = _read(result.data?.data, result.error);
+    return PaginatedResponse<CommentModel>.fromApi(
+      response: response,
+      itemBuilder: CommentModel.fromJson,
+      dataKey: 'comments',
+      fallbackPage: page,
+      fallbackPerPage: 15,
+    ).items;
+  }
+
+  Future<void> deleteComment(int commentId) async {
+    final result = await _apiClient.delete(
+      ApiEndpoints.adminCommentById(commentId),
+    );
+    if (!result.isSuccess) {
+      throw AdminException(result.error ?? 'Unable to delete comment.');
     }
   }
 

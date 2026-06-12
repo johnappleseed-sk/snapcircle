@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../features/admin/screens/admin_dashboard_screen.dart';
+import '../features/admin/screens/admin_comments_screen.dart';
+import '../features/admin/screens/admin_posts_screen.dart';
 import '../features/admin/screens/admin_report_detail_screen.dart';
 import '../features/admin/screens/admin_reports_screen.dart';
+import '../features/admin/screens/admin_user_detail_screen.dart';
 import '../features/admin/screens/admin_users_screen.dart';
 import '../features/auth/providers/auth_provider.dart';
 import '../features/auth/screens/forgot_password_screen.dart';
@@ -239,6 +242,21 @@ class AppRouter {
         GoRoute(
           path: '/admin/users',
           builder: (context, state) => const AdminUsersScreen(),
+        ),
+        GoRoute(
+          path: '/admin/users/:userId',
+          builder: (context, state) {
+            final userId = int.tryParse(state.pathParameters['userId'] ?? '');
+            return AdminUserDetailScreen(userId: userId ?? 0);
+          },
+        ),
+        GoRoute(
+          path: '/admin/posts',
+          builder: (context, state) => const AdminPostsScreen(),
+        ),
+        GoRoute(
+          path: '/admin/comments',
+          builder: (context, state) => const AdminCommentsScreen(),
         ),
         GoRoute(
           path: '/messages',

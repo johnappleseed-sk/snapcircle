@@ -45,6 +45,7 @@ class PostModel {
   final bool isOwner;
   final bool canDelete;
   final bool canUpdate;
+  final int reportsCount;
   final DateTime? createdAt;
   final UserModel user;
 
@@ -62,6 +63,7 @@ class PostModel {
     this.isOwner = false,
     this.canDelete = false,
     this.canUpdate = false,
+    this.reportsCount = 0,
     this.createdAt,
   });
 
@@ -84,6 +86,7 @@ class PostModel {
       isOwner: _parseBool(json['is_owner']),
       canDelete: _parseBool(json['can_delete']),
       canUpdate: _parseBool(json['can_update']),
+      reportsCount: _parseInt(json['reports_count']),
       createdAt: _parseDate(json['created_at']),
       user: userJson is Map<String, dynamic>
           ? UserModel.fromJson(userJson)
@@ -105,6 +108,7 @@ class PostModel {
       'is_owner': isOwner,
       'can_delete': canDelete,
       'can_update': canUpdate,
+      'reports_count': reportsCount,
       'created_at': createdAt?.toIso8601String(),
       'user': user.toJson(),
     };
@@ -123,6 +127,7 @@ class PostModel {
     bool? isOwner,
     bool? canDelete,
     bool? canUpdate,
+    int? reportsCount,
     DateTime? createdAt,
     UserModel? user,
   }) {
@@ -139,6 +144,7 @@ class PostModel {
       isOwner: isOwner ?? this.isOwner,
       canDelete: canDelete ?? this.canDelete,
       canUpdate: canUpdate ?? this.canUpdate,
+      reportsCount: reportsCount ?? this.reportsCount,
       createdAt: createdAt ?? this.createdAt,
       user: user ?? this.user,
     );

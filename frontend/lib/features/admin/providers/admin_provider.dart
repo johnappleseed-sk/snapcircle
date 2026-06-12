@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 
 import '../../auth/models/user_model.dart';
+import '../../comments/models/comment_model.dart';
+import '../../feed/models/post_model.dart';
 import '../data/admin_repository.dart';
 import '../models/admin_dashboard_model.dart';
 import '../models/report_model.dart';
@@ -11,7 +13,10 @@ class AdminProvider extends ChangeNotifier {
   AdminDashboardModel? _dashboard;
   List<ReportModel> _reports = [];
   ReportModel? _selectedReport;
+  UserModel? _selectedUser;
   List<UserModel> _users = [];
+  List<PostModel> _posts = [];
+  List<CommentModel> _comments = [];
   bool _isLoading = false;
   String? _errorMessage;
 
@@ -21,7 +26,10 @@ class AdminProvider extends ChangeNotifier {
   AdminDashboardModel? get dashboard => _dashboard;
   List<ReportModel> get reports => List.unmodifiable(_reports);
   ReportModel? get selectedReport => _selectedReport;
+  UserModel? get selectedUser => _selectedUser;
   List<UserModel> get users => List.unmodifiable(_users);
+  List<PostModel> get posts => List.unmodifiable(_posts);
+  List<CommentModel> get comments => List.unmodifiable(_comments);
   bool get isLoading => _isLoading;
   String? get errorMessage => _errorMessage;
 
@@ -55,10 +63,17 @@ class AdminProvider extends ChangeNotifier {
     await _run(() async => _users = await _repository.getUsers(search: search));
   }
 
+  Future<void> fetchUser(int userId) async {
+    await _run(() async => _selectedUser = await _repository.getUser(userId));
+  }
+
   Future<bool> banUser(int userId, String reason) async {
     return _runBool(() async {
       await _repository.banUser(userId, reason);
       await fetchUsers();
+      if (_selectedUser?.id == userId) {
+        _selectedUser = await _repository.getUser(userId);
+      }
     });
   }
 
@@ -66,6 +81,9 @@ class AdminProvider extends ChangeNotifier {
     return _runBool(() async {
       await _repository.unbanUser(userId);
       await fetchUsers();
+      if (_selectedUser?.id == userId) {
+        _selectedUser = await _repository.getUser(userId);
+      }
     });
   }
 
@@ -73,6 +91,35 @@ class AdminProvider extends ChangeNotifier {
     return _runBool(() async {
       await _repository.updateUserRole(userId, role);
       await fetchUsers();
+      if (_selectedUser?.id == userId) {
+        _selectedUser = await _repository.getUser(userId);
+      }
+    });
+  }
+
+  Future<void> fetchPosts() async {
+    await _run(() async => _posts = await _repository.getPosts());
+  }
+
+  Future<bool> deletePost(int postId) async {
+    return _runBool(() async {
+      await _repository.deletePost(postId);
+      _posts = _posts.where((post) => post.id != postId).toList();
+      _dashboard = await _repository.getDashboard();
+    });
+  }
+
+  Future<void> fetchComments() async {
+    await _run(() async => _comments = await _repository.getComments());
+  }
+
+  Future<bool> deleteComment(int commentId) async {
+    return _runBool(() async {
+      await _repository.deleteComment(commentId);
+      _comments = _comments
+          .where((comment) => comment.id != commentId)
+          .toList();
+      _dashboard = await _repository.getDashboard();
     });
   }
 

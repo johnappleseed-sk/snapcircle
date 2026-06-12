@@ -27,6 +27,9 @@ class UserModel {
   final String followStatus;
   final bool isBlockedByMe;
   final bool hasBlockedMe;
+  final int reportsCount;
+  final String? banReason;
+  final DateTime? bannedAt;
 
   const UserModel({
     required this.id,
@@ -57,6 +60,9 @@ class UserModel {
     this.followStatus = 'not_following',
     this.isBlockedByMe = false,
     this.hasBlockedMe = false,
+    this.reportsCount = 0,
+    this.banReason,
+    this.bannedAt,
   });
 
   factory UserModel.fromJson(Map<String, dynamic> json) {
@@ -89,6 +95,9 @@ class UserModel {
       followStatus: _parseString(json['follow_status']) ?? 'not_following',
       isBlockedByMe: _parseBool(json['is_blocked_by_me']),
       hasBlockedMe: _parseBool(json['has_blocked_me']),
+      reportsCount: _parseInt(json['reports_count']),
+      banReason: _parseString(json['ban_reason']),
+      bannedAt: _parseDate(json['banned_at']),
     );
   }
 
@@ -122,6 +131,9 @@ class UserModel {
       'follow_status': followStatus,
       'is_blocked_by_me': isBlockedByMe,
       'has_blocked_me': hasBlockedMe,
+      'reports_count': reportsCount,
+      'ban_reason': banReason,
+      'banned_at': bannedAt?.toIso8601String(),
     };
   }
 
@@ -154,6 +166,9 @@ class UserModel {
     String? followStatus,
     bool? isBlockedByMe,
     bool? hasBlockedMe,
+    int? reportsCount,
+    String? banReason,
+    DateTime? bannedAt,
   }) {
     return UserModel(
       id: id ?? this.id,
@@ -184,6 +199,9 @@ class UserModel {
       followStatus: followStatus ?? this.followStatus,
       isBlockedByMe: isBlockedByMe ?? this.isBlockedByMe,
       hasBlockedMe: hasBlockedMe ?? this.hasBlockedMe,
+      reportsCount: reportsCount ?? this.reportsCount,
+      banReason: banReason ?? this.banReason,
+      bannedAt: bannedAt ?? this.bannedAt,
     );
   }
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_sizes.dart';
@@ -110,6 +111,7 @@ class _AdminUserTile extends StatelessWidget {
     final isBanned = user.accountStatus == 'banned';
 
     return AppCard(
+      onTap: () => context.push('/admin/users/${user.id}'),
       child: Row(
         children: [
           AppAvatar(
