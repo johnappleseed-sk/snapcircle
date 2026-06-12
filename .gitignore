@@ -44,6 +44,7 @@ frontend/.packages
 # Android build output
 frontend/android/.gradle/
 frontend/android/local.properties
+frontend/android/app/google-services.json
 frontend/android/app/debug/
 frontend/android/app/profile/
 frontend/android/app/release/
@@ -61,6 +62,7 @@ frontend/ios/Runner/GeneratedPluginRegistrant.*
 backend/vendor/
 backend/node_modules/
 backend/storage/*.key
+backend/storage/firebase-service-account*.json
 backend/storage/app/*
 backend/storage/framework/cache/*
 backend/storage/framework/sessions/*

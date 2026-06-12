@@ -12,6 +12,7 @@ class Notification extends Model
     public const TYPE_USER_FOLLOWED = 'user_followed';
     public const TYPE_FOLLOW_REQUESTED = 'follow_requested';
     public const TYPE_FOLLOW_REQUEST_APPROVED = 'follow_request_approved';
+    public const TYPE_MESSAGE_SENT = 'message_sent';
 
     /**
      * The attributes that are mass assignable.

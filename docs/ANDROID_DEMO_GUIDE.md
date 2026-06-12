@@ -273,3 +273,40 @@ Manual Android checklist:
 7. Approve the request from Follow Requests.
 8. Login as the second user and confirm private posts are visible.
 9. Repeat with reject and cancel request paths.
+
+## Android Push Notifications Feature Pass
+
+Android Firebase setup:
+
+- Add Firebase Android app package `com.snapcircle.app`.
+- Download `google-services.json` from Firebase Console.
+- Place it at `frontend/android/app/google-services.json`.
+- Keep `google-services.json` out of git.
+- Store the backend Firebase service account JSON outside git, for example `backend/storage/firebase-service-account.json`.
+- Set `FIREBASE_PROJECT_ID` and `FIREBASE_SERVICE_ACCOUNT_PATH` in `backend/.env`.
+
+Device token API:
+
+- `POST /api/device-tokens` registers the current Android FCM token.
+- `DELETE /api/device-tokens` removes the current Android FCM token on logout when possible.
+
+Notification triggers:
+
+- Likes, comments, follows, follow requests, approved follow requests, and new chat messages create in-app notifications and attempt FCM delivery.
+- Push payloads include route data such as `type`, `post_id`, `user_id`, `conversation_id`, and `message_id`.
+
+Manual Android checklist:
+
+1. Install a build that includes the real `google-services.json`.
+2. Login and confirm a row is created in `device_tokens`.
+3. Trigger a like from another account and confirm the push opens the post.
+4. Trigger a comment and confirm the push opens the post.
+5. Trigger a follow request and confirm the push opens Follow Requests.
+6. Approve a request and confirm the push opens the approving user's profile.
+7. Send a chat message and confirm the push opens the conversation.
+8. Logout and confirm the token is removed when the device is online.
+
+Known limitations:
+
+- A real Firebase project and service account are required before pushes can be delivered.
+- Per-category push preferences are not stored separately yet; the existing Push notifications setting controls delivery globally.

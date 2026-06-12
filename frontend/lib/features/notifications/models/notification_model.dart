@@ -66,6 +66,28 @@ class NotificationModel {
     };
   }
 
+  Map<String, dynamic> get routeData {
+    return {
+      ...?data,
+      'type': _routeType,
+      if (postId != null) 'post_id': postId,
+      if (commentId != null) 'comment_id': commentId,
+      if (actor != null) 'user_id': actor!.id,
+    };
+  }
+
+  String get _routeType {
+    return switch (type) {
+      'post_liked' => 'like',
+      'post_commented' => 'comment',
+      'user_followed' => 'follow',
+      'follow_requested' => 'follow_request',
+      'follow_request_approved' => 'follow_request_approved',
+      'message_sent' => 'message',
+      _ => type,
+    };
+  }
+
   NotificationModel copyWith({
     int? id,
     String? type,

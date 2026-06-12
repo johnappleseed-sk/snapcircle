@@ -190,6 +190,33 @@ Android demo steps:
 6. Repeat with another request and reject it.
 7. Cancel a pending request by tapping Requested.
 
+## Android Push Notifications Feature Pass
+
+Backend/API:
+
+- Run `php artisan migrate` so `device_tokens` exists.
+- Configure `FIREBASE_PROJECT_ID` and `FIREBASE_SERVICE_ACCOUNT_PATH` in `backend/.env`.
+- Keep the Firebase service account JSON outside git.
+- `POST /device-tokens` registers the Android token.
+- `DELETE /device-tokens` removes the Android token.
+
+Flutter demo behavior:
+
+- On login or session restore, Flutter requests notification permission and registers the FCM token.
+- Foreground pushes display as local notifications.
+- Taps route to post detail, Follow Requests, user profile, chat conversation, or Notifications.
+
+Android test notes:
+
+- Add the real `frontend/android/app/google-services.json` before building.
+- Use two accounts so self-actions do not generate pushes.
+- Test like, comment, follow, follow request, approval, and message notifications.
+- Logout should remove the token when the device can reach the API.
+
+Security notes:
+
+- Do not commit `.env`, `google-services.json`, Firebase service account JSON, private keys, API keys, tokens, build outputs, or APK files.
+
 ## 6. Troubleshooting
 
 - Android emulator cannot connect: make sure the backend is running with `--host=0.0.0.0` and use `10.0.2.2`.

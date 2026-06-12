@@ -294,3 +294,30 @@ Flutter coverage update:
 Visibility:
 
 - Feed, Explore posts, profile posts, stories, direct post detail, comments, likes, and saves now rely on backend private-content checks.
+
+## Android Push Notifications Feature Pass
+
+Date: 2026-06-12
+
+API coverage update:
+
+- Added `POST /device-tokens` to register an authenticated user's Android FCM token.
+- Added `DELETE /device-tokens` to remove an authenticated user's Android FCM token.
+- Added `device_tokens` backend storage with duplicate-token prevention.
+- Added Firebase HTTP v1 push delivery behind `FIREBASE_PROJECT_ID` and `FIREBASE_SERVICE_ACCOUNT_PATH`.
+- Existing notification APIs remain unchanged and continue to power the in-app notification screen.
+
+Flutter coverage update:
+
+- Added Firebase Core, Firebase Messaging, and Flutter Local Notifications dependencies.
+- Added Android notification permission and Firebase Gradle setup.
+- Added FCM token registration after login/session restore and unregister on logout.
+- Added token refresh registration.
+- Added foreground local notifications for FCM messages.
+- Added notification tap routing for posts, follow requests, profiles, conversations, and the notifications screen fallback.
+
+Known limitations:
+
+- `frontend/android/app/google-services.json` must be supplied by the developer from Firebase Console.
+- Backend service account JSON must live outside git and be referenced by env.
+- Per-category notification preferences remain a future API/UI expansion.

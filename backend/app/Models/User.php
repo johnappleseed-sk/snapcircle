@@ -89,6 +89,11 @@ class User extends Authenticatable
         return $this->hasMany(Notification::class, 'actor_id');
     }
 
+    public function deviceTokens(): HasMany
+    {
+        return $this->hasMany(DeviceToken::class);
+    }
+
     public function conversations(): BelongsToMany
     {
         return $this->belongsToMany(Conversation::class)

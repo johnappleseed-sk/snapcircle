@@ -81,7 +81,7 @@ class _NotificationSettingsScreenState
                               ),
                         title: const Text('Push notifications'),
                         subtitle: const Text(
-                          'Delivery requires production notification setup later.',
+                          'Likes, comments, follows, requests, approvals, and messages.',
                         ),
                       ),
                       const Divider(),
@@ -119,7 +119,7 @@ class _NotificationSettingsScreenState
                 ),
                 const SizedBox(height: AppSizes.paddingMedium),
                 Text(
-                  'These preferences are stored now; production delivery systems can consume them later.',
+                  'Push delivery requires Android Firebase setup on this device.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: AppColors.textSecondary,
                   ),

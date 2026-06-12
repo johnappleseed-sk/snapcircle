@@ -23,6 +23,7 @@ class ApiEndpoints {
   static const String blocks = '/blocks';
   static const String notificationUnreadCount = '/notifications/unread-count';
   static const String markAllNotificationsRead = '/notifications/read-all';
+  static const String deviceTokens = '/device-tokens';
   static const String conversations = '/conversations';
   static const String stories = '/stories';
   static const String explorePosts = '/explore/posts';

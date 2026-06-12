@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/api/api_client.dart';
+import '../../../core/notifications/push_notification_service.dart';
 import '../data/auth_repository.dart';
 import '../models/auth_response.dart';
 import '../models/user_model.dart';
@@ -37,6 +38,7 @@ class AuthProvider extends ChangeNotifier {
     try {
       _user = await _authRepository.getCurrentUser();
       _isAuthenticated = true;
+      await PushNotificationService.instance.registerDeviceToken();
     } on AuthException catch (error) {
       await _authRepository.clearToken();
       _clearSession();
@@ -132,6 +134,7 @@ class AuthProvider extends ChangeNotifier {
     _errorMessage = null;
 
     try {
+      await PushNotificationService.instance.unregisterDeviceToken();
       await _authRepository.logout();
     } on AuthException catch (error) {
       _errorMessage = error.message;
@@ -169,6 +172,7 @@ class AuthProvider extends ChangeNotifier {
       final authResponse = await loginAction();
       _user = authResponse.user;
       _isAuthenticated = true;
+      await PushNotificationService.instance.registerDeviceToken();
       return true;
     } on AuthException catch (error) {
       _errorMessage = error.message;

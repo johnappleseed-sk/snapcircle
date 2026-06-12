@@ -8,12 +8,18 @@ use App\Http\Requests\StoreMessageRequest;
 use App\Http\Resources\MessageResource;
 use App\Models\Conversation;
 use App\Models\Message;
+use App\Models\User;
+use App\Services\NotificationService;
 use App\Support\Pagination;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class MessageController extends Controller
 {
+    public function __construct(private readonly NotificationService $notifications)
+    {
+    }
+
     public function index(Request $request, Conversation $conversation): JsonResponse
     {
         $this->authorize('view', $conversation);
@@ -42,6 +48,15 @@ class MessageController extends Controller
         ]);
         $conversation->touch();
         $message->load('sender.setting');
+        $conversation->loadMissing('users.setting');
+
+        $conversation->users
+            ->where('id', '!=', $request->user()->id)
+            ->each(fn (User $recipient) => $this->notifications->createMessageSentNotification(
+                $request->user(),
+                $recipient,
+                $message
+            ));
 
         return ApiResponse::success('Message sent successfully', [
             'message' => MessageResource::make($message),

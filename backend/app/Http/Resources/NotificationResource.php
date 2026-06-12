@@ -47,6 +47,7 @@ class NotificationResource extends JsonResource
             Notification::TYPE_USER_FOLLOWED => "{$actorName} started following you.",
             Notification::TYPE_FOLLOW_REQUESTED => "{$actorName} requested to follow you.",
             Notification::TYPE_FOLLOW_REQUEST_APPROVED => "{$actorName} approved your follow request.",
+            Notification::TYPE_MESSAGE_SENT => "{$actorName} sent you a message.",
             default => 'You have a new notification.',
         };
     }

@@ -608,3 +608,23 @@ Recommended next step:
 Recommended next step:
 
 - Run the full Flutter and Laravel verification suite on a configured demo machine, then record a short demo walkthrough using `docs/DEMO_GUIDE.md`.
+
+## Android Push Notifications Feature Pass
+
+Date: 2026-06-12
+
+Improvements completed:
+
+- Added Firebase Messaging and local notification support for Android.
+- Added backend device-token storage and register/remove APIs.
+- Added Firebase HTTP v1 push delivery service with safe no-op behavior when Firebase is not configured.
+- Wired push attempts into likes, comments, follows, follow requests, approvals, and messages.
+- Added foreground local notifications and push tap routing into the existing `go_router` routes.
+- Updated notification settings copy to reflect real Android push delivery setup.
+
+Files changed include backend models, controllers, services, routes, migrations, Flutter auth/bootstrap/routing, notification models/screens, Android Gradle/manifest setup, and documentation.
+
+Remaining limitations:
+
+- Full push testing needs a real Firebase Android project, `google-services.json`, and backend service account JSON outside git.
+- Per-category push preferences remain future work.

@@ -173,3 +173,21 @@ Remaining gaps:
 - Follower removal is supported by the backend but not yet exposed as a dedicated Flutter action.
 - Existing accepted followers remain accepted when an account becomes private.
 - Search can still show basic private user profiles, but post/story content remains hidden.
+
+## Android Push Notifications Feature Pass
+
+Date: 2026-06-12
+
+Bugs/gaps resolved:
+
+- Android FCM token registration now has backend storage and protected API routes.
+- Flutter now initializes Firebase, registers tokens after login, reacts to token rotation, and attempts token cleanup on logout.
+- Push sending is wired to existing notification triggers without replacing in-app notifications.
+- Foreground FCM messages now display local notifications.
+- Push taps route to post detail, follow requests, user profiles, chat conversations, or notifications fallback.
+
+Remaining gaps:
+
+- Real push delivery requires the developer to add `frontend/android/app/google-services.json`.
+- Backend push delivery requires `FIREBASE_PROJECT_ID` and `FIREBASE_SERVICE_ACCOUNT_PATH` in `.env`.
+- Per-category notification preferences for likes, comments, follows, and messages are not persisted separately yet.

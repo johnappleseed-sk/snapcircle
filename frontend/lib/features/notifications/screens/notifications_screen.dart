@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_sizes.dart';
+import '../../../core/notifications/push_notification_service.dart';
 import '../../../core/realtime/realtime_provider.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/empty_view.dart';
@@ -159,21 +159,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       provider.unreadCount,
     );
 
-    if (notification.postId != null) {
-      context.push('/posts/${notification.postId}');
-      return;
-    }
-
-    if (notification.type == 'follow_requested') {
-      context.push('/follow-requests');
-      return;
-    }
-
-    if ((notification.type == 'user_followed' ||
-            notification.type == 'follow_request_approved') &&
-        notification.actor != null) {
-      context.push('/users/${notification.actor!.id}');
-    }
+    PushNotificationService.instance.routeFromData(notification.routeData);
   }
 }
 

@@ -199,6 +199,29 @@ SnapCircle now supports private-account social behavior:
 
 Known limitations: follower removal is available in the API but not yet exposed in a dedicated Flutter follower-management screen, and existing followers remain approved when an account turns private.
 
+## Android Push Notifications Feature Pass
+
+SnapCircle now has Android-first Firebase Cloud Messaging support:
+
+- Flutter includes Firebase initialization, FCM token registration, token refresh handling, foreground local notifications, and notification tap routing.
+- Laravel stores Android FCM tokens in `device_tokens`.
+- New protected routes: `POST /api/device-tokens` and `DELETE /api/device-tokens`.
+- Pushes are triggered for likes, comments, follows, follow requests, follow request approvals, and chat messages.
+- In-app notification records still use the existing notification system.
+- Backend push delivery uses Firebase HTTP v1 and skips safely until Firebase is configured.
+
+Firebase setup required:
+
+1. Create a Firebase Android app with package `com.snapcircle.app`.
+2. Download the real `google-services.json`.
+3. Place it at `frontend/android/app/google-services.json`.
+4. Create a Firebase service account JSON and store it outside git, for example `backend/storage/firebase-service-account.json`.
+5. Set `FIREBASE_PROJECT_ID` and `FIREBASE_SERVICE_ACCOUNT_PATH` in `backend/.env`.
+
+Security notes: do not commit `.env`, `google-services.json`, service account JSON, private keys, API keys, tokens, build outputs, or APK files. These paths are ignored by git.
+
+Known limitations: push preferences are currently controlled by the existing global push toggle; per-category push toggles are a future enhancement.
+
 ## Documentation
 
 - [Backend API Documentation](docs/API_DOCUMENTATION.md)

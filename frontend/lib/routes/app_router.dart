@@ -16,6 +16,7 @@ import '../features/chat/models/conversation_model.dart';
 import '../features/chat/screens/chat_detail_screen.dart';
 import '../features/chat/screens/conversations_screen.dart';
 import '../features/comments/screens/comments_screen.dart';
+import '../core/notifications/push_notification_service.dart';
 import '../features/explore/screens/explore_screen.dart';
 import '../features/feed/models/post_model.dart';
 import '../features/feed/screens/home_screen.dart';
@@ -51,6 +52,7 @@ class AppRouter {
 
   static GoRouter createRouter(AuthProvider authProvider) {
     return GoRouter(
+      navigatorKey: PushNotificationService.navigatorKey,
       initialLocation: splash,
       refreshListenable: authProvider,
       redirect: (context, state) {
