@@ -29,6 +29,7 @@ class ApiEndpoints {
   static const String explorePosts = '/explore/posts';
   static const String exploreUsers = '/explore/users';
   static const String trendingPosts = '/explore/trending-posts';
+  static const String trendingTags = '/explore/trending-tags';
   static const String recommendedUsers = '/explore/recommended-users';
   static const String exploreSearch = '/explore/search';
 
@@ -67,6 +68,7 @@ class ApiEndpoints {
   static String storyById(int id) => '/stories/$id';
   static String storyView(int id) => '/stories/$id/view';
   static String userStories(int userId) => '/users/$userId/stories';
+  static String tagPosts(String tag) => '/explore/tags/$tag/posts';
   static String reportPost(int postId) => '/posts/$postId/report';
   static String reportComment(int commentId) => '/comments/$commentId/report';
   static String reportUser(int userId) => '/users/$userId/report';

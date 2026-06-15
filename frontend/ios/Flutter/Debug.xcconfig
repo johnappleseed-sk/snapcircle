@@ -1,2 +1,6 @@
 #include? "Pods/Target Support Files/Pods-Runner/Pods-Runner.debug.xcconfig"
 #include "Generated.xcconfig"
+CLANG_MODULE_CACHE_PATH=$(PROJECT_TEMP_DIR)/ModuleCache.noindex
+CLANG_MODULES_BUILD_SESSION_FILE=$(CLANG_MODULE_CACHE_PATH)/Session.modulevalidation
+SDK_STAT_CACHE_ENABLE=NO
+CLANG_ENABLE_EXPLICIT_MODULES=NO

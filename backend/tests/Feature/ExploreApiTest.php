@@ -83,6 +83,38 @@ class ExploreApiTest extends TestCase
             ->assertJsonPath('data.data.1.id', $quiet->id);
     }
 
+    public function test_trending_tags_endpoint_extracts_real_hashtags(): void
+    {
+        [$user, $author] = [User::factory()->create(), User::factory()->create()];
+        $this->postFor($author, 'Morning walk #Travel #CityLife #1001');
+        $this->postFor($author, 'Late light #travel #Photography');
+        $this->postFor($author, 'Coffee notes #Cafe');
+
+        Sanctum::actingAs($user);
+
+        $this->getJson('/api/explore/trending-tags')
+            ->assertOk()
+            ->assertJsonPath('data.data.0.tag', 'travel')
+            ->assertJsonPath('data.data.0.label', '#travel')
+            ->assertJsonPath('data.data.0.posts_count', 2)
+            ->assertJsonMissing(['tag' => '1001']);
+    }
+
+    public function test_tag_posts_endpoint_filters_posts_by_hashtag(): void
+    {
+        [$user, $author] = [User::factory()->create(), User::factory()->create()];
+        $match = $this->postFor($author, 'Blue hour from the bridge #Travel');
+        $this->postFor($author, 'Desk setup notes #Work');
+        $this->postFor($author, 'A different tag should stay out #Traveling');
+
+        Sanctum::actingAs($user);
+
+        $this->getJson('/api/explore/tags/travel/posts')
+            ->assertOk()
+            ->assertJsonPath('data.data.0.id', $match->id)
+            ->assertJsonCount(1, 'data.data');
+    }
+
     public function test_recommended_users_excludes_already_followed_users(): void
     {
         [$user, $followed, $recommended] = [
@@ -121,6 +153,8 @@ class ExploreApiTest extends TestCase
         $this->getJson('/api/explore/posts')->assertUnauthorized();
         $this->getJson('/api/explore/users')->assertUnauthorized();
         $this->getJson('/api/explore/trending-posts')->assertUnauthorized();
+        $this->getJson('/api/explore/trending-tags')->assertUnauthorized();
+        $this->getJson('/api/explore/tags/travel/posts')->assertUnauthorized();
         $this->getJson('/api/explore/recommended-users')->assertUnauthorized();
         $this->getJson('/api/explore/search?q=test')->assertUnauthorized();
     }

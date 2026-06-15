@@ -67,27 +67,27 @@ class DatabaseSeeder extends Seeder
         $posts = collect([
             [
                 'user_id' => $users[0]->id,
-                'content' => 'Morning walk by the riverside. The light was perfect today.',
-                'image_path' => 'posts/riverside-morning.jpg',
+                'content' => 'Morning walk by the riverside. The light was perfect today. #travel #goodlight',
+                'image_path' => 'https://picsum.photos/seed/snapcircle-riverside-morning/1080/1080',
             ],
             [
                 'user_id' => $users[1]->id,
-                'content' => 'Trying a new noodle place near campus. Instant favorite.',
-                'image_path' => 'posts/noodle-spot.jpg',
+                'content' => 'Trying a new noodle place near campus. Instant favorite. #foodie #localspots',
+                'image_path' => 'https://picsum.photos/seed/snapcircle-noodle-spot/1080/1080',
             ],
             [
                 'user_id' => $users[2]->id,
-                'content' => 'Sketching layout ideas for my social app assignment.',
+                'content' => 'Sketching layout ideas for my social app assignment. #creative #snapcircle',
                 'image_path' => null,
             ],
             [
                 'user_id' => $users[0]->id,
-                'content' => 'Small photo dump from the weekend market.',
-                'image_path' => 'posts/weekend-market.jpg',
+                'content' => 'Small photo dump from the weekend market. #weekend #citylife',
+                'image_path' => 'https://picsum.photos/seed/snapcircle-weekend-market/1080/1080',
             ],
             [
                 'user_id' => $users[1]->id,
-                'content' => 'Late-night coding session for the backend API.',
+                'content' => 'Late-night coding session for the backend API. #snapcircle #creative',
                 'image_path' => null,
             ],
         ])->map(fn (array $post) => Post::query()->create($post));
@@ -97,11 +97,11 @@ class DatabaseSeeder extends Seeder
                 return;
             }
 
-            $paths = $post->content === 'Small photo dump from the weekend market.'
+            $paths = str_starts_with($post->content, 'Small photo dump from the weekend market.')
                 ? [
-                    'posts/weekend-market.jpg',
-                    'posts/weekend-market-2.jpg',
-                    'posts/weekend-market-3.jpg',
+                    'https://picsum.photos/seed/snapcircle-weekend-market/1080/1080',
+                    'https://picsum.photos/seed/snapcircle-weekend-market-2/1080/1080',
+                    'https://picsum.photos/seed/snapcircle-weekend-market-3/1080/1080',
                 ]
                 : [$post->image_path];
 

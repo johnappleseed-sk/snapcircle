@@ -36,44 +36,58 @@ class _PostMediaCarouselState extends State<PostMediaCarousel> {
       return const SizedBox.shrink();
     }
 
-    final imageFill = Theme.of(context).colorScheme.surfaceContainerHighest;
-    final mediaCacheWidth =
-        (MediaQuery.sizeOf(context).width *
-                MediaQuery.devicePixelRatioOf(context))
-            .round();
-
     return Column(
       children: [
-        ClipRRect(
-          borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
-          child: AspectRatio(
-            aspectRatio: widget.aspectRatio,
-            child: PageView.builder(
-              controller: _pageController,
-              itemCount: media.length,
-              onPageChanged: (value) => setState(() => _page = value),
-              itemBuilder: (context, index) {
-                return CachedNetworkImage(
-                  imageUrl: media[index].url,
-                  fit: BoxFit.cover,
-                  memCacheWidth: mediaCacheWidth,
-                  placeholder: (context, url) => Container(
-                    color: imageFill,
-                    alignment: Alignment.center,
-                    child: const CircularProgressIndicator(strokeWidth: 2),
-                  ),
-                  errorWidget: (context, url, error) => Container(
-                    color: imageFill,
-                    alignment: Alignment.center,
-                    child: const Icon(
-                      Icons.broken_image_outlined,
-                      color: AppColors.mutedText,
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final imageFill = Theme.of(
+              context,
+            ).colorScheme.surfaceContainerHighest;
+            final devicePixelRatio = MediaQuery.devicePixelRatioOf(
+              context,
+            ).clamp(1.0, 2.25);
+            final logicalWidth = constraints.maxWidth.isFinite
+                ? constraints.maxWidth
+                : MediaQuery.sizeOf(context).width;
+            final mediaCacheWidth = (logicalWidth * devicePixelRatio)
+                .round()
+                .clamp(480, 1080);
+
+            return ClipRRect(
+              borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+              child: AspectRatio(
+                aspectRatio: widget.aspectRatio,
+                child: PageView.builder(
+                  controller: _pageController,
+                  itemCount: media.length,
+                  onPageChanged: (value) => setState(() => _page = value),
+                  itemBuilder: (context, index) {
+                    return CachedNetworkImage(
+                      imageUrl: media[index].url,
+                      fit: BoxFit.cover,
+                      memCacheWidth: mediaCacheWidth,
+                      fadeInDuration: const Duration(milliseconds: 120),
+                      placeholderFadeInDuration: Duration.zero,
+                      useOldImageOnUrlChange: true,
+                      placeholder: (context, url) => Container(
+                        color: imageFill,
+                        alignment: Alignment.center,
+                        child: const CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                      errorWidget: (context, url, error) => Container(
+                        color: imageFill,
+                        alignment: Alignment.center,
+                        child: const Icon(
+                          Icons.broken_image_outlined,
+                          color: AppColors.mutedText,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+            );
+          },
         ),
         if (media.length > 1) ...[
           const SizedBox(height: 8),

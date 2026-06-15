@@ -28,6 +28,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  DateTime? _lastLoadMoreAttempt;
+
   @override
   void initState() {
     super.initState();
@@ -50,6 +52,22 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  void _maybeLoadMore(ScrollMetrics metrics) {
+    if (!mounted || metrics.extentAfter > 720) {
+      return;
+    }
+
+    final now = DateTime.now();
+    final lastAttempt = _lastLoadMoreAttempt;
+    if (lastAttempt != null &&
+        now.difference(lastAttempt) < const Duration(milliseconds: 450)) {
+      return;
+    }
+
+    _lastLoadMoreAttempt = now;
+    context.read<FeedProvider>().loadMorePosts();
+  }
+
   @override
   Widget build(BuildContext context) {
     final feedProvider = context.watch<FeedProvider>();
@@ -64,17 +82,26 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('SnapCircle'),
-            Text(
-              'Share moments. Build your circle.',
-              style: Theme.of(
-                context,
-              ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
-            ),
-          ],
+        titleSpacing: AppSizes.paddingMedium,
+        title: Builder(
+          builder: (context) {
+            final showSubtitle = MediaQuery.sizeOf(context).width >= 380;
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('SnapCircle'),
+                if (showSubtitle)
+                  Text(
+                    'Share moments. Build your circle.',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+              ],
+            );
+          },
         ),
         actions: [
           IconButton(
@@ -97,45 +124,21 @@ class _HomeScreenState extends State<HomeScreen> {
               }
             },
           ),
-          IconButton(
-            onPressed: () => context.push('/saved-posts'),
-            icon: const Icon(Icons.bookmark_border_outlined),
-            tooltip: 'Saved posts',
-          ),
-          IconButton(
-            onPressed: () async {
-              await feedProvider.fetchPosts(refresh: true);
-              if (context.mounted) {
-                await context.read<StoriesProvider>().fetchStories(
-                  refresh: true,
-                );
-              }
-              if (context.mounted) {
-                context.read<RealtimeProvider>().markFeedAsSeen();
-                context.read<RealtimeProvider>().checkFeedStatus();
-              }
-            },
-            icon: const Icon(Icons.refresh),
-            tooltip: 'Refresh feed',
+          _HomeOverflowMenu(
+            onSavedPosts: () => context.push('/saved-posts'),
+            onRefresh: () =>
+                _refreshHome(context, feedProvider, realtimeProvider),
           ),
         ],
       ),
       body: RefreshIndicator(
-        onRefresh: () async {
-          await feedProvider.fetchPosts(refresh: true);
-          if (context.mounted) {
-            await context.read<StoriesProvider>().fetchStories(refresh: true);
-          }
-          if (context.mounted) {
-            context.read<RealtimeProvider>().markFeedAsSeen();
-            context.read<RealtimeProvider>().checkFeedStatus();
-          }
-        },
+        onRefresh: () => _refreshHome(context, feedProvider, realtimeProvider),
         child: NotificationListener<ScrollNotification>(
           onNotification: (notification) {
-            if (notification.metrics.pixels >=
-                notification.metrics.maxScrollExtent - 480) {
-              feedProvider.loadMorePosts();
+            if (notification is ScrollUpdateNotification ||
+                notification is OverscrollNotification ||
+                notification is ScrollEndNotification) {
+              _maybeLoadMore(notification.metrics);
             }
             return false;
           },
@@ -154,6 +157,21 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+  }
+
+  Future<void> _refreshHome(
+    BuildContext context,
+    FeedProvider feedProvider,
+    RealtimeProvider realtimeProvider,
+  ) async {
+    await feedProvider.fetchPosts(refresh: true);
+    if (context.mounted) {
+      await context.read<StoriesProvider>().fetchStories(refresh: true);
+    }
+    if (context.mounted) {
+      realtimeProvider.markFeedAsSeen();
+      realtimeProvider.checkFeedStatus();
+    }
   }
 }
 
@@ -180,6 +198,52 @@ class _NotificationIconButton extends StatelessWidget {
   }
 }
 
+class _HomeOverflowMenu extends StatelessWidget {
+  final VoidCallback onSavedPosts;
+  final Future<void> Function() onRefresh;
+
+  const _HomeOverflowMenu({
+    required this.onSavedPosts,
+    required this.onRefresh,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return PopupMenuButton<_HomeMenuAction>(
+      tooltip: 'More feed actions',
+      icon: const Icon(Icons.more_horiz),
+      onSelected: (action) {
+        switch (action) {
+          case _HomeMenuAction.saved:
+            onSavedPosts();
+          case _HomeMenuAction.refresh:
+            onRefresh();
+        }
+      },
+      itemBuilder: (context) => const [
+        PopupMenuItem(
+          value: _HomeMenuAction.saved,
+          child: ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(Icons.bookmark_border_outlined),
+            title: Text('Saved posts'),
+          ),
+        ),
+        PopupMenuItem(
+          value: _HomeMenuAction.refresh,
+          child: ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(Icons.refresh),
+            title: Text('Refresh feed'),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+enum _HomeMenuAction { saved, refresh }
+
 class _FeedBody extends StatelessWidget {
   final FeedProvider feedProvider;
   final bool showNewPostsBanner;
@@ -195,11 +259,19 @@ class _FeedBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final horizontalPadding = screenWidth < 380
+        ? AppSizes.paddingSmall
+        : AppSizes.paddingMedium;
+
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(
+      key: const PageStorageKey('home-feed-list'),
+      cacheExtent: 1000,
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: EdgeInsets.fromLTRB(
+        horizontalPadding,
         AppSizes.paddingMedium,
-        AppSizes.paddingMedium,
-        AppSizes.paddingMedium,
+        horizontalPadding,
         96,
       ),
       itemCount: _itemCount,

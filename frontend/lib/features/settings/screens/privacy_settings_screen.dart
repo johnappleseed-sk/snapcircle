@@ -87,6 +87,9 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
   Widget build(BuildContext context) {
     final provider = context.watch<SettingsProvider>();
     final settings = provider.settings;
+    final horizontalPadding = MediaQuery.sizeOf(context).width < 380
+        ? AppSizes.paddingSmall
+        : AppSizes.paddingMedium;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Privacy Settings')),
@@ -98,9 +101,15 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
               onRetry: provider.fetchSettings,
             )
           : ListView(
-              padding: const EdgeInsets.all(AppSizes.paddingMedium),
+              padding: EdgeInsets.fromLTRB(
+                horizontalPadding,
+                AppSizes.paddingMedium,
+                horizontalPadding,
+                AppSizes.paddingXL,
+              ),
               children: [
                 AppCard(
+                  padding: EdgeInsets.zero,
                   child: Column(
                     children: [
                       SwitchListTile.adaptive(
@@ -112,6 +121,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                         subtitle: const Text(
                           'When your account is private, only approved followers can see your posts and stories.',
                         ),
+                        secondary: const Icon(Icons.lock_outline),
                       ),
                       const Divider(),
                       SwitchListTile.adaptive(
@@ -127,6 +137,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                         subtitle: const Text(
                           'When off, your profile message button is disabled.',
                         ),
+                        secondary: const Icon(Icons.chat_bubble_outline),
                       ),
                       const Divider(),
                       SwitchListTile.adaptive(
@@ -142,6 +153,7 @@ class _PrivacySettingsScreenState extends State<PrivacySettingsScreen> {
                         subtitle: const Text(
                           'Your own profile can still show your email.',
                         ),
+                        secondary: const Icon(Icons.alternate_email),
                       ),
                     ],
                   ),

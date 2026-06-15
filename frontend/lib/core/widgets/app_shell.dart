@@ -28,7 +28,7 @@ class AppShell extends StatelessWidget {
           SafeArea(
             top: false,
             child: Container(
-              padding: const EdgeInsets.fromLTRB(10, 6, 10, 8),
+              padding: const EdgeInsets.fromLTRB(8, 6, 8, 8),
               decoration: BoxDecoration(
                 color: theme.colorScheme.surface,
                 border: Border(top: BorderSide(color: theme.dividerColor)),
@@ -112,12 +112,23 @@ class _NavItem extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 7),
+            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(isSelected ? selectedIcon : icon, color: color),
-                const SizedBox(height: 2),
+                Icon(isSelected ? selectedIcon : icon, color: color, size: 24),
+                const SizedBox(height: 3),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    color: color,
+                    fontSize: 11,
+                    fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
+                  ),
+                ),
+                const SizedBox(height: 3),
                 AnimatedContainer(
                   duration: const Duration(milliseconds: 160),
                   height: 3,
@@ -151,25 +162,41 @@ class _CreateNavItem extends StatelessWidget {
           onTap: onTap,
           borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: 4),
-            child: Center(
-              child: Container(
-                height: 42,
-                width: 42,
-                decoration: BoxDecoration(
-                  color: isSelected
-                      ? Theme.of(context).colorScheme.onSurface
-                      : Theme.of(context).colorScheme.surface,
-                  border: Border.all(color: Theme.of(context).dividerColor),
-                  shape: BoxShape.circle,
+            padding: const EdgeInsets.symmetric(vertical: 3, horizontal: 2),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Container(
+                  height: 38,
+                  width: 38,
+                  decoration: BoxDecoration(
+                    color: isSelected
+                        ? Theme.of(context).colorScheme.onSurface
+                        : Theme.of(context).colorScheme.surface,
+                    border: Border.all(color: Theme.of(context).dividerColor),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Icon(
+                    Icons.add,
+                    color: isSelected
+                        ? Theme.of(context).colorScheme.surface
+                        : Theme.of(context).colorScheme.onSurface,
+                  ),
                 ),
-                child: Icon(
-                  Icons.add,
-                  color: isSelected
-                      ? Theme.of(context).colorScheme.surface
-                      : Theme.of(context).colorScheme.onSurface,
+                const SizedBox(height: 3),
+                Text(
+                  'Create',
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                    fontSize: 11,
+                    fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
+                    color: isSelected
+                        ? Theme.of(context).colorScheme.onSurface
+                        : AppColors.textSecondary,
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
         ),

@@ -14,7 +14,9 @@ class MessageBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final isMine = message.isMine;
     final theme = Theme.of(context);
-    final otherBubble = theme.colorScheme.surfaceContainerHighest;
+    final otherBubble = theme.brightness == Brightness.dark
+        ? theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.72)
+        : theme.colorScheme.surface;
 
     return Align(
       alignment: isMine ? Alignment.centerRight : Alignment.centerLeft,
@@ -27,15 +29,20 @@ class MessageBubble extends StatelessWidget {
             color: isMine ? theme.colorScheme.primary : otherBubble,
             border: isMine ? null : Border.all(color: theme.dividerColor),
             borderRadius: BorderRadius.only(
-              topLeft: const Radius.circular(AppSizes.radiusMedium),
-              topRight: const Radius.circular(AppSizes.radiusMedium),
-              bottomLeft: Radius.circular(
-                isMine ? AppSizes.radiusMedium : AppSizes.radiusSmall,
-              ),
-              bottomRight: Radius.circular(
-                isMine ? AppSizes.radiusSmall : AppSizes.radiusMedium,
-              ),
+              topLeft: const Radius.circular(AppSizes.radiusSmall),
+              topRight: const Radius.circular(AppSizes.radiusSmall),
+              bottomLeft: Radius.circular(isMine ? AppSizes.radiusSmall : 3),
+              bottomRight: Radius.circular(isMine ? 3 : AppSizes.radiusSmall),
             ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(
+                  alpha: theme.brightness == Brightness.dark ? 0.16 : 0.035,
+                ),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+            ],
           ),
           child: Padding(
             padding: const EdgeInsets.symmetric(

@@ -38,9 +38,9 @@ class PostSkeletonCard extends StatelessWidget {
           SizedBox(height: AppSizes.paddingMedium),
           Row(
             children: [
-              _SkeletonLine(widthFactor: 0.14),
+              _SkeletonFixedLine(width: 54),
               SizedBox(width: AppSizes.paddingLarge),
-              _SkeletonLine(widthFactor: 0.14),
+              _SkeletonFixedLine(width: 54),
             ],
           ),
         ],
@@ -75,5 +75,16 @@ class _SkeletonLine extends StatelessWidget {
       widthFactor: widthFactor,
       child: const SkeletonBox(height: 12),
     );
+  }
+}
+
+class _SkeletonFixedLine extends StatelessWidget {
+  final double width;
+
+  const _SkeletonFixedLine({required this.width});
+
+  @override
+  Widget build(BuildContext context) {
+    return SkeletonBox(height: 12, width: width);
   }
 }

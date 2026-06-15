@@ -35,6 +35,8 @@ class ProfileHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isCompact = MediaQuery.sizeOf(context).width < 390;
+
     return AppCard(
       padding: EdgeInsets.zero,
       child: Column(
@@ -55,7 +57,10 @@ class ProfileHeader extends StatelessWidget {
                         padding: const EdgeInsets.all(4),
                         decoration: BoxDecoration(
                           color: Theme.of(context).colorScheme.surface,
-                          shape: BoxShape.circle,
+                          border: Border.all(
+                            color: Theme.of(context).dividerColor,
+                          ),
+                          borderRadius: BorderRadius.circular(999),
                         ),
                         child: AppAvatar(
                           imageUrl: user.avatarUrl ?? user.avatar,
@@ -64,38 +69,15 @@ class ProfileHeader extends StatelessWidget {
                         ),
                       ),
                       const Spacer(),
-                      if (isOwnProfile)
-                        FilledButton.icon(
-                          onPressed: onEdit,
-                          icon: const Icon(Icons.edit_outlined),
-                          label: const Text('Edit'),
-                        )
-                      else if (user.isBlockedByMe || user.hasBlockedMe)
-                        OutlinedButton.icon(
-                          onPressed: null,
-                          icon: const Icon(Icons.block),
-                          label: Text(
-                            user.isBlockedByMe ? 'Blocked' : 'Unavailable',
-                          ),
-                        )
-                      else
-                        Row(
-                          children: [
-                            OutlinedButton.icon(
-                              onPressed: user.allowMessages ? onMessage : null,
-                              icon: const Icon(Icons.chat_bubble_outline),
-                              label: Text(
-                                user.allowMessages ? 'Message' : 'Messages off',
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            _FollowButton(
-                              user: user,
-                              isUpdating: isFollowing,
-                              onFollow: onFollow,
-                              onUnfollow: onUnfollow,
-                            ),
-                          ],
+                      if (!isCompact)
+                        _ProfileActions(
+                          user: user,
+                          isOwnProfile: isOwnProfile,
+                          isFollowing: isFollowing,
+                          onEdit: onEdit,
+                          onFollow: onFollow,
+                          onUnfollow: onUnfollow,
+                          onMessage: onMessage,
                         ),
                     ],
                   ),
@@ -128,6 +110,19 @@ class ProfileHeader extends StatelessWidget {
                           style: Theme.of(context).textTheme.bodyMedium
                               ?.copyWith(color: AppColors.textSecondary),
                         ),
+                      if (isCompact) ...[
+                        const SizedBox(height: AppSizes.paddingSmall),
+                        _ProfileActions(
+                          user: user,
+                          isOwnProfile: isOwnProfile,
+                          isFollowing: isFollowing,
+                          compact: true,
+                          onEdit: onEdit,
+                          onFollow: onFollow,
+                          onUnfollow: onUnfollow,
+                          onMessage: onMessage,
+                        ),
+                      ],
                       if (user.bio != null && user.bio!.trim().isNotEmpty) ...[
                         const SizedBox(height: AppSizes.paddingSmall),
                         Text(user.bio!),
@@ -180,39 +175,147 @@ class ProfileHeader extends StatelessWidget {
   }
 }
 
+class _ProfileActions extends StatelessWidget {
+  final UserModel user;
+  final bool isOwnProfile;
+  final bool isFollowing;
+  final bool compact;
+  final VoidCallback? onEdit;
+  final VoidCallback? onFollow;
+  final VoidCallback? onUnfollow;
+  final VoidCallback? onMessage;
+
+  const _ProfileActions({
+    required this.user,
+    required this.isOwnProfile,
+    required this.isFollowing,
+    this.compact = false,
+    this.onEdit,
+    this.onFollow,
+    this.onUnfollow,
+    this.onMessage,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final outlineStyle = OutlinedButton.styleFrom(
+      minimumSize: Size(0, compact ? 40 : 44),
+      visualDensity: compact ? VisualDensity.compact : VisualDensity.standard,
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 12 : 14,
+        vertical: compact ? 10 : 12,
+      ),
+    );
+    final filledStyle = FilledButton.styleFrom(
+      minimumSize: Size(0, compact ? 40 : 44),
+      visualDensity: compact ? VisualDensity.compact : VisualDensity.standard,
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 14 : 16,
+        vertical: compact ? 10 : 12,
+      ),
+    );
+
+    if (isOwnProfile) {
+      return FilledButton.icon(
+        style: filledStyle,
+        onPressed: onEdit,
+        icon: const Icon(Icons.edit_outlined),
+        label: const Text('Edit'),
+      );
+    }
+
+    if (user.isBlockedByMe || user.hasBlockedMe) {
+      return OutlinedButton.icon(
+        style: outlineStyle,
+        onPressed: null,
+        icon: const Icon(Icons.block),
+        label: Text(user.isBlockedByMe ? 'Blocked' : 'Unavailable'),
+      );
+    }
+
+    final messageLabel = user.allowMessages ? 'Message' : 'Messages off';
+
+    return Wrap(
+      spacing: 8,
+      runSpacing: 8,
+      alignment: compact ? WrapAlignment.start : WrapAlignment.end,
+      children: [
+        Tooltip(
+          message: messageLabel,
+          child: OutlinedButton.icon(
+            style: outlineStyle,
+            onPressed: user.allowMessages ? onMessage : null,
+            icon: const Icon(Icons.chat_bubble_outline),
+            label: Text(compact ? 'Chat' : messageLabel),
+          ),
+        ),
+        _FollowButton(
+          user: user,
+          isUpdating: isFollowing,
+          compact: compact,
+          onFollow: onFollow,
+          onUnfollow: onUnfollow,
+        ),
+      ],
+    );
+  }
+}
+
 class _FollowButton extends StatelessWidget {
   final UserModel user;
   final bool isUpdating;
+  final bool compact;
   final VoidCallback? onFollow;
   final VoidCallback? onUnfollow;
 
   const _FollowButton({
     required this.user,
     required this.isUpdating,
+    this.compact = false,
     required this.onFollow,
     required this.onUnfollow,
   });
 
   @override
   Widget build(BuildContext context) {
+    final outlineStyle = OutlinedButton.styleFrom(
+      minimumSize: Size(0, compact ? 40 : 44),
+      visualDensity: compact ? VisualDensity.compact : VisualDensity.standard,
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 12 : 14,
+        vertical: compact ? 10 : 12,
+      ),
+    );
+    final filledStyle = FilledButton.styleFrom(
+      minimumSize: Size(0, compact ? 40 : 44),
+      visualDensity: compact ? VisualDensity.compact : VisualDensity.standard,
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 14 : 16,
+        vertical: compact ? 10 : 12,
+      ),
+    );
+
     if (user.followStatus == 'requested' || user.hasRequestedFollow) {
       return OutlinedButton.icon(
+        style: outlineStyle,
         onPressed: isUpdating ? null : onUnfollow,
         icon: const Icon(Icons.hourglass_top_outlined),
-        label: Text(isUpdating ? 'Updating...' : 'Requested'),
+        label: Text(isUpdating ? 'Updating' : 'Requested'),
       );
     }
 
     if (user.isFollowedByMe || user.followStatus == 'following') {
       return OutlinedButton(
+        style: outlineStyle,
         onPressed: isUpdating ? null : onUnfollow,
-        child: Text(isUpdating ? 'Updating...' : 'Unfollow'),
+        child: Text(isUpdating ? 'Updating' : 'Unfollow'),
       );
     }
 
     return FilledButton(
+      style: filledStyle,
       onPressed: isUpdating ? null : onFollow,
-      child: Text(isUpdating ? 'Updating...' : 'Follow'),
+      child: Text(isUpdating ? 'Updating' : 'Follow'),
     );
   }
 }
@@ -229,7 +332,7 @@ class _BlockedNotice extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.warning.withValues(alpha: 0.10),
         border: Border.all(color: AppColors.warning.withValues(alpha: 0.24)),
-        borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+        borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
       ),
       child: Row(
         children: [
@@ -259,7 +362,7 @@ class _CoverImage extends StatelessWidget {
     final url = imageUrl;
     return ClipRRect(
       borderRadius: const BorderRadius.vertical(
-        top: Radius.circular(AppSizes.radiusMedium),
+        top: Radius.circular(AppSizes.radiusSmall),
       ),
       child: SizedBox(
         height: 150,
@@ -267,10 +370,12 @@ class _CoverImage extends StatelessWidget {
             ? DecoratedBox(
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                     colors: [
-                      AppColors.primary,
-                      AppColors.secondary,
-                      AppColors.accent.withValues(alpha: 0.8),
+                      AppColors.primary.withValues(alpha: 0.92),
+                      AppColors.info.withValues(alpha: 0.78),
+                      AppColors.accent.withValues(alpha: 0.74),
                     ],
                   ),
                 ),
@@ -294,11 +399,18 @@ class _MetaItem extends StatelessWidget {
       children: [
         Icon(icon, size: 16, color: AppColors.textSecondary),
         const SizedBox(width: 4),
-        Text(
-          label,
-          style: Theme.of(
-            context,
-          ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+        ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.sizeOf(context).width * 0.62,
+          ),
+          child: Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: Theme.of(
+              context,
+            ).textTheme.bodySmall?.copyWith(color: AppColors.textSecondary),
+          ),
         ),
       ],
     );
@@ -330,8 +442,8 @@ class _CompletionBar extends StatelessWidget {
         const SizedBox(height: 6),
         LinearProgressIndicator(
           value: value.clamp(0, 100).toDouble() / 100,
-          minHeight: 8,
-          borderRadius: BorderRadius.circular(999),
+          minHeight: 7,
+          borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
         ),
       ],
     );

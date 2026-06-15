@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/widgets/app_card.dart';
 
@@ -20,7 +21,18 @@ class AdminStatCard extends StatelessWidget {
     return AppCard(
       child: Row(
         children: [
-          Icon(icon, size: 28),
+          Container(
+            height: 42,
+            width: 42,
+            decoration: BoxDecoration(
+              color: AppColors.primary.withValues(alpha: 0.10),
+              border: Border.all(
+                color: AppColors.primary.withValues(alpha: 0.18),
+              ),
+              borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
+            ),
+            child: Icon(icon, size: 23, color: AppColors.primary),
+          ),
           const SizedBox(width: AppSizes.paddingMedium),
           Expanded(
             child: Column(

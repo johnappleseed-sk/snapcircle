@@ -80,6 +80,9 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
   Widget build(BuildContext context) {
     final provider = context.watch<StoriesProvider>();
     final canSubmit = !provider.isCreating && _selectedImage != null;
+    final horizontalPadding = MediaQuery.sizeOf(context).width < 380
+        ? AppSizes.paddingSmall
+        : AppSizes.paddingMedium;
 
     return Scaffold(
       appBar: AppBar(
@@ -95,9 +98,9 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
         child: ListView(
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
             AppSizes.paddingMedium,
-            AppSizes.paddingMedium,
-            AppSizes.paddingMedium,
+            horizontalPadding,
             AppSizes.paddingLarge + MediaQuery.viewInsetsOf(context).bottom,
           ),
           children: [
@@ -108,15 +111,40 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                   if (_selectedImage == null)
                     OutlinedButton(
                       onPressed: provider.isCreating ? null : _pickImage,
-                      child: const Padding(
-                        padding: EdgeInsets.symmetric(
-                          vertical: AppSizes.paddingXL,
+                      style: OutlinedButton.styleFrom(
+                        side: BorderSide(color: Theme.of(context).dividerColor),
+                        backgroundColor: Theme.of(context).colorScheme.surface,
+                      ),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: AppSizes.paddingSmall,
+                          vertical: AppSizes.paddingLarge,
                         ),
                         child: Column(
                           children: [
-                            Icon(Icons.add_photo_alternate_outlined, size: 34),
-                            SizedBox(height: AppSizes.paddingSmall),
-                            Text('Choose story image'),
+                            Container(
+                              height: 56,
+                              width: 56,
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(
+                                  alpha: 0.10,
+                                ),
+                                border: Border.all(
+                                  color: AppColors.primary.withValues(
+                                    alpha: 0.18,
+                                  ),
+                                ),
+                                borderRadius: BorderRadius.circular(
+                                  AppSizes.radiusSmall,
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.add_photo_alternate_outlined,
+                                size: 28,
+                              ),
+                            ),
+                            const SizedBox(height: AppSizes.paddingMedium),
+                            const Text('Choose story image'),
                           ],
                         ),
                       ),
@@ -126,7 +154,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(
-                            AppSizes.radiusMedium,
+                            AppSizes.radiusSmall,
                           ),
                           child: AspectRatio(
                             aspectRatio: 9 / 16,
@@ -190,7 +218,7 @@ class _StoryError extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.error.withValues(alpha: 0.08),
         border: Border.all(color: AppColors.error.withValues(alpha: 0.24)),
-        borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+        borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
       ),
       child: Text(
         message,

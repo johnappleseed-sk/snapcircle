@@ -22,18 +22,26 @@ class EmptyView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSizes.paddingLarge),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircleAvatar(
-              radius: 36,
-              backgroundColor: AppColors.primary.withValues(alpha: 0.10),
-              child: Icon(icon, color: AppColors.primary, size: 34),
+            Container(
+              height: 64,
+              width: 64,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.primary.withValues(alpha: 0.10),
+                border: Border.all(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.20),
+                ),
+                borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
+              ),
+              child: Icon(icon, color: theme.colorScheme.primary, size: 32),
             ),
-            const SizedBox(height: AppSizes.paddingMedium),
+            const SizedBox(height: AppSizes.paddingLarge),
             Text(
               title,
               textAlign: TextAlign.center,
@@ -42,12 +50,15 @@ class EmptyView extends StatelessWidget {
               ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w800),
             ),
             const SizedBox(height: 8),
-            Text(
-              subtitle,
-              textAlign: TextAlign.center,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyMedium?.copyWith(color: AppColors.textSecondary),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 320),
+              child: Text(
+                subtitle,
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: AppColors.textSecondary,
+                ),
+              ),
             ),
             if (actionLabel != null && onAction != null) ...[
               const SizedBox(height: 18),

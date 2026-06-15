@@ -76,17 +76,26 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
+    final horizontalPadding = MediaQuery.sizeOf(context).width < 380
+        ? AppSizes.paddingMedium
+        : AppSizes.paddingLarge;
 
     return Scaffold(
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSizes.paddingLarge),
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
+            AppSizes.paddingLarge,
+            horizontalPadding,
+            AppSizes.paddingLarge + MediaQuery.viewInsetsOf(context).bottom,
+          ),
           child: ConstrainedBox(
             constraints: BoxConstraints(
               minHeight:
                   MediaQuery.sizeOf(context).height -
                   MediaQuery.paddingOf(context).vertical -
-                  AppSizes.paddingLarge * 2,
+                  AppSizes.paddingLarge * 2 -
+                  MediaQuery.viewInsetsOf(context).bottom,
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -243,7 +252,7 @@ class _DemoCredentialsCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.primary.withValues(alpha: 0.08),
         border: Border.all(color: AppColors.primary.withValues(alpha: 0.18)),
-        borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+        borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -279,25 +288,25 @@ class _AuthHeader extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          height: 76,
-          width: 76,
+          height: 68,
+          width: 68,
           alignment: Alignment.center,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [AppColors.primary, AppColors.secondary],
+              colors: [AppColors.primary, AppColors.info, AppColors.accent],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
+            borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.18),
-                blurRadius: 24,
-                offset: const Offset(0, 12),
+                color: AppColors.primary.withValues(alpha: 0.16),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
               ),
             ],
           ),
-          child: const Icon(Icons.camera_alt, color: Colors.white, size: 34),
+          child: const Icon(Icons.camera_alt, color: Colors.white, size: 31),
         ),
         const SizedBox(height: AppSizes.paddingLarge),
         Text(AppStrings.appName, style: AppTextStyles.headingLarge),
@@ -326,7 +335,7 @@ class _AuthErrorMessage extends StatelessWidget {
       decoration: BoxDecoration(
         color: AppColors.error.withValues(alpha: 0.08),
         border: Border.all(color: AppColors.error.withValues(alpha: 0.24)),
-        borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+        borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,

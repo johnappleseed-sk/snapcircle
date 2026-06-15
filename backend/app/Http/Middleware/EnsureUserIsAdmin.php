@@ -14,6 +14,10 @@ class EnsureUserIsAdmin
         $role = $request->user()?->role;
 
         if (! in_array($role, ['admin', 'moderator'], true)) {
+            if (! $request->expectsJson() && ! $request->is('api/*')) {
+                return redirect()->route('admin.login');
+            }
+
             return ApiResponse::error('Admin access required.', [], 403);
         }
 

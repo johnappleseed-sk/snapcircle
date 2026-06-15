@@ -2,6 +2,7 @@ import '../../../core/api/api_client.dart';
 import '../../../core/api/api_endpoints.dart';
 import '../../auth/models/user_model.dart';
 import '../../feed/models/post_model.dart';
+import '../models/trending_tag_model.dart';
 
 class ExploreException implements Exception {
   final String message;
@@ -69,6 +70,32 @@ class ExploreRepository {
     return _parsePosts(result.data?.data, result.error);
   }
 
+  Future<List<TrendingTagModel>> getTrendingTags({
+    int limit = 12,
+    int days = 30,
+  }) async {
+    final result = await _apiClient.get(
+      ApiEndpoints.trendingTags,
+      queryParameters: {'limit': limit, 'days': days},
+    );
+
+    return _parseTags(result.data?.data, result.error);
+  }
+
+  Future<List<PostModel>> getPostsByTag({
+    required String tag,
+    int page = 1,
+    int perPage = 12,
+    String sort = 'latest',
+  }) async {
+    final result = await _apiClient.get(
+      ApiEndpoints.tagPosts(Uri.encodeComponent(tag)),
+      queryParameters: {'page': page, 'per_page': perPage, 'sort': sort},
+    );
+
+    return _parsePosts(result.data?.data, result.error);
+  }
+
   Future<List<UserModel>> getRecommendedUsers({
     int page = 1,
     int perPage = 10,
@@ -116,6 +143,14 @@ class ExploreRepository {
   List<UserModel> _parseUsers(dynamic responseData, String? error) {
     final response = _readResponse(responseData, error);
     return _extractList(response, 'users').map(UserModel.fromJson).toList();
+  }
+
+  List<TrendingTagModel> _parseTags(dynamic responseData, String? error) {
+    final response = _readResponse(responseData, error);
+    return _extractList(
+      response,
+      'tags',
+    ).map(TrendingTagModel.fromJson).toList();
   }
 
   Map<String, dynamic> _readResponse(dynamic responseData, String? error) {

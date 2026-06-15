@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/utils/snackbar_helper.dart';
 import '../../../core/widgets/app_avatar.dart';
+import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
@@ -29,12 +30,16 @@ class _FollowRequestsScreenState extends State<FollowRequestsScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ProfileProvider>();
+    final horizontalPadding = MediaQuery.sizeOf(context).width < 380
+        ? AppSizes.paddingSmall
+        : AppSizes.paddingMedium;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Follow Requests')),
       body: RefreshIndicator(
         onRefresh: provider.fetchFollowRequests,
-        child: provider.isLoadingFollowRequests && provider.followRequests.isEmpty
+        child:
+            provider.isLoadingFollowRequests && provider.followRequests.isEmpty
             ? const LoadingView(message: 'Loading follow requests...')
             : provider.errorMessage != null && provider.followRequests.isEmpty
             ? ListView(
@@ -60,52 +65,76 @@ class _FollowRequestsScreenState extends State<FollowRequestsScreen> {
                 ],
               )
             : ListView.separated(
-                padding: const EdgeInsets.all(AppSizes.paddingMedium),
+                padding: EdgeInsets.fromLTRB(
+                  horizontalPadding,
+                  AppSizes.paddingMedium,
+                  horizontalPadding,
+                  AppSizes.paddingXL,
+                ),
                 itemCount: provider.followRequests.length,
                 separatorBuilder: (context, index) =>
                     const SizedBox(height: AppSizes.paddingSmall),
                 itemBuilder: (context, index) {
                   final user = provider.followRequests[index];
                   return AppCard(
-                    child: Row(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
                       children: [
-                        AppAvatar(
-                          name: user.name,
-                          imageUrl: user.avatarUrl ?? user.avatar,
-                        ),
-                        const SizedBox(width: AppSizes.paddingSmall + 4),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                user.name,
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: Theme.of(context).textTheme.titleSmall
-                                    ?.copyWith(fontWeight: FontWeight.w900),
+                        Row(
+                          children: [
+                            AppAvatar(
+                              name: user.name,
+                              imageUrl: user.avatarUrl ?? user.avatar,
+                            ),
+                            const SizedBox(width: AppSizes.paddingSmall + 4),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    user.name,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: Theme.of(context)
+                                        .textTheme
+                                        .titleSmall
+                                        ?.copyWith(fontWeight: FontWeight.w900),
+                                  ),
+                                  if (user.username != null)
+                                    Text(
+                                      '@${user.username}',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                ],
                               ),
-                              if (user.username != null)
-                                Text(
-                                  '@${user.username}',
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                            ],
-                          ),
+                            ),
+                          ],
                         ),
-                        TextButton(
-                          onPressed: provider.isFollowing
-                              ? null
-                              : () => _reject(context, user.id),
-                          child: const Text('Reject'),
-                        ),
-                        const SizedBox(width: 4),
-                        FilledButton(
-                          onPressed: provider.isFollowing
-                              ? null
-                              : () => _approve(context, user.id),
-                          child: const Text('Approve'),
+                        const SizedBox(height: AppSizes.paddingSmall),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: AppButton(
+                                label: 'Reject',
+                                variant: AppButtonVariant.outline,
+                                fullWidth: true,
+                                onPressed: provider.isFollowing
+                                    ? null
+                                    : () => _reject(context, user.id),
+                              ),
+                            ),
+                            const SizedBox(width: AppSizes.paddingSmall),
+                            Expanded(
+                              child: AppButton(
+                                label: 'Approve',
+                                fullWidth: true,
+                                onPressed: provider.isFollowing
+                                    ? null
+                                    : () => _approve(context, user.id),
+                              ),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -117,9 +146,9 @@ class _FollowRequestsScreenState extends State<FollowRequestsScreen> {
   }
 
   Future<void> _approve(BuildContext context, int userId) async {
-    final success = await context
-        .read<ProfileProvider>()
-        .approveFollowRequest(userId);
+    final success = await context.read<ProfileProvider>().approveFollowRequest(
+      userId,
+    );
     if (!context.mounted) return;
 
     success
@@ -132,9 +161,9 @@ class _FollowRequestsScreenState extends State<FollowRequestsScreen> {
   }
 
   Future<void> _reject(BuildContext context, int userId) async {
-    final success = await context
-        .read<ProfileProvider>()
-        .rejectFollowRequest(userId);
+    final success = await context.read<ProfileProvider>().rejectFollowRequest(
+      userId,
+    );
     if (!context.mounted) return;
 
     success

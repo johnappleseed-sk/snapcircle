@@ -25,21 +25,24 @@ class SettingsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final color = iconColor ?? Theme.of(context).colorScheme.primary;
+    final isCompact = MediaQuery.sizeOf(context).width < 380;
     return AppCard(
       onTap: onTap,
-      padding: const EdgeInsets.all(AppSizes.paddingMedium),
+      padding: EdgeInsets.all(isCompact ? 12 : AppSizes.paddingMedium),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
-            height: 42,
-            width: 42,
+            height: 40,
+            width: 40,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.10),
-              borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+              border: Border.all(color: color.withValues(alpha: 0.18)),
+              borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
             ),
-            child: Icon(icon, color: color),
+            child: Icon(icon, color: color, size: 21),
           ),
-          const SizedBox(width: AppSizes.paddingMedium),
+          SizedBox(width: isCompact ? 12 : AppSizes.paddingMedium),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -54,6 +57,8 @@ class SettingsTile extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(
                     subtitle!,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
                       color: AppColors.textSecondary,
                     ),

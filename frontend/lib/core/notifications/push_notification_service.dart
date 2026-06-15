@@ -27,7 +27,7 @@ class PushNotificationService {
   static final GlobalKey<NavigatorState> navigatorKey =
       GlobalKey<NavigatorState>();
 
-  final FirebaseMessaging _messaging = FirebaseMessaging.instance;
+  FirebaseMessaging? _messaging;
   final FlutterLocalNotificationsPlugin _localNotifications =
       FlutterLocalNotificationsPlugin();
   final ApiClient _apiClient = ApiClient();
@@ -45,6 +45,7 @@ class PushNotificationService {
 
     try {
       await Firebase.initializeApp();
+      _messaging = FirebaseMessaging.instance;
       _isFirebaseAvailable = true;
     } catch (error) {
       if (kDebugMode) {
@@ -59,11 +60,11 @@ class PushNotificationService {
 
     FirebaseMessaging.onMessage.listen(_handleForegroundMessage);
     FirebaseMessaging.onMessageOpenedApp.listen(_handleRemoteMessageTap);
-    _messaging.onTokenRefresh.listen((token) {
+    _messaging?.onTokenRefresh.listen((token) {
       registerDeviceToken(token: token);
     });
 
-    final initialMessage = await _messaging.getInitialMessage();
+    final initialMessage = await _messaging?.getInitialMessage();
     if (initialMessage != null) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         _handleRemoteMessageTap(initialMessage);
@@ -72,12 +73,13 @@ class PushNotificationService {
   }
 
   Future<void> registerDeviceToken({String? token}) async {
-    if (!_isFirebaseAvailable || kIsWeb) {
+    final messaging = _messaging;
+    if (!_isFirebaseAvailable || messaging == null || kIsWeb) {
       return;
     }
 
     try {
-      final fcmToken = token ?? await _messaging.getToken();
+      final fcmToken = token ?? await messaging.getToken();
       if (fcmToken == null || fcmToken.isEmpty) {
         return;
       }
@@ -102,12 +104,13 @@ class PushNotificationService {
   }
 
   Future<void> unregisterDeviceToken() async {
-    if (!_isFirebaseAvailable || kIsWeb) {
+    final messaging = _messaging;
+    if (!_isFirebaseAvailable || messaging == null || kIsWeb) {
       return;
     }
 
     try {
-      final fcmToken = _lastRegisteredToken ?? await _messaging.getToken();
+      final fcmToken = _lastRegisteredToken ?? await messaging.getToken();
       if (fcmToken == null || fcmToken.isEmpty) {
         return;
       }
@@ -143,7 +146,7 @@ class PushNotificationService {
     );
 
     await _localNotifications.initialize(
-      initializationSettings,
+      settings: initializationSettings,
       onDidReceiveNotificationResponse: (response) {
         final payload = response.payload;
         if (payload == null || payload.isEmpty) {
@@ -179,7 +182,7 @@ class PushNotificationService {
   }
 
   Future<void> _requestPermission() async {
-    await _messaging.requestPermission(alert: true, badge: true, sound: true);
+    await _messaging?.requestPermission(alert: true, badge: true, sound: true);
 
     final androidPlugin = _localNotifications
         .resolvePlatformSpecificImplementation<
@@ -195,11 +198,11 @@ class PushNotificationService {
     final payload = jsonEncode(message.data);
 
     await _localNotifications.show(
-      message.hashCode,
-      title,
-      body,
+      id: message.hashCode,
+      title: title,
+      body: body,
       payload: payload,
-      const NotificationDetails(
+      notificationDetails: const NotificationDetails(
         android: AndroidNotificationDetails(
           'snapcircle_activity',
           'SnapCircle activity',

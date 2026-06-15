@@ -78,10 +78,19 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final horizontalPadding = MediaQuery.sizeOf(context).width < 380
+        ? AppSizes.paddingMedium
+        : AppSizes.paddingLarge;
+
     return Scaffold(
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(AppSizes.paddingLarge),
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
+            AppSizes.paddingLarge,
+            horizontalPadding,
+            AppSizes.paddingLarge,
+          ),
           child: Column(
             children: [
               Row(
@@ -169,24 +178,24 @@ class _OnboardingPage extends StatelessWidget {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Container(
-          height: 132,
-          width: 132,
+          height: 124,
+          width: 124,
           decoration: BoxDecoration(
             gradient: const LinearGradient(
-              colors: [AppColors.primary, AppColors.secondary],
+              colors: [AppColors.primary, AppColors.info, AppColors.accent],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
-            borderRadius: BorderRadius.circular(36),
+            borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
             boxShadow: [
               BoxShadow(
-                color: AppColors.primary.withValues(alpha: 0.24),
-                blurRadius: 28,
-                offset: const Offset(0, 16),
+                color: AppColors.primary.withValues(alpha: 0.18),
+                blurRadius: 22,
+                offset: const Offset(0, 10),
               ),
             ],
           ),
-          child: Icon(data.icon, color: Colors.white, size: 56),
+          child: Icon(data.icon, color: Colors.white, size: 52),
         ),
         const SizedBox(height: AppSizes.paddingXL),
         Text(
@@ -198,12 +207,15 @@ class _OnboardingPage extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSizes.paddingMedium),
-        Text(
-          data.subtitle,
-          textAlign: TextAlign.center,
-          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-            color: AppColors.textSecondary,
-            height: 1.45,
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 340),
+          child: Text(
+            data.subtitle,
+            textAlign: TextAlign.center,
+            style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+              color: AppColors.textSecondary,
+              height: 1.45,
+            ),
           ),
         ),
       ],

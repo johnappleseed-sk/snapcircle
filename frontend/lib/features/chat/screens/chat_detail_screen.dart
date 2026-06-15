@@ -177,6 +177,9 @@ class _MessagesBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<MessagesProvider>();
+    final horizontalPadding = MediaQuery.sizeOf(context).width < 380
+        ? AppSizes.paddingSmall
+        : AppSizes.paddingMedium;
 
     if (provider.isLoading) {
       return const LoadingView(message: 'Loading messages...');
@@ -203,10 +206,10 @@ class _MessagesBody extends StatelessWidget {
     return ListView.separated(
       reverse: true,
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-      padding: const EdgeInsets.fromLTRB(
+      padding: EdgeInsets.fromLTRB(
+        horizontalPadding,
         AppSizes.paddingMedium,
-        AppSizes.paddingMedium,
-        AppSizes.paddingMedium,
+        horizontalPadding,
         AppSizes.paddingLarge,
       ),
       itemCount: provider.messages.length + 1,
@@ -269,6 +272,10 @@ class _MessageComposer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final horizontalPadding = MediaQuery.sizeOf(context).width < 380
+        ? AppSizes.paddingSmall
+        : AppSizes.paddingMedium;
+
     return DecoratedBox(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
@@ -276,9 +283,9 @@ class _MessageComposer extends StatelessWidget {
       ),
       child: Padding(
         padding: EdgeInsets.fromLTRB(
-          AppSizes.paddingMedium,
+          horizontalPadding,
           AppSizes.paddingSmall,
-          AppSizes.paddingMedium,
+          horizontalPadding,
           AppSizes.paddingSmall + MediaQuery.viewInsetsOf(context).bottom,
         ),
         child: Column(
@@ -303,26 +310,34 @@ class _MessageComposer extends StatelessWidget {
                     minLines: 1,
                     maxLines: 5,
                     enabled: !isSending,
+                    textInputAction: TextInputAction.newline,
                     decoration: const InputDecoration(
                       hintText: 'Write a message...',
                       labelText: 'Message',
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: AppSizes.paddingMedium,
+                        vertical: 12,
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
-                IconButton.filled(
-                  onPressed: isSending || !canSend ? null : onSend,
-                  icon: isSending
-                      ? const SizedBox(
-                          height: 18,
-                          width: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Icon(Icons.send_outlined),
-                  tooltip: 'Send message',
+                const SizedBox(width: AppSizes.paddingSmall),
+                SizedBox.square(
+                  dimension: 48,
+                  child: IconButton.filled(
+                    onPressed: isSending || !canSend ? null : onSend,
+                    icon: isSending
+                        ? const SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(Icons.send_outlined),
+                    tooltip: 'Send message',
+                  ),
                 ),
               ],
             ),

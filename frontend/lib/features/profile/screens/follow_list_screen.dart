@@ -98,6 +98,10 @@ class _FollowListBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final horizontalPadding = MediaQuery.sizeOf(context).width < 380
+        ? AppSizes.paddingSmall
+        : AppSizes.paddingMedium;
+
     if (isLoading && users.isEmpty) {
       return const LoadingView(message: 'Loading people...');
     }
@@ -127,7 +131,12 @@ class _FollowListBody extends StatelessWidget {
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.all(AppSizes.paddingMedium),
+      padding: EdgeInsets.fromLTRB(
+        horizontalPadding,
+        AppSizes.paddingMedium,
+        horizontalPadding,
+        AppSizes.paddingXL,
+      ),
       itemCount: users.length + 1,
       separatorBuilder: (context, index) => const SizedBox(height: 12),
       itemBuilder: (context, index) {

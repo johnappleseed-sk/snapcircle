@@ -34,7 +34,9 @@ class PostResource extends JsonResource
         $media = $this->relationLoaded('media') ? $this->media : $this->media()->get();
         $mediaItems = $media->map(fn ($item): array => [
             'id' => $item->id,
-            'url' => asset('storage/'.$item->path),
+            'url' => str_starts_with($item->path, 'http')
+                ? $item->path
+                : asset('storage/'.$item->path),
             'path' => $item->path,
             'type' => $item->type,
             'sort_order' => (int) $item->sort_order,
@@ -43,7 +45,9 @@ class PostResource extends JsonResource
         if ($mediaItems->isEmpty() && $this->image_path) {
             $mediaItems->push([
                 'id' => null,
-                'url' => asset('storage/'.$this->image_path),
+                'url' => str_starts_with($this->image_path, 'http')
+                    ? $this->image_path
+                    : asset('storage/'.$this->image_path),
                 'path' => $this->image_path,
                 'type' => 'image',
                 'sort_order' => 0,

@@ -58,12 +58,16 @@ class _SavedPostsBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final horizontalPadding = MediaQuery.sizeOf(context).width < 380
+        ? AppSizes.paddingSmall
+        : AppSizes.paddingMedium;
+
     if (provider.isLoading && provider.posts.isEmpty) {
       return ListView.separated(
-        padding: const EdgeInsets.fromLTRB(
+        padding: EdgeInsets.fromLTRB(
+          horizontalPadding,
           AppSizes.paddingMedium,
-          AppSizes.paddingMedium,
-          AppSizes.paddingMedium,
+          horizontalPadding,
           AppSizes.paddingXL,
         ),
         itemCount: 3,
@@ -101,10 +105,10 @@ class _SavedPostsBody extends StatelessWidget {
     }
 
     return ListView.separated(
-      padding: const EdgeInsets.fromLTRB(
+      padding: EdgeInsets.fromLTRB(
+        horizontalPadding,
         AppSizes.paddingMedium,
-        AppSizes.paddingMedium,
-        AppSizes.paddingMedium,
+        horizontalPadding,
         AppSizes.paddingXL,
       ),
       itemCount: provider.posts.length + 1,

@@ -26,7 +26,11 @@ class NotificationResource extends JsonResource
             'post' => $this->post ? [
                 'id' => $this->post->id,
                 'content' => $this->post->content,
-                'image_url' => $this->post->image_path ? asset('storage/'.$this->post->image_path) : null,
+                'image_url' => $this->post->image_path
+                    ? (str_starts_with($this->post->image_path, 'http')
+                        ? $this->post->image_path
+                        : asset('storage/'.$this->post->image_path))
+                    : null,
             ] : null,
             'comment' => $this->comment ? [
                 'id' => $this->comment->id,

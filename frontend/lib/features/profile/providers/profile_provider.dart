@@ -114,14 +114,19 @@ class ProfileProvider extends ChangeNotifier {
   Future<void> fetchUserById(int userId) async {
     _isLoading = true;
     _errorMessage = null;
+    _selectedUser = null;
+    _profilePosts = [];
+    _profileStories = [];
     notifyListeners();
 
     try {
       _selectedUser = await _profileRepository.getUserById(userId);
     } on ProfileException catch (error) {
       _errorMessage = error.message;
+      _selectedUser = null;
     } catch (_) {
       _errorMessage = 'Unable to load user profile. Please try again.';
+      _selectedUser = null;
     } finally {
       _isLoading = false;
       notifyListeners();
@@ -131,14 +136,19 @@ class ProfileProvider extends ChangeNotifier {
   Future<void> fetchUserByUsername(String username) async {
     _isLoading = true;
     _errorMessage = null;
+    _selectedUser = null;
+    _profilePosts = [];
+    _profileStories = [];
     notifyListeners();
 
     try {
       _selectedUser = await _profileRepository.getUserByUsername(username);
     } on ProfileException catch (error) {
       _errorMessage = error.message;
+      _selectedUser = null;
     } catch (_) {
       _errorMessage = 'Unable to load user profile. Please try again.';
+      _selectedUser = null;
     } finally {
       _isLoading = false;
       notifyListeners();

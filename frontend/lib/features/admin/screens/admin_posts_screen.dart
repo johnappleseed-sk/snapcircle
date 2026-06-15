@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/utils/date_formatter.dart';
 import '../../../core/utils/snackbar_helper.dart';
@@ -34,13 +35,21 @@ class _AdminPostsScreenState extends State<AdminPostsScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AdminProvider>();
+    final horizontalPadding = MediaQuery.sizeOf(context).width < 380
+        ? AppSizes.paddingSmall
+        : AppSizes.paddingMedium;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Post Moderation')),
       body: RefreshIndicator(
         onRefresh: _fetch,
         child: ListView.separated(
-          padding: const EdgeInsets.all(AppSizes.paddingMedium),
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
+            AppSizes.paddingMedium,
+            horizontalPadding,
+            AppSizes.paddingXL,
+          ),
           itemCount: provider.posts.isEmpty ? 1 : provider.posts.length,
           separatorBuilder: (_, _) =>
               const SizedBox(height: AppSizes.paddingMedium),
@@ -85,6 +94,7 @@ class _AdminPostTile extends StatelessWidget {
     final content = post.content?.trim();
 
     return AppCard(
+      padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -116,18 +126,9 @@ class _AdminPostTile extends StatelessWidget {
                 tooltip: 'Post actions',
                 onSelected: (value) => _handleAction(context, value),
                 itemBuilder: (context) => const [
-                  PopupMenuItem(
-                    value: 'open',
-                    child: Text('Open post'),
-                  ),
-                  PopupMenuItem(
-                    value: 'profile',
-                    child: Text('Open author'),
-                  ),
-                  PopupMenuItem(
-                    value: 'delete',
-                    child: Text('Delete post'),
-                  ),
+                  PopupMenuItem(value: 'open', child: Text('Open post')),
+                  PopupMenuItem(value: 'profile', child: Text('Open author')),
+                  PopupMenuItem(value: 'delete', child: Text('Delete post')),
                 ],
               ),
             ],
@@ -232,6 +233,8 @@ class _MetricChip extends StatelessWidget {
     return Chip(
       avatar: Icon(icon, size: 16),
       label: Text(label),
+      side: BorderSide(color: Theme.of(context).dividerColor),
+      backgroundColor: AppColors.surfaceMuted,
       visualDensity: VisualDensity.compact,
     );
   }

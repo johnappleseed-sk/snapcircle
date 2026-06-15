@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../constants/app_colors.dart';
+import '../constants/app_sizes.dart';
 import '../constants/app_text_styles.dart';
 
 class SectionHeader extends StatelessWidget {
@@ -16,15 +18,27 @@ class SectionHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(child: Text(title, style: AppTextStyles.headingSmall)),
-        if (actionLabel != null)
-          TextButton(
-            onPressed: onAction,
-            child: Text(actionLabel!, style: AppTextStyles.link),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSizes.paddingXS),
+      child: Row(
+        children: [
+          Container(
+            width: 3,
+            height: 18,
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(99),
+            ),
           ),
-      ],
+          const SizedBox(width: AppSizes.paddingSmall),
+          Expanded(child: Text(title, style: AppTextStyles.headingSmall)),
+          if (actionLabel != null)
+            TextButton(
+              onPressed: onAction,
+              child: Text(actionLabel!, style: AppTextStyles.link),
+            ),
+        ],
+      ),
     );
   }
 }

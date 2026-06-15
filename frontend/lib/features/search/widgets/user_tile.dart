@@ -14,6 +14,7 @@ class UserTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isCompact = MediaQuery.sizeOf(context).width < 380;
     final handle = user.username == null ? null : '@${user.username}';
     final subtitle = user.bio != null && user.bio!.trim().isNotEmpty
         ? user.bio!
@@ -25,8 +26,9 @@ class UserTile extends StatelessWidget {
 
     return AppCard(
       onTap: onTap,
-      padding: const EdgeInsets.all(12),
+      padding: EdgeInsets.all(isCompact ? 10 : 12),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           AppAvatar(imageUrl: user.avatar, name: user.name),
           const SizedBox(width: AppSizes.paddingSmall + 4),
@@ -45,57 +47,89 @@ class UserTile extends StatelessWidget {
                 const SizedBox(height: 3),
                 Text(
                   secondaryText,
-                  maxLines: 2,
+                  maxLines: isCompact ? 1 : 2,
                   overflow: TextOverflow.ellipsis,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: AppColors.textSecondary,
                   ),
                 ),
+                const SizedBox(height: AppSizes.paddingSmall),
+                Wrap(
+                  spacing: AppSizes.paddingSmall,
+                  runSpacing: AppSizes.paddingXS,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    if (user.isPrivate)
+                      const _UserMetaPill(
+                        icon: Icons.lock_outline,
+                        label: 'Private',
+                      ),
+                    if (user.isFollowedByMe ||
+                        user.hasRequestedFollow ||
+                        user.followStatus == 'requested')
+                      _UserStatusPill(
+                        label: user.isFollowedByMe ? 'Following' : 'Requested',
+                      ),
+                    _UserMetaPill(
+                      icon: Icons.people_outline,
+                      label: '${user.followersCount}',
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
-          if (user.isPrivate) ...[
-            const SizedBox(width: 8),
-            const Icon(
-              Icons.lock_outline,
-              size: 16,
-              color: AppColors.textSecondary,
-            ),
-          ],
-          if (user.isFollowedByMe ||
-              user.hasRequestedFollow ||
-              user.followStatus == 'requested') ...[
-            const SizedBox(width: 10),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-              decoration: BoxDecoration(
-                color: AppColors.primary.withValues(alpha: 0.08),
-                borderRadius: BorderRadius.circular(999),
-              ),
-              child: Text(
-                user.isFollowedByMe ? 'Following' : 'Requested',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                  color: AppColors.primary,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-            ),
-          ],
-          const SizedBox(width: 8),
-          Text(
-            '${user.followersCount}',
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: AppColors.textSecondary,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
-          const Icon(
-            Icons.people_outline,
-            size: 16,
-            color: AppColors.textSecondary,
-          ),
         ],
       ),
+    );
+  }
+}
+
+class _UserStatusPill extends StatelessWidget {
+  final String label;
+
+  const _UserStatusPill({required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+          color: AppColors.primary,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+}
+
+class _UserMetaPill extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _UserMetaPill({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Icon(icon, size: 15, color: AppColors.textSecondary),
+        const SizedBox(width: 3),
+        Text(
+          label,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color: AppColors.textSecondary,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ],
     );
   }
 }

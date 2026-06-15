@@ -80,8 +80,8 @@ class ProfilePostsSection extends StatelessWidget {
             itemCount: posts.length,
             gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 3,
-              crossAxisSpacing: 3,
-              mainAxisSpacing: 3,
+              crossAxisSpacing: 4,
+              mainAxisSpacing: 4,
             ),
             itemBuilder: (context, index) {
               return _ProfilePostPreview(
@@ -151,8 +151,9 @@ class _ProfilePostPreview extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
+      borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(3),
+        borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -203,7 +204,7 @@ class _ProfilePostPreview extends StatelessWidget {
                   gradient: LinearGradient(
                     colors: [
                       Colors.transparent,
-                      Colors.black.withValues(alpha: 0.58),
+                      Colors.black.withValues(alpha: 0.62),
                     ],
                     begin: Alignment.topCenter,
                     end: Alignment.bottomCenter,
@@ -214,19 +215,14 @@ class _ProfilePostPreview extends StatelessWidget {
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
-                        Icons.favorite,
-                        size: 14,
-                        color: Colors.white,
-                      ),
+                      const Icon(Icons.favorite, size: 14, color: Colors.white),
                       const SizedBox(width: 3),
                       Text(
                         '${post.likesCount}',
-                        style: Theme.of(context).textTheme.labelSmall
-                            ?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w900,
-                            ),
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                       const SizedBox(width: 8),
                       const Icon(
@@ -237,11 +233,10 @@ class _ProfilePostPreview extends StatelessWidget {
                       const SizedBox(width: 3),
                       Text(
                         '${post.commentsCount}',
-                        style: Theme.of(context).textTheme.labelSmall
-                            ?.copyWith(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w900,
-                            ),
+                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                        ),
                       ),
                     ],
                   ),

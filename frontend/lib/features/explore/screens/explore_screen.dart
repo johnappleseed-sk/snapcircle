@@ -15,7 +15,9 @@ import '../widgets/explore_search_bar.dart';
 import '../widgets/recommended_user_card.dart';
 
 class ExploreScreen extends StatefulWidget {
-  const ExploreScreen({super.key});
+  final String? initialTag;
+
+  const ExploreScreen({super.key, this.initialTag});
 
   @override
   State<ExploreScreen> createState() => _ExploreScreenState();
@@ -26,26 +28,50 @@ class _ExploreScreenState extends State<ExploreScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final provider = context.read<ExploreProvider>();
-      if (provider.explorePosts.isEmpty) {
-        provider.fetchExploreData(refresh: true);
-      }
+      _loadInitialContent();
     });
+  }
+
+  @override
+  void didUpdateWidget(covariant ExploreScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.initialTag != widget.initialTag) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _loadInitialContent();
+      });
+    }
+  }
+
+  void _loadInitialContent() {
+    final provider = context.read<ExploreProvider>();
+    final initialTag = widget.initialTag?.trim();
+
+    if (initialTag != null && initialTag.isNotEmpty) {
+      provider.openTag(initialTag);
+      return;
+    }
+
+    if (provider.explorePosts.isEmpty) {
+      provider.fetchExploreData(refresh: true);
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ExploreProvider>();
+    final horizontalPadding = MediaQuery.sizeOf(context).width < 380
+        ? AppSizes.paddingSmall
+        : AppSizes.paddingMedium;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Explore')),
       body: RefreshIndicator(
         onRefresh: () => provider.fetchExploreData(refresh: true),
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
             AppSizes.paddingMedium,
-            AppSizes.paddingMedium,
-            AppSizes.paddingMedium,
+            horizontalPadding,
             AppSizes.paddingXL,
           ),
           children: [
@@ -75,6 +101,9 @@ class _ExploreScreenState extends State<ExploreScreen> {
               if (provider.searchQuery.isNotEmpty)
                 _SearchResults(provider: provider)
               else ...[
+                _TrendingTagsSection(provider: provider),
+                if (provider.trendingTags.isNotEmpty)
+                  const SizedBox(height: AppSizes.paddingLarge),
                 _RecommendedUsersSection(provider: provider),
                 const SizedBox(height: AppSizes.paddingLarge),
                 _TrendingPostsSection(provider: provider),
@@ -104,10 +133,8 @@ class _ExploreSkeleton extends StatelessWidget {
             itemCount: 3,
             separatorBuilder: (context, index) =>
                 const SizedBox(width: AppSizes.paddingSmall),
-            itemBuilder: (context, index) => const SizedBox(
-              width: 150,
-              child: SkeletonBox(height: 188),
-            ),
+            itemBuilder: (context, index) =>
+                const SizedBox(width: 150, child: SkeletonBox(height: 188)),
           ),
         ),
         const SizedBox(height: AppSizes.paddingLarge),
@@ -162,6 +189,67 @@ class _RecentSearchesSection extends StatelessWidget {
   }
 }
 
+class _TrendingTagsSection extends StatelessWidget {
+  final ExploreProvider provider;
+
+  const _TrendingTagsSection({required this.provider});
+
+  @override
+  Widget build(BuildContext context) {
+    if (provider.trendingTags.isEmpty) {
+      return const SizedBox.shrink();
+    }
+
+    final theme = Theme.of(context);
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          'Trending tags',
+          style: theme.textTheme.titleMedium?.copyWith(
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+        const SizedBox(height: AppSizes.paddingSmall),
+        SizedBox(
+          height: 44,
+          child: ListView.separated(
+            scrollDirection: Axis.horizontal,
+            itemCount: provider.trendingTags.length,
+            separatorBuilder: (_, _) =>
+                const SizedBox(width: AppSizes.paddingSmall),
+            itemBuilder: (context, index) {
+              final tag = provider.trendingTags[index];
+              final isSelected = provider.selectedTag == tag.tag;
+
+              return ChoiceChip(
+                selected: isSelected,
+                avatar: Icon(
+                  Icons.tag_rounded,
+                  size: 18,
+                  color: isSelected ? Colors.white : AppColors.primary,
+                ),
+                label: Text('${tag.label} ${tag.postsCount}'),
+                labelStyle: theme.textTheme.labelLarge?.copyWith(
+                  color: isSelected ? Colors.white : AppColors.textPrimary,
+                  fontWeight: FontWeight.w800,
+                ),
+                selectedColor: AppColors.primary,
+                backgroundColor: AppColors.surface,
+                side: BorderSide(
+                  color: isSelected ? AppColors.primary : AppColors.border,
+                ),
+                onSelected: (_) => provider.selectTag(tag),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}
+
 class _RecommendedUsersSection extends StatelessWidget {
   final ExploreProvider provider;
 
@@ -172,6 +260,9 @@ class _RecommendedUsersSection extends StatelessWidget {
     if (provider.recommendedUsers.isEmpty) {
       return const SizedBox.shrink();
     }
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final cardWidth = screenWidth < 360 ? 154.0 : 170.0;
+    final cardHeight = screenWidth < 360 ? 256.0 : 268.0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -184,7 +275,7 @@ class _RecommendedUsersSection extends StatelessWidget {
         ),
         const SizedBox(height: AppSizes.paddingSmall),
         SizedBox(
-          height: 238,
+          height: cardHeight,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: provider.recommendedUsers.length,
@@ -195,6 +286,7 @@ class _RecommendedUsersSection extends StatelessWidget {
               return RecommendedUserCard(
                 user: user,
                 isUpdating: provider.isFollowingUser(user.id),
+                width: cardWidth,
                 onTap: () => context.push('/users/${user.id}'),
                 onFollowTap: () => provider.toggleFollow(user),
               );
@@ -216,6 +308,9 @@ class _TrendingPostsSection extends StatelessWidget {
     if (provider.trendingPosts.isEmpty) {
       return const SizedBox.shrink();
     }
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final tileWidth = screenWidth < 360 ? 136.0 : 150.0;
+    final tileHeight = screenWidth < 360 ? 172.0 : 188.0;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -228,7 +323,7 @@ class _TrendingPostsSection extends StatelessWidget {
         ),
         const SizedBox(height: AppSizes.paddingSmall),
         SizedBox(
-          height: 188,
+          height: tileHeight,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: provider.trendingPosts.length,
@@ -237,7 +332,7 @@ class _TrendingPostsSection extends StatelessWidget {
             itemBuilder: (context, index) {
               final post = provider.trendingPosts[index];
               return SizedBox(
-                width: 150,
+                width: tileWidth,
                 child: ExplorePostGridItem(
                   post: post,
                   onTap: () => context.push('/posts/${post.id}', extra: post),
@@ -280,6 +375,7 @@ class _SearchResults extends StatelessWidget {
             RecommendedUserCard(
               user: user,
               isUpdating: provider.isFollowingUser(user.id),
+              width: double.infinity,
               onTap: () => context.push('/users/${user.id}'),
               onFollowTap: () => provider.toggleFollow(user),
             ),
@@ -300,32 +396,13 @@ class _ExplorePostsSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final posts = provider.explorePosts;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final isCompact = screenWidth < 380;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Row(
-          children: [
-            Expanded(
-              child: Text(
-                provider.searchQuery.isEmpty ? 'Explore posts' : 'Posts',
-                style: Theme.of(
-                  context,
-                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
-              ),
-            ),
-            if (provider.searchQuery.isEmpty)
-              SegmentedButton<String>(
-                segments: const [
-                  ButtonSegment(value: 'latest', label: Text('Latest')),
-                  ButtonSegment(value: 'popular', label: Text('Popular')),
-                ],
-                selected: {provider.currentSort},
-                onSelectionChanged: (values) =>
-                    provider.changeSort(values.first),
-              ),
-          ],
-        ),
+        _ExplorePostsHeader(provider: provider, isCompact: isCompact),
         const SizedBox(height: AppSizes.paddingSmall),
         if (posts.isEmpty)
           const EmptyView(
@@ -370,6 +447,78 @@ class _ExplorePostsSection extends StatelessWidget {
               fontWeight: FontWeight.w700,
             ),
           ),
+        ],
+      ],
+    );
+  }
+}
+
+class _ExplorePostsHeader extends StatelessWidget {
+  final ExploreProvider provider;
+  final bool isCompact;
+
+  const _ExplorePostsHeader({required this.provider, required this.isCompact});
+
+  @override
+  Widget build(BuildContext context) {
+    final title = provider.selectedTag == null
+        ? provider.searchQuery.isEmpty
+              ? 'Explore posts'
+              : 'Posts'
+        : '#${provider.selectedTag} posts';
+    final titleWidget = Text(
+      title,
+      maxLines: 1,
+      overflow: TextOverflow.ellipsis,
+      style: Theme.of(
+        context,
+      ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
+    );
+    final clearChip = provider.selectedTag == null
+        ? null
+        : ActionChip(
+            avatar: const Icon(Icons.close_rounded, size: 16),
+            label: const Text('Clear tag'),
+            onPressed: provider.clearSearch,
+          );
+    final sortControl = provider.searchQuery.isNotEmpty
+        ? null
+        : SegmentedButton<String>(
+            segments: const [
+              ButtonSegment(value: 'latest', label: Text('Latest')),
+              ButtonSegment(value: 'popular', label: Text('Popular')),
+            ],
+            selected: {provider.currentSort},
+            onSelectionChanged: (values) => provider.changeSort(values.first),
+          );
+
+    if (isCompact) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          titleWidget,
+          if (clearChip != null) ...[
+            const SizedBox(height: AppSizes.paddingSmall),
+            clearChip,
+          ],
+          if (sortControl != null) ...[
+            const SizedBox(height: AppSizes.paddingSmall),
+            SizedBox(width: double.infinity, child: sortControl),
+          ],
+        ],
+      );
+    }
+
+    return Row(
+      children: [
+        Expanded(child: titleWidget),
+        if (clearChip != null) ...[
+          const SizedBox(width: AppSizes.paddingSmall),
+          clearChip,
+        ],
+        if (sortControl != null) ...[
+          const SizedBox(width: AppSizes.paddingSmall),
+          sortControl,
         ],
       ],
     );

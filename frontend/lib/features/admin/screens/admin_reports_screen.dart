@@ -33,13 +33,21 @@ class _AdminReportsScreenState extends State<AdminReportsScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AdminProvider>();
+    final horizontalPadding = MediaQuery.sizeOf(context).width < 380
+        ? AppSizes.paddingSmall
+        : AppSizes.paddingMedium;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Reports')),
       body: RefreshIndicator(
         onRefresh: _fetch,
         child: ListView.separated(
-          padding: const EdgeInsets.all(AppSizes.paddingMedium),
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
+            AppSizes.paddingMedium,
+            horizontalPadding,
+            AppSizes.paddingXL,
+          ),
           itemCount: provider.reports.isEmpty ? 2 : provider.reports.length + 1,
           separatorBuilder: (_, _) =>
               const SizedBox(height: AppSizes.paddingMedium),
@@ -119,13 +127,31 @@ class _StatusFilter extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DropdownButtonFormField<String>(
-      initialValue: value,
-      decoration: const InputDecoration(labelText: 'Status'),
-      items: statuses
-          .map((status) => DropdownMenuItem(value: status, child: Text(status)))
-          .toList(),
-      onChanged: (value) => onChanged(value ?? 'pending'),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        border: Border.all(color: Theme.of(context).dividerColor),
+        borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: AppSizes.paddingSmall),
+        child: DropdownButtonFormField<String>(
+          initialValue: value,
+          decoration: const InputDecoration(
+            labelText: 'Status',
+            border: InputBorder.none,
+            enabledBorder: InputBorder.none,
+            focusedBorder: InputBorder.none,
+          ),
+          items: statuses
+              .map(
+                (status) =>
+                    DropdownMenuItem(value: status, child: Text(status)),
+              )
+              .toList(),
+          onChanged: (value) => onChanged(value ?? 'pending'),
+        ),
+      ),
     );
   }
 }

@@ -12,26 +12,37 @@ class ErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(AppSizes.paddingLarge),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            CircleAvatar(
-              radius: 36,
-              backgroundColor: AppColors.error.withValues(alpha: 0.10),
+            Container(
+              height: 64,
+              width: 64,
+              decoration: BoxDecoration(
+                color: AppColors.error.withValues(alpha: 0.10),
+                border: Border.all(
+                  color: AppColors.error.withValues(alpha: 0.22),
+                ),
+                borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
+              ),
               child: const Icon(
                 Icons.error_outline,
                 color: AppColors.error,
-                size: 34,
+                size: 32,
               ),
             ),
-            const SizedBox(height: 12),
-            Text(
-              message,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyLarge,
+            const SizedBox(height: AppSizes.paddingLarge),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 340),
+              child: Text(
+                message,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyLarge,
+              ),
             ),
             if (onRetry != null) ...[
               const SizedBox(height: 16),

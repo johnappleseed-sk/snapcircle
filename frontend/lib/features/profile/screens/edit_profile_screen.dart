@@ -128,6 +128,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
     final profileProvider = context.watch<ProfileProvider>();
     _initializeFields(profileProvider);
     final profile = profileProvider.profile;
+    final horizontalPadding = MediaQuery.sizeOf(context).width < 380
+        ? AppSizes.paddingSmall
+        : AppSizes.paddingMedium;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Edit Profile')),
@@ -140,9 +143,9 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                   keyboardDismissBehavior:
                       ScrollViewKeyboardDismissBehavior.onDrag,
                   padding: EdgeInsets.fromLTRB(
+                    horizontalPadding,
                     AppSizes.paddingMedium,
-                    AppSizes.paddingMedium,
-                    AppSizes.paddingMedium,
+                    horizontalPadding,
                     AppSizes.paddingLarge +
                         MediaQuery.viewInsetsOf(context).bottom,
                   ),
@@ -202,6 +205,7 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       hint: 'Tell people about yourself',
                       controller: _bioController,
                       maxLines: 4,
+                      onChanged: (_) => setState(() {}),
                     ),
                     Align(
                       alignment: Alignment.centerRight,
@@ -235,16 +239,20 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                       },
                     ),
                     const SizedBox(height: AppSizes.paddingMedium),
-                    SwitchListTile.adaptive(
-                      value: _isPrivate,
-                      onChanged: profileProvider.isUpdating
-                          ? null
-                          : (value) => setState(() => _isPrivate = value),
-                      title: const Text('Private profile'),
-                      subtitle: const Text(
-                        'Limit discovery and follow access when supported.',
+                    AppCard(
+                      padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
+                      child: SwitchListTile.adaptive(
+                        value: _isPrivate,
+                        onChanged: profileProvider.isUpdating
+                            ? null
+                            : (value) => setState(() => _isPrivate = value),
+                        title: const Text('Private profile'),
+                        subtitle: const Text(
+                          'Limit discovery and follow access when supported.',
+                        ),
+                        secondary: const Icon(Icons.lock_outline),
+                        contentPadding: EdgeInsets.zero,
                       ),
-                      contentPadding: EdgeInsets.zero,
                     ),
                     if (_localError != null) ...[
                       const SizedBox(height: 14),
@@ -288,7 +296,7 @@ class _CoverPreview extends StatelessWidget {
       children: [
         ClipRRect(
           borderRadius: const BorderRadius.vertical(
-            top: Radius.circular(AppSizes.radiusMedium),
+            top: Radius.circular(AppSizes.radiusSmall),
           ),
           child: SizedBox(
             height: 150,
@@ -300,10 +308,12 @@ class _CoverPreview extends StatelessWidget {
                 : DecoratedBox(
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
                         colors: [
-                          AppColors.primary,
-                          AppColors.secondary,
-                          AppColors.accent.withValues(alpha: 0.8),
+                          AppColors.primary.withValues(alpha: 0.92),
+                          AppColors.info.withValues(alpha: 0.78),
+                          AppColors.accent.withValues(alpha: 0.74),
                         ],
                       ),
                     ),
@@ -341,9 +351,10 @@ class _AvatarPreview extends StatelessWidget {
       children: [
         Container(
           padding: const EdgeInsets.all(4),
-          decoration: const BoxDecoration(
-            color: AppColors.surface,
-            shape: BoxShape.circle,
+          decoration: BoxDecoration(
+            color: Theme.of(context).colorScheme.surface,
+            border: Border.all(color: Theme.of(context).dividerColor),
+            borderRadius: BorderRadius.circular(999),
           ),
           child: ClipOval(
             child: SizedBox(

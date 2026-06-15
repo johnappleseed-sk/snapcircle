@@ -123,6 +123,15 @@ class AppRouter {
               const AppShell(currentIndex: 1, child: ExploreScreen()),
         ),
         GoRoute(
+          path: '/explore/tags/:tag',
+          builder: (context, state) {
+            return AppShell(
+              currentIndex: 1,
+              child: ExploreScreen(initialTag: state.pathParameters['tag']),
+            );
+          },
+        ),
+        GoRoute(
           path: '/create',
           builder: (context, state) =>
               const AppShell(currentIndex: 2, child: CreateHubScreen()),

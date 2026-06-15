@@ -58,7 +58,11 @@ class ReportResource extends JsonResource
                 'id' => $reportable->id,
                 'type' => 'post',
                 'content_preview' => str($reportable->content ?? '')->limit(120)->toString(),
-                'image_url' => $reportable->image_path ? asset('storage/'.$reportable->image_path) : null,
+                'image_url' => $reportable->image_path
+                    ? (str_starts_with($reportable->image_path, 'http')
+                        ? $reportable->image_path
+                        : asset('storage/'.$reportable->image_path))
+                    : null,
                 'owner' => $reportable->relationLoaded('user')
                     ? UserResource::make($reportable->user)
                     : null,

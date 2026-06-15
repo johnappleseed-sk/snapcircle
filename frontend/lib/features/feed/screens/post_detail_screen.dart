@@ -114,16 +114,19 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     final currentUserId = context.watch<AuthProvider>().user?.id;
     final provider = context.watch<FeedProvider>();
     final post = _findProviderPost(provider) ?? _post;
+    final horizontalPadding = MediaQuery.sizeOf(context).width < 380
+        ? AppSizes.paddingSmall
+        : AppSizes.paddingMedium;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Post')),
       body: RefreshIndicator(
         onRefresh: _fetchPost,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
             AppSizes.paddingMedium,
-            AppSizes.paddingMedium,
-            AppSizes.paddingMedium,
+            horizontalPadding,
             AppSizes.paddingXL,
           ),
           children: [
@@ -155,10 +158,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                 onCommentsTap: () {
                   context.push('/posts/${post.id}/comments', extra: post);
                 },
-                onEdit: () => context.push(
-                  '/posts/${post.id}/edit',
-                  extra: post,
-                ).then((_) => _fetchPost()),
+                onEdit: () => context
+                    .push('/posts/${post.id}/edit', extra: post)
+                    .then((_) => _fetchPost()),
                 onDelete: () => _deletePost(context, post.id),
               ),
               const SizedBox(height: AppSizes.paddingMedium),

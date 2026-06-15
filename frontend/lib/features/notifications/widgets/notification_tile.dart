@@ -24,12 +24,14 @@ class NotificationTile extends StatelessWidget {
     final actor = notification.actor;
     final preview = _previewText;
     final theme = Theme.of(context);
+    final isCompact = MediaQuery.sizeOf(context).width < 380;
 
     return AppCard(
       color: notification.isRead
           ? null
           : theme.colorScheme.primary.withValues(alpha: 0.08),
       onTap: onTap,
+      padding: EdgeInsets.all(isCompact ? 12 : AppSizes.paddingMedium),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -44,20 +46,9 @@ class NotificationTile extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Expanded(
-                      child: Text(
-                        notification.message,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          fontWeight: notification.isRead
-                              ? FontWeight.w600
-                              : FontWeight.w900,
-                        ),
-                      ),
-                    ),
                     if (!notification.isRead) ...[
-                      const SizedBox(width: AppSizes.paddingSmall),
                       Container(
                         height: 9,
                         width: 9,
@@ -66,7 +57,21 @@ class NotificationTile extends StatelessWidget {
                           shape: BoxShape.circle,
                         ),
                       ),
+                      const SizedBox(width: AppSizes.paddingSmall),
                     ],
+                    Expanded(
+                      child: Text(
+                        notification.message,
+                        maxLines: 3,
+                        overflow: TextOverflow.ellipsis,
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          fontWeight: notification.isRead
+                              ? FontWeight.w600
+                              : FontWeight.w900,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: AppSizes.paddingXS),
                     PopupMenuButton<String>(
                       tooltip: 'Notification options',
                       icon: const Icon(Icons.more_horiz),

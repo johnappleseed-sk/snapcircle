@@ -54,6 +54,9 @@ class _NotificationSettingsScreenState
   Widget build(BuildContext context) {
     final provider = context.watch<SettingsProvider>();
     final settings = provider.settings;
+    final horizontalPadding = MediaQuery.sizeOf(context).width < 380
+        ? AppSizes.paddingSmall
+        : AppSizes.paddingMedium;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Notification Settings')),
@@ -65,9 +68,15 @@ class _NotificationSettingsScreenState
               onRetry: provider.fetchSettings,
             )
           : ListView(
-              padding: const EdgeInsets.all(AppSizes.paddingMedium),
+              padding: EdgeInsets.fromLTRB(
+                horizontalPadding,
+                AppSizes.paddingMedium,
+                horizontalPadding,
+                AppSizes.paddingXL,
+              ),
               children: [
                 AppCard(
+                  padding: EdgeInsets.zero,
                   child: Column(
                     children: [
                       SwitchListTile.adaptive(
@@ -83,6 +92,7 @@ class _NotificationSettingsScreenState
                         subtitle: const Text(
                           'Likes, comments, follows, requests, approvals, and messages.',
                         ),
+                        secondary: const Icon(Icons.notifications_outlined),
                       ),
                       const Divider(),
                       SwitchListTile.adaptive(
@@ -98,6 +108,7 @@ class _NotificationSettingsScreenState
                         subtitle: const Text(
                           'Receive important account and activity emails.',
                         ),
+                        secondary: const Icon(Icons.mark_email_unread_outlined),
                       ),
                       const Divider(),
                       SwitchListTile.adaptive(
@@ -113,6 +124,7 @@ class _NotificationSettingsScreenState
                         subtitle: const Text(
                           'Get occasional SnapCircle product updates.',
                         ),
+                        secondary: const Icon(Icons.campaign_outlined),
                       ),
                     ],
                   ),

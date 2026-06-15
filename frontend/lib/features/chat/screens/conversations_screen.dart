@@ -31,16 +31,19 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
   Widget build(BuildContext context) {
     final provider = context.watch<ConversationsProvider>();
     final currentUserId = context.watch<AuthProvider>().user?.id;
+    final horizontalPadding = MediaQuery.sizeOf(context).width < 380
+        ? AppSizes.paddingSmall
+        : AppSizes.paddingMedium;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Messages')),
       body: RefreshIndicator(
         onRefresh: () => provider.fetchConversations(refresh: true),
         child: ListView.separated(
-          padding: const EdgeInsets.fromLTRB(
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
             AppSizes.paddingMedium,
-            AppSizes.paddingMedium,
-            AppSizes.paddingMedium,
+            horizontalPadding,
             AppSizes.paddingXL,
           ),
           itemCount: _itemCount(provider),

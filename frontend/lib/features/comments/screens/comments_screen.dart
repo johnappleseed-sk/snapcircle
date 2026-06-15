@@ -25,6 +25,7 @@ class CommentsScreen extends StatefulWidget {
 
 class _CommentsScreenState extends State<CommentsScreen> {
   final _commentController = TextEditingController();
+  CommentsProvider? _commentsProvider;
   String? _localError;
   bool _canSubmitComment = false;
 
@@ -44,8 +45,14 @@ class _CommentsScreenState extends State<CommentsScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _commentsProvider = context.read<CommentsProvider>();
+  }
+
+  @override
   void dispose() {
-    context.read<CommentsProvider>().stopCommentsStatusPolling();
+    _commentsProvider?.stopCommentsStatusPolling();
     _commentController.removeListener(_handleComposerChanged);
     _commentController.dispose();
     super.dispose();
@@ -137,6 +144,9 @@ class _CommentsBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final commentsProvider = context.watch<CommentsProvider>();
+    final horizontalPadding = MediaQuery.sizeOf(context).width < 380
+        ? AppSizes.paddingSmall
+        : AppSizes.paddingMedium;
 
     if (commentsProvider.isLoading) {
       return const LoadingView(message: 'Loading comments...');
@@ -177,10 +187,10 @@ class _CommentsBody extends StatelessWidget {
 
     return ListView.separated(
       keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
-      padding: const EdgeInsets.fromLTRB(
+      padding: EdgeInsets.fromLTRB(
+        horizontalPadding,
         AppSizes.paddingMedium,
-        AppSizes.paddingMedium,
-        AppSizes.paddingMedium,
+        horizontalPadding,
         AppSizes.paddingLarge,
       ),
       itemCount:
@@ -326,6 +336,10 @@ class _CommentComposer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final horizontalPadding = MediaQuery.sizeOf(context).width < 380
+        ? AppSizes.paddingSmall
+        : AppSizes.paddingMedium;
+
     return DecoratedBox(
       decoration: BoxDecoration(
         color: Theme.of(context).colorScheme.surface,
@@ -333,9 +347,9 @@ class _CommentComposer extends StatelessWidget {
       ),
       child: Padding(
         padding: EdgeInsets.fromLTRB(
-          AppSizes.paddingMedium,
+          horizontalPadding,
           AppSizes.paddingSmall,
-          AppSizes.paddingMedium,
+          horizontalPadding,
           AppSizes.paddingSmall + MediaQuery.viewInsetsOf(context).bottom,
         ),
         child: Column(
@@ -360,26 +374,34 @@ class _CommentComposer extends StatelessWidget {
                     minLines: 1,
                     maxLines: 4,
                     enabled: !isSubmitting,
+                    textInputAction: TextInputAction.newline,
                     decoration: const InputDecoration(
                       hintText: 'Write a comment...',
                       labelText: 'Comment',
+                      contentPadding: EdgeInsets.symmetric(
+                        horizontal: AppSizes.paddingMedium,
+                        vertical: 12,
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 10),
-                IconButton.filled(
-                  onPressed: isSubmitting || !canSubmit ? null : onSubmit,
-                  icon: isSubmitting
-                      ? const SizedBox(
-                          height: 18,
-                          width: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : const Icon(Icons.send_outlined),
-                  tooltip: 'Send comment',
+                const SizedBox(width: AppSizes.paddingSmall),
+                SizedBox.square(
+                  dimension: 48,
+                  child: IconButton.filled(
+                    onPressed: isSubmitting || !canSubmit ? null : onSubmit,
+                    icon: isSubmitting
+                        ? const SizedBox(
+                            height: 18,
+                            width: 18,
+                            child: CircularProgressIndicator(
+                              strokeWidth: 2,
+                              color: Colors.white,
+                            ),
+                          )
+                        : const Icon(Icons.send_outlined),
+                    tooltip: 'Send comment',
+                  ),
                 ),
               ],
             ),

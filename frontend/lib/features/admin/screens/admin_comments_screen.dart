@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/utils/date_formatter.dart';
 import '../../../core/utils/snackbar_helper.dart';
@@ -34,13 +35,21 @@ class _AdminCommentsScreenState extends State<AdminCommentsScreen> {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<AdminProvider>();
+    final horizontalPadding = MediaQuery.sizeOf(context).width < 380
+        ? AppSizes.paddingSmall
+        : AppSizes.paddingMedium;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Comment Moderation')),
       body: RefreshIndicator(
         onRefresh: _fetch,
         child: ListView.separated(
-          padding: const EdgeInsets.all(AppSizes.paddingMedium),
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
+            AppSizes.paddingMedium,
+            horizontalPadding,
+            AppSizes.paddingXL,
+          ),
           itemCount: provider.comments.isEmpty ? 1 : provider.comments.length,
           separatorBuilder: (_, _) =>
               const SizedBox(height: AppSizes.paddingMedium),
@@ -83,6 +92,7 @@ class _AdminCommentTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AppCard(
+      padding: const EdgeInsets.all(14),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -139,6 +149,8 @@ class _AdminCommentTile extends StatelessWidget {
           Chip(
             avatar: const Icon(Icons.flag_outlined, size: 16),
             label: Text('${comment.reportsCount} reports'),
+            side: BorderSide(color: Theme.of(context).dividerColor),
+            backgroundColor: AppColors.surfaceMuted,
             visualDensity: VisualDensity.compact,
           ),
         ],

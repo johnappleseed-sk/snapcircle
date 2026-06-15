@@ -26,6 +26,7 @@ class CommentTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isCompact = MediaQuery.sizeOf(context).width < 380;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -34,10 +35,17 @@ class CommentTile extends StatelessWidget {
           imageUrl: comment.user.avatar,
           size: AppAvatarSize.small,
         ),
-        const SizedBox(width: AppSizes.paddingMedium),
+        SizedBox(
+          width: isCompact ? AppSizes.paddingSmall : AppSizes.paddingMedium,
+        ),
         Expanded(
           child: AppCard(
-            padding: const EdgeInsets.fromLTRB(14, 12, 14, 12),
+            padding: EdgeInsets.fromLTRB(
+              isCompact ? 12 : 14,
+              12,
+              isCompact ? 12 : 14,
+              12,
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -129,9 +137,11 @@ class CommentTile extends StatelessWidget {
                 const SizedBox(height: AppSizes.paddingSmall),
                 Text(
                   comment.comment,
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    height: 1.35,
-                  ),
+                  maxLines: 8,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodyMedium?.copyWith(height: 1.35),
                 ),
               ],
             ),

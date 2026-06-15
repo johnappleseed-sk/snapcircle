@@ -42,6 +42,10 @@ class AppAvatar extends StatelessWidget {
       return fallback;
     }
 
+    final cacheSize = (_dimension * MediaQuery.devicePixelRatioOf(context))
+        .round()
+        .clamp(48, 240);
+
     return Container(
       height: _dimension,
       width: _dimension,
@@ -55,6 +59,9 @@ class AppAvatar extends StatelessWidget {
       child: CachedNetworkImage(
         imageUrl: url,
         fit: BoxFit.cover,
+        memCacheWidth: cacheSize,
+        memCacheHeight: cacheSize,
+        fadeInDuration: const Duration(milliseconds: 100),
         placeholder: (context, url) => fallback,
         errorWidget: (context, url, error) => fallback,
       ),
@@ -93,16 +100,23 @@ class _AvatarFallback extends StatelessWidget {
       width: dimension,
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: AppColors.secondary.withValues(alpha: 0.12),
+        gradient: LinearGradient(
+          colors: [
+            AppColors.primary.withValues(alpha: 0.12),
+            AppColors.info.withValues(alpha: 0.14),
+          ],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
         shape: BoxShape.circle,
-        border: showBorder
-            ? Border.all(color: AppColors.surface, width: 3)
-            : null,
+        border: Border.all(
+          color: AppColors.primary.withValues(alpha: showBorder ? 0.20 : 0.10),
+        ),
       ),
       child: Text(
         initials,
         style: TextStyle(
-          color: AppColors.secondary,
+          color: AppColors.primary,
           fontWeight: FontWeight.w900,
           fontSize: dimension * 0.34,
         ),

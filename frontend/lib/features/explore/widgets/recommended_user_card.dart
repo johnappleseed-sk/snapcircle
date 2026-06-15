@@ -12,6 +12,7 @@ class RecommendedUserCard extends StatelessWidget {
   final bool isUpdating;
   final VoidCallback onTap;
   final VoidCallback onFollowTap;
+  final double width;
 
   const RecommendedUserCard({
     super.key,
@@ -19,6 +20,7 @@ class RecommendedUserCard extends StatelessWidget {
     required this.isUpdating,
     required this.onTap,
     required this.onFollowTap,
+    this.width = 178,
   });
 
   @override
@@ -30,7 +32,7 @@ class RecommendedUserCard extends StatelessWidget {
         : user.location ?? (user.showEmail ? user.email : 'SnapCircle user');
 
     return SizedBox(
-      width: 178,
+      width: width,
       child: AppCard(
         onTap: onTap,
         padding: const EdgeInsets.all(AppSizes.paddingMedium),

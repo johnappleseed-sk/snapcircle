@@ -34,6 +34,9 @@ class ProfileCompletionCard extends StatelessWidget {
                 width: 42,
                 decoration: BoxDecoration(
                   color: AppColors.primary.withValues(alpha: 0.12),
+                  border: Border.all(
+                    color: AppColors.primary.withValues(alpha: 0.18),
+                  ),
                   borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
                 ),
                 child: const Icon(
@@ -68,8 +71,8 @@ class ProfileCompletionCard extends StatelessWidget {
           const SizedBox(height: AppSizes.paddingSmall),
           LinearProgressIndicator(
             value: completion / 100,
-            minHeight: 8,
-            borderRadius: BorderRadius.circular(999),
+            minHeight: 7,
+            borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
           ),
           const SizedBox(height: AppSizes.paddingSmall),
           Text(

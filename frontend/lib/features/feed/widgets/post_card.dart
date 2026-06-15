@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
@@ -12,6 +13,7 @@ import '../../../core/utils/date_formatter.dart';
 import '../../reports/widgets/report_dialog.dart';
 import '../models/post_model.dart';
 import '../providers/feed_provider.dart';
+import 'hashtag_caption.dart';
 import 'post_media_carousel.dart';
 
 class PostCard extends StatelessWidget {
@@ -24,6 +26,7 @@ class PostCard extends StatelessWidget {
   final Future<bool> Function()? onSaveTap;
   final VoidCallback? onShareTap;
   final VoidCallback? onBlockUser;
+  final ValueChanged<String>? onTagTap;
 
   const PostCard({
     super.key,
@@ -36,24 +39,34 @@ class PostCard extends StatelessWidget {
     this.onSaveTap,
     this.onShareTap,
     this.onBlockUser,
+    this.onTagTap,
   });
 
   @override
   Widget build(BuildContext context) {
     final hasContent = post.content != null && post.content!.trim().isNotEmpty;
     final hasMedia = post.media.isNotEmpty;
-    final feedProvider = context.watch<FeedProvider>();
-    final isLikeUpdating = feedProvider.isLikeUpdating(post.id);
-    final isSaveUpdating = feedProvider.isSaveUpdating(post.id);
+    final isLikeUpdating = context.select<FeedProvider, bool>(
+      (provider) => provider.isLikeUpdating(post.id),
+    );
+    final isSaveUpdating = context.select<FeedProvider, bool>(
+      (provider) => provider.isSaveUpdating(post.id),
+    );
     final username = post.user.username?.trim();
     final subtitle = [
       if (username != null && username.isNotEmpty) '@$username',
       DateFormatter.timeAgo(post.createdAt),
     ].join(' - ');
+    final isCompact = MediaQuery.sizeOf(context).width < 380;
 
     return AppCard(
       onTap: onTap,
-      padding: const EdgeInsets.fromLTRB(14, 14, 14, 12),
+      padding: EdgeInsets.fromLTRB(
+        isCompact ? 12 : 14,
+        14,
+        isCompact ? 12 : 14,
+        12,
+      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -102,11 +115,9 @@ class PostCard extends StatelessWidget {
           ),
           if (hasContent) ...[
             const SizedBox(height: AppSizes.paddingMedium),
-            Text(
-              post.content!,
-              style: Theme.of(
-                context,
-              ).textTheme.bodyLarge?.copyWith(height: 1.4),
+            HashtagCaption(
+              text: post.content!,
+              onTagTap: onTagTap ?? (tag) => _openTag(context, tag),
             ),
           ],
           if (hasMedia) ...[
@@ -123,6 +134,7 @@ class PostCard extends StatelessWidget {
                 label: post.likesCount.toString(),
                 color: post.likedByMe ? AppColors.danger : null,
                 isLoading: isLikeUpdating,
+                compact: isCompact,
                 semanticLabel: post.likedByMe ? 'Unlike post' : 'Like post',
                 onTap: isLikeUpdating
                     ? null
@@ -143,12 +155,14 @@ class PostCard extends StatelessWidget {
               _PostAction(
                 icon: Icons.chat_bubble_outline,
                 label: post.commentsCount.toString(),
+                compact: isCompact,
                 semanticLabel: 'Open comments',
                 onTap: onCommentsTap,
               ),
               _PostAction(
                 icon: Icons.ios_share_outlined,
                 label: 'Share',
+                compact: isCompact,
                 semanticLabel: 'Share post',
                 onTap:
                     onShareTap ??
@@ -162,6 +176,7 @@ class PostCard extends StatelessWidget {
                 label: post.savesCount.toString(),
                 color: post.savedByMe ? AppColors.primary : null,
                 isLoading: isSaveUpdating,
+                compact: isCompact,
                 semanticLabel: post.savedByMe ? 'Unsave post' : 'Save post',
                 onTap: isSaveUpdating
                     ? null
@@ -186,6 +201,10 @@ class PostCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void _openTag(BuildContext context, String tag) {
+    context.go('/explore/tags/${Uri.encodeComponent(tag)}');
   }
 
   Future<void> _showPostActions(BuildContext context) async {
@@ -257,6 +276,7 @@ class _PostAction extends StatefulWidget {
   final String label;
   final Color? color;
   final bool isLoading;
+  final bool compact;
   final String semanticLabel;
   final FutureOr<void> Function()? onTap;
 
@@ -265,6 +285,7 @@ class _PostAction extends StatefulWidget {
     required this.label,
     required this.semanticLabel,
     this.color,
+    this.compact = false,
     this.isLoading = false,
     this.onTap,
   });
@@ -293,6 +314,9 @@ class _PostActionState extends State<_PostAction> {
   @override
   Widget build(BuildContext context) {
     final foreground = widget.color ?? AppColors.mutedText;
+    final visibleLabel = widget.compact && widget.label.length > 3
+        ? ''
+        : widget.label;
     return Semantics(
       button: true,
       label: widget.semanticLabel,
@@ -305,36 +329,44 @@ class _PostActionState extends State<_PostAction> {
           child: InkWell(
             borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
             onTap: widget.isLoading || widget.onTap == null ? null : _handleTap,
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 6),
-              child: AnimatedSwitcher(
-                duration: const Duration(milliseconds: 160),
-                transitionBuilder: (child, animation) {
-                  return ScaleTransition(scale: animation, child: child);
-                },
-                child: widget.isLoading
-                    ? const SizedBox(
-                        key: ValueKey('loading'),
-                        height: 20,
-                        width: 20,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : Row(
-                        key: ValueKey('${widget.icon}-${widget.label}'),
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(widget.icon, size: 22, color: foreground),
-                          const SizedBox(width: 5),
-                          Text(
-                            widget.label,
-                            style: Theme.of(context).textTheme.bodyMedium
-                                ?.copyWith(
-                                  color: foreground,
-                                  fontWeight: FontWeight.w800,
-                                ),
-                          ),
-                        ],
-                      ),
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(minHeight: 40, minWidth: 40),
+              child: Padding(
+                padding: EdgeInsets.symmetric(
+                  horizontal: widget.compact ? 4 : 6,
+                  vertical: 6,
+                ),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 160),
+                  transitionBuilder: (child, animation) {
+                    return ScaleTransition(scale: animation, child: child);
+                  },
+                  child: widget.isLoading
+                      ? const SizedBox(
+                          key: ValueKey('loading'),
+                          height: 20,
+                          width: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2),
+                        )
+                      : Row(
+                          key: ValueKey('${widget.icon}-$visibleLabel'),
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(widget.icon, size: 22, color: foreground),
+                            if (visibleLabel.isNotEmpty) ...[
+                              const SizedBox(width: 5),
+                              Text(
+                                visibleLabel,
+                                style: Theme.of(context).textTheme.bodyMedium
+                                    ?.copyWith(
+                                      color: foreground,
+                                      fontWeight: FontWeight.w800,
+                                    ),
+                              ),
+                            ],
+                          ],
+                        ),
+                ),
               ),
             ),
           ),

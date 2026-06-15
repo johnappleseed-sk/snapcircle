@@ -21,26 +21,48 @@ class ProfileStatsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Expanded(
-          child: _StatItem(label: 'Posts', value: postsCount),
-        ),
-        Expanded(
-          child: _StatItem(
-            label: 'Followers',
-            value: followersCount,
-            onTap: onFollowersTap,
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(
+          context,
+        ).colorScheme.surfaceContainerHighest.withValues(alpha: 0.46),
+        border: Border.all(color: Theme.of(context).dividerColor),
+        borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: _StatItem(label: 'Posts', value: postsCount),
           ),
-        ),
-        Expanded(
-          child: _StatItem(
-            label: 'Following',
-            value: followingCount,
-            onTap: onFollowingTap,
+          _StatDivider(),
+          Expanded(
+            child: _StatItem(
+              label: 'Followers',
+              value: followersCount,
+              onTap: onFollowersTap,
+            ),
           ),
-        ),
-      ],
+          _StatDivider(),
+          Expanded(
+            child: _StatItem(
+              label: 'Following',
+              value: followingCount,
+              onTap: onFollowingTap,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatDivider extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 1,
+      height: 38,
+      color: Theme.of(context).dividerColor,
     );
   }
 }

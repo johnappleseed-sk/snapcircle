@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
+import '../../../core/utils/hashtag_utils.dart';
 import '../../feed/models/post_model.dart';
 
 class ExplorePostGridItem extends StatelessWidget {
@@ -21,11 +22,12 @@ class ExplorePostGridItem extends StatelessWidget {
     final thumbnailUrl = post.media.isNotEmpty
         ? post.media.first.url
         : post.imageUrl;
+    final tags = HashtagUtils.extract(post.content ?? '');
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+      borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
       child: ClipRRect(
-        borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+        borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
         child: Stack(
           fit: StackFit.expand,
           children: [
@@ -39,6 +41,14 @@ class ExplorePostGridItem extends StatelessWidget {
               )
             else
               _TextPreview(post: post),
+            const Positioned.fill(child: _MediaOverlay()),
+            if (tags.isNotEmpty)
+              Positioned(
+                top: 8,
+                left: 8,
+                right: post.media.length > 1 ? 36 : 8,
+                child: _TagPill(tag: tags.first),
+              ),
             if (post.media.length > 1)
               const Positioned(
                 top: 8,
@@ -69,6 +79,37 @@ class ExplorePostGridItem extends StatelessWidget {
   }
 }
 
+class _TagPill extends StatelessWidget {
+  final String tag;
+
+  const _TagPill({required this.tag});
+
+  @override
+  Widget build(BuildContext context) {
+    return Align(
+      alignment: Alignment.centerLeft,
+      child: Container(
+        constraints: const BoxConstraints(maxWidth: 116),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: Colors.black.withValues(alpha: 0.58),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          '#$tag',
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+            color: Colors.white,
+            fontWeight: FontWeight.w900,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _TextPreview extends StatelessWidget {
   final PostModel post;
 
@@ -78,7 +119,10 @@ class _TextPreview extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(AppSizes.paddingMedium),
-      color: AppColors.primary.withValues(alpha: 0.08),
+      decoration: BoxDecoration(
+        color: AppColors.primary.withValues(alpha: 0.08),
+        border: Border.all(color: AppColors.primary.withValues(alpha: 0.12)),
+      ),
       child: Center(
         child: Text(
           post.content?.trim().isNotEmpty == true
@@ -89,6 +133,28 @@ class _TextPreview extends StatelessWidget {
           style: Theme.of(
             context,
           ).textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.w800),
+        ),
+      ),
+    );
+  }
+}
+
+class _MediaOverlay extends StatelessWidget {
+  const _MediaOverlay();
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [
+            Colors.black.withValues(alpha: 0.04),
+            Colors.transparent,
+            Colors.black.withValues(alpha: 0.42),
+          ],
+          stops: const [0, 0.48, 1],
         ),
       ),
     );
@@ -106,7 +172,8 @@ class _Metric extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.58),
+        color: Colors.black.withValues(alpha: 0.62),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.14)),
         borderRadius: BorderRadius.circular(999),
       ),
       child: Row(

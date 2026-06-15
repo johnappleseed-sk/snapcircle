@@ -114,32 +114,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   if (profile.profileCompletion < 90)
                     const SizedBox(height: AppSizes.paddingMedium),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () => context.push('/follow-requests'),
-                          icon: const Icon(Icons.person_add_alt_outlined),
-                          label: const Text('Requests'),
-                        ),
-                      ),
-                      const SizedBox(width: AppSizes.paddingSmall),
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: () => context.push('/saved-posts'),
-                          icon: const Icon(Icons.bookmark_outline),
-                          label: const Text('Saved Posts'),
-                        ),
-                      ),
-                      const SizedBox(width: AppSizes.paddingSmall),
-                      Expanded(
-                        child: OutlinedButton.icon(
-                          onPressed: _logout,
-                          icon: const Icon(Icons.logout),
-                          label: const Text('Logout'),
-                        ),
-                      ),
-                    ],
+                  _ProfileQuickActions(
+                    onFollowRequests: () => context.push('/follow-requests'),
+                    onSavedPosts: () => context.push('/saved-posts'),
+                    onLogout: _logout,
                   ),
                   if (profile.isPrivate) ...[
                     const SizedBox(height: AppSizes.paddingSmall),
@@ -173,6 +151,82 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                 ],
               ),
+      ),
+    );
+  }
+}
+
+class _ProfileQuickActions extends StatelessWidget {
+  final VoidCallback onFollowRequests;
+  final VoidCallback onSavedPosts;
+  final VoidCallback onLogout;
+
+  const _ProfileQuickActions({
+    required this.onFollowRequests,
+    required this.onSavedPosts,
+    required this.onLogout,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isCompact = constraints.maxWidth < 360;
+        final gap = AppSizes.paddingSmall;
+        final itemWidth = isCompact
+            ? (constraints.maxWidth - gap) / 2
+            : (constraints.maxWidth - gap * 2) / 3;
+
+        return Wrap(
+          spacing: gap,
+          runSpacing: gap,
+          children: [
+            _ProfileQuickActionButton(
+              width: itemWidth,
+              onPressed: onFollowRequests,
+              icon: Icons.person_add_alt_outlined,
+              label: 'Requests',
+            ),
+            _ProfileQuickActionButton(
+              width: itemWidth,
+              onPressed: onSavedPosts,
+              icon: Icons.bookmark_outline,
+              label: 'Saved',
+            ),
+            _ProfileQuickActionButton(
+              width: itemWidth,
+              onPressed: onLogout,
+              icon: Icons.logout,
+              label: 'Log out',
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _ProfileQuickActionButton extends StatelessWidget {
+  final double width;
+  final VoidCallback onPressed;
+  final IconData icon;
+  final String label;
+
+  const _ProfileQuickActionButton({
+    required this.width,
+    required this.onPressed,
+    required this.icon,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: width,
+      child: OutlinedButton.icon(
+        onPressed: onPressed,
+        icon: Icon(icon, size: AppSizes.iconSmall),
+        label: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
       ),
     );
   }

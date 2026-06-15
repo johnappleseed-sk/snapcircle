@@ -49,12 +49,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
+    final horizontalPadding = MediaQuery.sizeOf(context).width < 380
+        ? AppSizes.paddingMedium
+        : AppSizes.paddingLarge;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Create account')),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSizes.paddingLarge),
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
+            AppSizes.paddingLarge,
+            horizontalPadding,
+            AppSizes.paddingLarge + MediaQuery.viewInsetsOf(context).bottom,
+          ),
           child: Form(
             key: _formKey,
             child: Column(
@@ -89,8 +97,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   controller: _nameController,
                   enabled: !authProvider.isLoading,
                   prefixIcon: const Icon(Icons.person_outline),
-                  validator: (value) =>
-                      (value?.trim().isEmpty ?? true) ? 'Name is required.' : null,
+                  validator: (value) => (value?.trim().isEmpty ?? true)
+                      ? 'Name is required.'
+                      : null,
                 ),
                 const SizedBox(height: AppSizes.paddingMedium),
                 AppTextField(
@@ -119,7 +128,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: AppSizes.paddingMedium),
                 TextButton(
-                  onPressed: authProvider.isLoading ? null : () => context.pop(),
+                  onPressed: authProvider.isLoading
+                      ? null
+                      : () => context.pop(),
                   child: const Text('I already have an account'),
                 ),
               ],

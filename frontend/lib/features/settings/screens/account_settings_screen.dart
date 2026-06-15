@@ -120,6 +120,9 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
   Widget build(BuildContext context) {
     final provider = context.watch<SettingsProvider>();
     final settings = provider.settings;
+    final horizontalPadding = MediaQuery.sizeOf(context).width < 380
+        ? AppSizes.paddingSmall
+        : AppSizes.paddingMedium;
 
     return Scaffold(
       appBar: AppBar(title: const Text('Account Settings')),
@@ -131,12 +134,33 @@ class _AccountSettingsScreenState extends State<AccountSettingsScreen> {
               onRetry: provider.fetchSettings,
             )
           : ListView(
-              padding: const EdgeInsets.all(AppSizes.paddingMedium),
+              padding: EdgeInsets.fromLTRB(
+                horizontalPadding,
+                AppSizes.paddingMedium,
+                horizontalPadding,
+                AppSizes.paddingXL,
+              ),
               children: [
                 AppCard(
                   child: Row(
                     children: [
-                      const Icon(Icons.verified_user_outlined),
+                      Container(
+                        height: 42,
+                        width: 42,
+                        decoration: BoxDecoration(
+                          color: AppColors.success.withValues(alpha: 0.10),
+                          border: Border.all(
+                            color: AppColors.success.withValues(alpha: 0.18),
+                          ),
+                          borderRadius: BorderRadius.circular(
+                            AppSizes.radiusSmall,
+                          ),
+                        ),
+                        child: const Icon(
+                          Icons.verified_user_outlined,
+                          color: AppColors.success,
+                        ),
+                      ),
                       const SizedBox(width: AppSizes.paddingMedium),
                       Expanded(
                         child: Column(

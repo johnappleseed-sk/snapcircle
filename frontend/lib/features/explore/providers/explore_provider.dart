@@ -1,10 +1,12 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../core/storage/app_preferences.dart';
+import '../../../core/utils/hashtag_utils.dart';
 import '../../auth/models/user_model.dart';
 import '../../feed/models/post_model.dart';
 import '../../profile/data/profile_repository.dart';
 import '../data/explore_repository.dart';
+import '../models/trending_tag_model.dart';
 
 class ExploreProvider extends ChangeNotifier {
   final ExploreRepository _exploreRepository;
@@ -13,6 +15,7 @@ class ExploreProvider extends ChangeNotifier {
 
   List<PostModel> _explorePosts = [];
   List<PostModel> _trendingPosts = [];
+  List<TrendingTagModel> _trendingTags = [];
   List<UserModel> _recommendedUsers = [];
   List<UserModel> _exploreUsers = [];
   bool _isLoading = false;
@@ -23,6 +26,7 @@ class ExploreProvider extends ChangeNotifier {
   final int _perPage = 12;
   String _currentSort = 'latest';
   String _searchQuery = '';
+  String? _selectedTag;
   String? _errorMessage;
   final Set<int> _followingUserIds = {};
   List<String> _recentSearches = [];
@@ -39,6 +43,7 @@ class ExploreProvider extends ChangeNotifier {
 
   List<PostModel> get explorePosts => List.unmodifiable(_explorePosts);
   List<PostModel> get trendingPosts => List.unmodifiable(_trendingPosts);
+  List<TrendingTagModel> get trendingTags => List.unmodifiable(_trendingTags);
   List<UserModel> get recommendedUsers => List.unmodifiable(_recommendedUsers);
   List<UserModel> get exploreUsers => List.unmodifiable(_exploreUsers);
   bool get isLoading => _isLoading;
@@ -48,6 +53,7 @@ class ExploreProvider extends ChangeNotifier {
   int get currentPostPage => _currentPostPage;
   String get currentSort => _currentSort;
   String get searchQuery => _searchQuery;
+  String? get selectedTag => _selectedTag;
   String? get errorMessage => _errorMessage;
   List<String> get recentSearches => List.unmodifiable(_recentSearches);
   bool isFollowingUser(int userId) => _followingUserIds.contains(userId);
@@ -70,6 +76,7 @@ class ExploreProvider extends ChangeNotifier {
       await Future.wait([
         fetchRecommendedUsers(refresh: true, notify: false),
         fetchTrendingPosts(refresh: true, notify: false),
+        fetchTrendingTags(refresh: true, notify: false),
         fetchExplorePosts(refresh: true, notify: false),
       ]);
     } on ExploreException catch (error) {
@@ -98,12 +105,19 @@ class ExploreProvider extends ChangeNotifier {
       notifyListeners();
     }
 
-    final posts = await _exploreRepository.getExplorePosts(
-      page: _currentPostPage,
-      perPage: _perPage,
-      search: _searchQuery.isEmpty ? null : _searchQuery,
-      sort: _currentSort,
-    );
+    final posts = _selectedTag == null
+        ? await _exploreRepository.getExplorePosts(
+            page: _currentPostPage,
+            perPage: _perPage,
+            search: _searchQuery.isEmpty ? null : _searchQuery,
+            sort: _currentSort,
+          )
+        : await _exploreRepository.getPostsByTag(
+            tag: _selectedTag!,
+            page: _currentPostPage,
+            perPage: _perPage,
+            sort: _currentSort,
+          );
     _explorePosts = posts;
     _hasMorePosts = posts.length >= _perPage;
 
@@ -118,6 +132,14 @@ class ExploreProvider extends ChangeNotifier {
     if (notify) notifyListeners();
   }
 
+  Future<void> fetchTrendingTags({
+    bool refresh = false,
+    bool notify = true,
+  }) async {
+    _trendingTags = await _exploreRepository.getTrendingTags();
+    if (notify) notifyListeners();
+  }
+
   Future<void> fetchRecommendedUsers({
     bool refresh = false,
     bool notify = true,
@@ -129,6 +151,7 @@ class ExploreProvider extends ChangeNotifier {
   Future<void> searchExplore(String query) async {
     final trimmed = query.trim();
     _searchQuery = trimmed;
+    _selectedTag = null;
 
     if (trimmed.isEmpty) {
       _exploreUsers = [];
@@ -169,6 +192,34 @@ class ExploreProvider extends ChangeNotifier {
     await fetchExplorePosts(refresh: true);
   }
 
+  Future<void> selectTag(TrendingTagModel tag) async {
+    await selectTagName(tag.tag);
+  }
+
+  Future<void> selectTagName(String tag) async {
+    final normalizedTag = HashtagUtils.normalize(tag);
+    if (normalizedTag.isEmpty || _selectedTag == normalizedTag) {
+      return;
+    }
+
+    _selectedTag = normalizedTag;
+    _searchQuery = '';
+    _exploreUsers = [];
+    await fetchExplorePosts(refresh: true);
+  }
+
+  Future<void> openTag(String tag) async {
+    final normalizedTag = HashtagUtils.normalize(tag);
+    if (normalizedTag.isEmpty) {
+      return;
+    }
+
+    _selectedTag = normalizedTag;
+    _searchQuery = '';
+    _exploreUsers = [];
+    await fetchExploreData(refresh: true);
+  }
+
   Future<void> loadMorePosts() async {
     if (_isLoadingMore || !_hasMorePosts || _searchQuery.isNotEmpty) {
       return;
@@ -180,11 +231,18 @@ class ExploreProvider extends ChangeNotifier {
 
     try {
       final nextPage = _currentPostPage + 1;
-      final posts = await _exploreRepository.getExplorePosts(
-        page: nextPage,
-        perPage: _perPage,
-        sort: _currentSort,
-      );
+      final posts = _selectedTag == null
+          ? await _exploreRepository.getExplorePosts(
+              page: nextPage,
+              perPage: _perPage,
+              sort: _currentSort,
+            )
+          : await _exploreRepository.getPostsByTag(
+              tag: _selectedTag!,
+              page: nextPage,
+              perPage: _perPage,
+              sort: _currentSort,
+            );
       if (posts.isEmpty) {
         _hasMorePosts = false;
       } else {
@@ -203,8 +261,9 @@ class ExploreProvider extends ChangeNotifier {
   }
 
   Future<void> clearSearch() async {
-    if (_searchQuery.isEmpty) return;
+    if (_searchQuery.isEmpty && _selectedTag == null) return;
     _searchQuery = '';
+    _selectedTag = null;
     _exploreUsers = [];
     await fetchExplorePosts(refresh: true);
   }

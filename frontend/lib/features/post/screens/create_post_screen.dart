@@ -117,7 +117,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     if (created) {
       SnackbarHelper.showSuccess(
         context,
-        _isEditing ? 'Post updated successfully.' : 'Post created successfully.',
+        _isEditing
+            ? 'Post updated successfully.'
+            : 'Post created successfully.',
       );
       if (_isEditing) {
         context.pop();
@@ -137,6 +139,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
     final feedProvider = context.watch<FeedProvider>();
     final user = context.watch<AuthProvider>().user;
     final contentLength = _contentController.text.trim().length;
+    final horizontalPadding = MediaQuery.sizeOf(context).width < 380
+        ? AppSizes.paddingSmall
+        : AppSizes.paddingMedium;
     final hasExistingImage =
         _isEditing && widget.initialPost?.media.isNotEmpty == true;
     final canSubmit =
@@ -158,9 +163,9 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
         child: ListView(
           keyboardDismissBehavior: ScrollViewKeyboardDismissBehavior.onDrag,
           padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
             AppSizes.paddingMedium,
-            AppSizes.paddingMedium,
-            AppSizes.paddingMedium,
+            horizontalPadding,
             AppSizes.paddingLarge + MediaQuery.viewInsetsOf(context).bottom,
           ),
           children: [
@@ -284,6 +289,7 @@ class _ImagePickerArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isCompact = MediaQuery.sizeOf(context).width < 380;
     final existingImages =
         existingImageUrls?.where((url) => url.isNotEmpty).toList() ??
         const <String>[];
@@ -314,15 +320,24 @@ class _ImagePickerArea extends StatelessWidget {
             backgroundColor: Theme.of(context).colorScheme.surface,
           ),
           child: Padding(
-            padding: const EdgeInsets.symmetric(vertical: AppSizes.paddingLarge),
+            padding: EdgeInsets.symmetric(
+              horizontal: AppSizes.paddingSmall,
+              vertical: isCompact
+                  ? AppSizes.paddingMedium
+                  : AppSizes.paddingLarge,
+            ),
             child: Column(
               children: [
-                const Icon(Icons.add_photo_alternate_outlined, size: 34),
+                Icon(
+                  Icons.add_photo_alternate_outlined,
+                  size: isCompact ? 30 : 34,
+                ),
                 const SizedBox(height: AppSizes.paddingSmall),
                 Text(existingImages.isEmpty ? 'Add images' : 'Replace images'),
                 const SizedBox(height: 3),
                 Text(
                   'Choose up to 10 photos for a carousel post',
+                  textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: AppColors.textSecondary,
                   ),
@@ -349,6 +364,9 @@ class _SelectedImagePreviewGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final crossAxisCount = width < 360 ? 2 : 3;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -356,8 +374,8 @@ class _SelectedImagePreviewGrid extends StatelessWidget {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           itemCount: images.length,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 3,
+          gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: crossAxisCount,
             crossAxisSpacing: 8,
             mainAxisSpacing: 8,
           ),

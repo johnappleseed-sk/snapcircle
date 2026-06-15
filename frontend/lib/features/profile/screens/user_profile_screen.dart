@@ -37,6 +37,17 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
     });
   }
 
+  @override
+  void didUpdateWidget(covariant UserProfileScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.userId != widget.userId ||
+        oldWidget.username != widget.username) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _refresh();
+      });
+    }
+  }
+
   Future<void> _refresh() async {
     final profileProvider = context.read<ProfileProvider>();
     if (widget.username != null) {
@@ -143,7 +154,8 @@ class _UserProfileScreenState extends State<UserProfileScreen> {
                         return;
                       }
                       final updatedUser = profileProvider.selectedUser;
-                      if (followed && updatedUser?.followStatus == 'requested') {
+                      if (followed &&
+                          updatedUser?.followStatus == 'requested') {
                         SnackbarHelper.showSuccess(
                           context,
                           'Follow request sent.',

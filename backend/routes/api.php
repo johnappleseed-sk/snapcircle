@@ -28,7 +28,8 @@ use Illuminate\Support\Facades\Route;
 | Public API Routes
 |--------------------------------------------------------------------------
 */
-Route::get('/health', fn () => response()->json([
+
+Route::get('/health', fn() => response()->json([
     'status' => 'ok',
     'app' => 'SnapCircle API',
 ]));
@@ -77,6 +78,8 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::get('/explore/posts', [ExploreController::class, 'posts']);
         Route::get('/explore/users', [ExploreController::class, 'users']);
         Route::get('/explore/trending-posts', [ExploreController::class, 'trendingPosts']);
+        Route::get('/explore/trending-tags', [ExploreController::class, 'trendingTags']);
+        Route::get('/explore/tags/{tag}/posts', [ExploreController::class, 'tagPosts']);
         Route::get('/explore/recommended-users', [ExploreController::class, 'recommendedUsers']);
         Route::get('/explore/search', [ExploreController::class, 'search']);
 
