@@ -2,6 +2,10 @@
 
 This guide prepares SnapCircle for a university demo, prototype review, or local product walkthrough.
 
+For the final narrated presentation, use `docs/FINAL_DEMO_SCRIPT.md`.
+For required screenshots, use `docs/SCREENSHOT_GUIDE.md`.
+For architecture explanation, use `docs/TECHNICAL_ARCHITECTURE.md`.
+
 ## 1. Start The Backend
 
 ```bash
@@ -128,6 +132,14 @@ Do not commit real OAuth secrets or local `.env` files.
 15. Open Messages and send a chat message.
 16. If using an admin account, open Admin > Reports and review a report detail/status.
 17. Open Settings, review privacy/notification/account settings, then logout.
+
+## Final Presentation Assets
+
+- Full script: `docs/FINAL_DEMO_SCRIPT.md`
+- Feature inventory: `docs/FEATURE_LIST.md`
+- Architecture explanation: `docs/TECHNICAL_ARCHITECTURE.md`
+- Screenshot plan: `docs/SCREENSHOT_GUIDE.md`
+- Android runbook: `docs/ANDROID_DEMO_GUIDE.md`
 
 ## 5. Known Limitations
 

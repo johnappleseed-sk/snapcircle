@@ -2,6 +2,13 @@
 
 This guide is for installing, testing, and demoing SnapCircle on an Android emulator or a real Android phone.
 
+Final presentation companion docs:
+
+- Demo script: `docs/FINAL_DEMO_SCRIPT.md`
+- Screenshot plan: `docs/SCREENSHOT_GUIDE.md`
+- Feature list: `docs/FEATURE_LIST.md`
+- Architecture explanation: `docs/TECHNICAL_ARCHITECTURE.md`
+
 ## Requirements
 
 - Flutter SDK with Android toolchain installed.
@@ -180,6 +187,10 @@ Use this checklist for emulator or real-device smoke testing:
 34. Logout.
 35. Login again.
 36. Confirm token persistence by closing and reopening the app while logged in.
+
+## Final Screenshot Checklist
+
+Capture the final submission screenshots after the smoke test passes. Recommended screens are listed in `docs/SCREENSHOT_GUIDE.md` and include login, home feed, create post, image carousel, comments, explore, profile, edit profile, notifications, chat, settings, and admin/report review.
 
 ## Troubleshooting
 

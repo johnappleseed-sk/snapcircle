@@ -23,6 +23,8 @@ SnapCircle is a full-stack social media mobile application built as an academic 
 - Flutter mobile UI with Provider state management
 - Dio API client with secure token storage
 
+See the complete final feature inventory in [Feature List](docs/FEATURE_LIST.md).
+
 ## Tech Stack
 
 | Layer | Technology |
@@ -164,6 +166,8 @@ Full Android install, APK, and real-device QA details are in [Android Demo Guide
 10. Send a chat message.
 11. Review settings and logout.
 
+For the final presentation sequence, use [Final Demo Script](docs/FINAL_DEMO_SCRIPT.md).
+
 ## Environment Variable Notes
 
 - Do not commit real `.env` files.
@@ -239,6 +243,10 @@ SnapCircle now has a more complete Android-first social action surface:
 - [Setup Guide](docs/SETUP_GUIDE.md)
 - [Demo Guide](docs/DEMO_GUIDE.md)
 - [Android Demo Guide](docs/ANDROID_DEMO_GUIDE.md)
+- [Final Demo Script](docs/FINAL_DEMO_SCRIPT.md)
+- [Feature List](docs/FEATURE_LIST.md)
+- [Technical Architecture](docs/TECHNICAL_ARCHITECTURE.md)
+- [Screenshot Guide](docs/SCREENSHOT_GUIDE.md)
 - [Testing Checklist](docs/TESTING_CHECKLIST.md)
 - [Assignment Report Draft](docs/ASSIGNMENT_REPORT.md)
 - [Submission Guide](docs/SUBMISSION_GUIDE.md)

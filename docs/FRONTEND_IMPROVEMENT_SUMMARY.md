@@ -669,3 +669,40 @@ Final verification on 2026-06-18:
 - `flutter analyze`: blocked because `flutter` is not available on PATH.
 - `flutter test`: blocked because `flutter` is not available on PATH.
 - `flutter build apk --debug --dart-define=SNAPCIRCLE_API_BASE_URL=http://10.0.2.2:8000/api`: blocked because `flutter` is not available on PATH.
+
+## Final Android Demo Polish and Presentation Assets
+
+Date: 2026-06-18
+
+Improvements completed:
+
+- Added a final narrated Android demo script.
+- Added a complete feature list for university submission.
+- Added a student-friendly technical architecture document.
+- Added a screenshot guide for final presentation assets.
+- Updated README, demo guide, Android demo guide, and testing checklist to reference the final presentation materials.
+
+Demo data review:
+
+- The default demo account remains `maya@snapcircle.local` / `password`.
+- Existing seeders already include demo users, posts, comments, likes, follows, saved posts, stories, conversations, and optional larger photo datasets.
+- No fragile local image paths were added; existing demo media uses remote URLs or uploaded storage behavior.
+
+Final verification on 2026-06-18:
+
+- `git status`: showed documentation changes only before commit.
+- `git diff --stat`: showed README/demo/testing documentation updates and four new docs.
+- `php artisan migrate`: blocked by missing local SQLite PDO driver.
+- `php artisan route:list`: passed and listed 114 routes.
+- `php artisan test`: blocked by missing PHP `mbstring` extension.
+- `flutter pub get`: blocked because `flutter` is not available on PATH.
+- `flutter analyze`: blocked because `flutter` is not available on PATH.
+- `flutter test`: blocked because `flutter` is not available on PATH.
+- `flutter build apk --debug --dart-define=SNAPCIRCLE_API_BASE_URL=http://10.0.2.2:8000/api`: blocked because `flutter` is not available on PATH.
+- `flutter run -d android --dart-define=SNAPCIRCLE_API_BASE_URL=http://10.0.2.2:8000/api`: blocked because `flutter` is not available on PATH.
+
+Remaining limitations:
+
+- Manual Android device QA still needs a machine with Flutter and Android tooling available.
+- Local backend verification needs the configured PDO driver and PHP `mbstring` extension.
+- Firebase push delivery still requires project credentials outside git.
