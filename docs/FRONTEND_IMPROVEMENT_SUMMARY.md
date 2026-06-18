@@ -657,3 +657,15 @@ Verification notes:
 
 - Backend routes already cover the expanded workflows, so no Laravel API additions were needed.
 - Saved collections, video posts, and typing indicators remain recommended future work.
+
+Final verification on 2026-06-18:
+
+- `git status`: clean before verification documentation update.
+- `git diff --stat`: empty before verification documentation update.
+- `php artisan migrate`: blocked by missing local SQLite PDO driver.
+- `php artisan route:list`: passed and listed 114 routes.
+- `php artisan test`: blocked by missing PHP `mbstring` extension.
+- `flutter pub get`: blocked because `flutter` is not available on PATH.
+- `flutter analyze`: blocked because `flutter` is not available on PATH.
+- `flutter test`: blocked because `flutter` is not available on PATH.
+- `flutter build apk --debug --dart-define=SNAPCIRCLE_API_BASE_URL=http://10.0.2.2:8000/api`: blocked because `flutter` is not available on PATH.
