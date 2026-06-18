@@ -310,3 +310,23 @@ Known limitations:
 
 - A real Firebase project and service account are required before pushes can be delivered.
 - Per-category push preferences are not stored separately yet; the existing Push notifications setting controls delivery globally.
+
+## Feature Expansion and UI Improvement Pass
+
+Android-specific notes:
+
+- The shared post menu now includes View profile, Copy post text, Save/unsave, Report, Block, Edit, and Delete actions depending on ownership.
+- Saved Posts now uses the same post action model as the main feed and confirms destructive deletes.
+- Post Detail now keeps block/report/save/profile actions available after opening an individual post.
+- No fake saved collections or typing indicators are shown.
+
+Manual Android checklist:
+
+1. Login as a user with at least one own post and one post from another user.
+2. Confirm own post menu shows Edit and Delete.
+3. Confirm another user's post menu shows Report and Block.
+4. Copy text from a text post and confirm the success message appears.
+5. Save and unsave a post from the menu and from the action row.
+6. Open Saved Posts, unsave a post, and confirm it leaves the list.
+7. Delete an owned saved post and confirm the delete dialog appears first.
+8. Open Post Detail for another user's post and confirm Block is available.

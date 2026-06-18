@@ -222,6 +222,16 @@ Security notes: do not commit `.env`, `google-services.json`, service account JS
 
 Known limitations: push preferences are currently controlled by the existing global push toggle; per-category push toggles are a future enhancement.
 
+## Feature Expansion and UI Improvement Pass
+
+SnapCircle now has a more complete Android-first social action surface:
+
+- Post menus include View profile, Copy post text, Save/unsave, Report, Block, Edit, and Delete where allowed.
+- Saved Posts supports the same post actions as the feed, including delete confirmation and unsave.
+- Post Detail keeps safety actions available after opening a post.
+- Existing real Laravel APIs power these actions; no fake client-only backend behavior was added.
+- Saved collections, video posts, per-category notification preferences, and real-time typing indicators remain future enhancements.
+
 ## Documentation
 
 - [Backend API Documentation](docs/API_DOCUMENTATION.md)

@@ -10,6 +10,7 @@ import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/loading_view.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../profile/providers/profile_provider.dart';
 import '../data/feed_repository.dart';
 import '../models/post_model.dart';
 import '../providers/feed_provider.dart';
@@ -162,6 +163,9 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
                     .push('/posts/${post.id}/edit', extra: post)
                     .then((_) => _fetchPost()),
                 onDelete: () => _deletePost(context, post.id),
+                onBlockUser: post.isOwner
+                    ? null
+                    : () => _confirmBlockUser(context, post.user.id),
               ),
               const SizedBox(height: AppSizes.paddingMedium),
               AppButton(
@@ -187,5 +191,37 @@ class _PostDetailScreenState extends State<PostDetailScreen> {
     }
 
     return null;
+  }
+
+  Future<void> _confirmBlockUser(BuildContext context, int userId) async {
+    final confirmed = await showConfirmationDialog(
+      context: context,
+      title: 'Block this user?',
+      message:
+          'Their posts will be hidden and they will not be able to follow or message you.',
+      confirmLabel: 'Block',
+      isDestructive: true,
+    );
+
+    if (!confirmed || !context.mounted) {
+      return;
+    }
+
+    final blocked = await context.read<ProfileProvider>().blockUser(userId);
+    if (!context.mounted) {
+      return;
+    }
+
+    if (blocked) {
+      context.read<FeedProvider>().removePostsByUser(userId);
+      SnackbarHelper.showSuccess(context, 'User blocked.');
+      context.pop();
+    } else {
+      SnackbarHelper.showError(
+        context,
+        context.read<ProfileProvider>().errorMessage ??
+            'Unable to block this user.',
+      );
+    }
   }
 }

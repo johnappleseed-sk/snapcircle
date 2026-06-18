@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -240,6 +241,61 @@ class PostCard extends StatelessWidget {
                       onDelete?.call();
                     },
                   ),
+                ListTile(
+                  leading: const Icon(Icons.person_outline),
+                  title: const Text('View profile'),
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    context.push('/users/${post.user.id}');
+                  },
+                ),
+                if (post.content != null && post.content!.trim().isNotEmpty)
+                  ListTile(
+                    leading: const Icon(Icons.copy_outlined),
+                    title: const Text('Copy post text'),
+                    onTap: () async {
+                      Navigator.of(sheetContext).pop();
+                      await Clipboard.setData(
+                        ClipboardData(text: post.content!.trim()),
+                      );
+                      if (context.mounted) {
+                        SnackbarHelper.showSuccess(
+                          context,
+                          'Post text copied.',
+                        );
+                      }
+                    },
+                  ),
+                ListTile(
+                  leading: Icon(
+                    post.savedByMe
+                        ? Icons.bookmark_remove_outlined
+                        : Icons.bookmark_add_outlined,
+                  ),
+                  title: Text(post.savedByMe ? 'Unsave post' : 'Save post'),
+                  onTap: () async {
+                    Navigator.of(sheetContext).pop();
+                    final success =
+                        await (onSaveTap?.call() ??
+                            context.read<FeedProvider>().toggleSave(post.id));
+                    if (!context.mounted) {
+                      return;
+                    }
+                    if (success) {
+                      SnackbarHelper.showSuccess(
+                        context,
+                        post.savedByMe ? 'Post unsaved.' : 'Post saved.',
+                      );
+                    } else {
+                      final message = context
+                          .read<FeedProvider>()
+                          .errorMessage;
+                      if (message != null) {
+                        SnackbarHelper.showError(context, message);
+                      }
+                    }
+                  },
+                ),
                 if (!post.isOwner && onBlockUser != null)
                   ListTile(
                     leading: const Icon(Icons.flag_outlined),

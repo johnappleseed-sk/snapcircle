@@ -191,3 +191,22 @@ Remaining gaps:
 - Real push delivery requires the developer to add `frontend/android/app/google-services.json`.
 - Backend push delivery requires `FIREBASE_PROJECT_ID` and `FIREBASE_SERVICE_ACCOUNT_PATH` in `.env`.
 - Per-category notification preferences for likes, comments, follows, and messages are not persisted separately yet.
+
+## Feature Expansion and UI Improvement Pass
+
+Date: 2026-06-18
+
+Bugs/gaps resolved:
+
+- Post action coverage is now consistent across feed, post detail, and saved posts.
+- Saved posts now supports the same edit/delete/block workflows as regular feed cards where permissions allow it.
+- Post menus now include profile navigation and text copy for text posts.
+- Saved-post deletion now uses a confirmation dialog before calling `DELETE /posts/{post}`.
+- Post detail now exposes block/report/save/profile actions through the shared post menu.
+
+Remaining gaps:
+
+- Saved collections remain future work because there are no backend collection models, routes, or migration yet.
+- Real-time typing indicators remain future work because the current chat stack does not include typing presence events.
+- Conversation deletion remains limited by the existing backend behavior.
+- Video posts and per-category notification preferences remain future feature phases.

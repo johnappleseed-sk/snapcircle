@@ -628,3 +628,32 @@ Remaining limitations:
 
 - Full push testing needs a real Firebase Android project, `google-services.json`, and backend service account JSON outside git.
 - Per-category push preferences remain future work.
+
+## Feature Expansion and UI Improvement Pass
+
+Date: 2026-06-18
+
+Improvements completed:
+
+- Expanded the shared post card menu with View profile, Copy post text, and Save/unsave actions.
+- Kept owner-only Edit and Delete actions and non-owner Report and Block actions in the same bottom sheet.
+- Added saved-post delete confirmation and consistent edit/block handling from the saved posts screen.
+- Added block support from post detail so safety actions remain available after opening a post.
+- Reused existing Flutter providers, repositories, routes, dialogs, report sheet, snackbars, and backend APIs.
+
+Files changed:
+
+- `frontend/lib/features/feed/widgets/post_card.dart`
+- `frontend/lib/features/feed/screens/saved_posts_screen.dart`
+- `frontend/lib/features/feed/screens/post_detail_screen.dart`
+- `docs/FRONTEND_API_COVERAGE.md`
+- `docs/FRONTEND_BACKEND_GAPS.md`
+- `docs/FRONTEND_IMPROVEMENT_SUMMARY.md`
+- `docs/DEMO_GUIDE.md`
+- `docs/ANDROID_DEMO_GUIDE.md`
+- `README.md`
+
+Verification notes:
+
+- Backend routes already cover the expanded workflows, so no Laravel API additions were needed.
+- Saved collections, video posts, and typing indicators remain recommended future work.

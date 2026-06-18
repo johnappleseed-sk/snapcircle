@@ -321,3 +321,30 @@ Known limitations:
 - `frontend/android/app/google-services.json` must be supplied by the developer from Firebase Console.
 - Backend service account JSON must live outside git and be referenced by env.
 - Per-category notification preferences remain a future API/UI expansion.
+
+## Feature Expansion and UI Improvement Pass
+
+Date: 2026-06-18
+
+API coverage update:
+
+- Post menu actions now use existing real APIs for edit, delete, save/unsave, report, and block.
+- User profile actions continue to use existing follow/unfollow, message, block/unblock, report, followers, following, posts, and stories APIs.
+- Comment edit, delete, and report remain backed by `PUT /comments/{comment}`, `DELETE /comments/{comment}`, and `POST /comments/{comment}/report`.
+- Saved posts use `GET /saved-posts`, `POST /posts/{post}/save`, and `DELETE /posts/{post}/save`.
+- Explore uses the existing search, trending posts, trending tags, and recommended users endpoints.
+- Notifications use unread count, mark all read, mark single read, delete, and route metadata from the backend.
+- Chat uses existing conversation/message APIs and supported message read status.
+
+Flutter coverage update:
+
+- Post cards now expose View profile, Copy post text, Save/unsave, Report, Block, Edit, and Delete actions from one menu.
+- Saved posts now supports edit/delete/block actions consistently with the feed.
+- Post detail now supports blocking the post author from the post menu.
+- Destructive saved-post deletes now use confirmation before calling the backend.
+
+Known limitations:
+
+- Saved collections are not implemented because they require new backend storage and product decisions.
+- Typing indicators are not shown because real-time typing presence is not implemented.
+- No fake trending, fake push, or fake collection behavior was added.

@@ -5,9 +5,11 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/utils/snackbar_helper.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/confirmation_dialog.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../auth/providers/auth_provider.dart';
+import '../../profile/providers/profile_provider.dart';
 import '../providers/feed_provider.dart';
 import '../providers/saved_posts_provider.dart';
 import '../widgets/post_card.dart';
@@ -140,7 +142,19 @@ class _SavedPostsBody extends StatelessWidget {
           onCommentsTap: () {
             context.push('/posts/${post.id}/comments', extra: post);
           },
+          onEdit: () => context.push('/posts/${post.id}/edit', extra: post),
           onDelete: () async {
+            final confirmed = await showConfirmationDialog(
+              context: context,
+              title: 'Delete post?',
+              message: 'This saved post will be permanently removed.',
+              confirmLabel: 'Delete',
+              isDestructive: true,
+            );
+            if (!confirmed || !context.mounted) {
+              return;
+            }
+
             final deleted = await context.read<FeedProvider>().deletePost(
               post.id,
             );
@@ -163,8 +177,47 @@ class _SavedPostsBody extends StatelessWidget {
             }
             return removed;
           },
+          onBlockUser: post.isOwner
+              ? null
+              : () => _confirmBlockUser(context, post.user.id),
         );
       },
     );
+  }
+
+  Future<void> _confirmBlockUser(BuildContext context, int userId) async {
+    final confirmed = await showConfirmationDialog(
+      context: context,
+      title: 'Block this user?',
+      message:
+          'Their posts will be hidden and they will not be able to follow or message you.',
+      confirmLabel: 'Block',
+      isDestructive: true,
+    );
+
+    if (!confirmed || !context.mounted) {
+      return;
+    }
+
+    final blocked = await context.read<ProfileProvider>().blockUser(userId);
+    if (!context.mounted) {
+      return;
+    }
+
+    if (blocked) {
+      context.read<FeedProvider>().removePostsByUser(userId);
+      provider.posts
+          .where((post) => post.user.id == userId)
+          .map((post) => post.id)
+          .toList()
+          .forEach(provider.removeSavedPost);
+      SnackbarHelper.showSuccess(context, 'User blocked.');
+    } else {
+      SnackbarHelper.showError(
+        context,
+        context.read<ProfileProvider>().errorMessage ??
+            'Unable to block this user.',
+      );
+    }
   }
 }

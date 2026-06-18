@@ -227,3 +227,27 @@ Security notes:
 - Session expired: log in again; the Flutter app clears stale local tokens on `401`.
 - Database errors: confirm MySQL is running and `backend/.env` database values are correct.
 - `php artisan test` reports missing PHP extensions: enable/install the listed extensions, especially `mbstring`, then rerun the command.
+
+## Feature Expansion and UI Improvement Pass
+
+Backend/API:
+
+- No new backend routes are required for this pass.
+- The demo uses existing real APIs for post edit/delete/save/report, comment edit/delete/report, user block/report, saved posts, explore, notifications, and chat.
+
+Flutter demo behavior:
+
+- Open a feed post menu to edit/delete your own post.
+- Open another user's post menu to view their profile, copy text, save/unsave, report, or block.
+- Open Saved Posts and confirm saved post cards support navigation, comments, edit/delete when allowed, unsave, and block for other authors.
+- Open a post detail page and confirm the post menu still exposes the same safety actions.
+
+Android test notes:
+
+- Test the post menu on a narrow Android viewport so long labels do not overflow.
+- Confirm destructive delete actions show confirmation dialogs.
+- Confirm block removes that user's posts from the current feed/saved context after the backend call succeeds.
+
+Known limitations:
+
+- Saved collections, typing indicators, and video uploads are future work.
