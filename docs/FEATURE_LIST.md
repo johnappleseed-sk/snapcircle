@@ -1,8 +1,8 @@
 # SnapCircle Feature List
 
-SnapCircle is a Flutter Android and Laravel REST API social media app for a university project demo. The feature set is organized around a real mobile social flow.
+SnapCircle is a Flutter Android and Laravel REST API social media app built for a university project demo. The features below are grouped for final submission.
 
-## Authentication
+## 1. Authentication
 
 - Email registration and login.
 - Demo login for presentations.
@@ -12,49 +12,44 @@ SnapCircle is a Flutter Android and Laravel REST API social media app for a univ
 - Secure token storage in Flutter.
 - Logout and expired-session handling.
 
-## Feed And Posts
+## 2. Feed And Posts
 
 - Home feed with pull-to-refresh and pagination.
-- Feed modes such as For You, Following, Popular, and Mine.
+- Feed modes including For You, Following, Popular, and Mine.
 - Text posts.
-- Single-image posts.
-- Multiple-image carousel posts.
 - Create, edit, delete, and view post detail.
-- Like/unlike posts.
-- Save/unsave posts and Saved Posts screen.
+- Post action menu with permission-aware owner/non-owner actions.
 - Share post text/link.
-- Post menu with owner and non-owner actions.
 
-## Comments
+## 3. Media
 
+- Single-image post upload.
+- Multiple-image carousel post upload.
+- Carousel display in feed and post detail.
+- Profile and Explore thumbnails with multiple-image indicators.
+- Backend `post_media` records while preserving first-image compatibility.
+
+## 4. Likes, Comments, And Saved Posts
+
+- Like/unlike posts.
 - Comment list with loading, empty, error, and pagination states.
 - Create comments.
-- Edit own comments.
-- Delete own comments.
+- Edit/delete own comments.
 - Report comments.
-- Comment count updates in the feed.
+- Save/unsave posts.
+- Saved Posts screen.
 
-## Profiles And Social Graph
+## 5. Profiles And Follow System
 
-- Own profile and public user profile screens.
+- Own profile and user profile screens.
 - Edit profile with avatar, cover image, bio, location, website, and privacy state.
 - Profile stats for posts, followers, and following.
 - Follow/unfollow users.
-- Followers and following list screens.
+- Followers and following lists.
 - Private accounts and follow requests.
 - Follow request approval/rejection.
-- Profile posts and stories sections.
 
-## Safety And Moderation
-
-- Block/unblock users.
-- Blocked users settings screen.
-- Report posts, comments, users, and generic targets.
-- Admin dashboard.
-- Admin report list and report detail.
-- Admin user and content moderation routes/screens.
-
-## Explore And Search
+## 6. Explore And Search
 
 - Explore posts.
 - Search users and posts.
@@ -64,7 +59,7 @@ SnapCircle is a Flutter Android and Laravel REST API social media app for a univ
 - Recent searches stored locally.
 - Clear recent searches.
 
-## Stories
+## 7. Stories
 
 - Story row in the home feed.
 - Create story.
@@ -72,26 +67,42 @@ SnapCircle is a Flutter Android and Laravel REST API social media app for a univ
 - Story view tracking.
 - Profile stories section.
 
-## Notifications
+## 8. Notifications
 
 - Notification list.
 - Unread count and badge.
 - Mark all as read.
 - Mark single notification read.
 - Delete notification.
-- Notification tap routing to posts, profiles, conversations, follow requests, or notification fallback.
+- Notification tap routing to posts, profiles, conversations, follow requests, or notifications fallback.
 - Android FCM token registration support when Firebase is configured.
 
-## Chat
+## 9. Chat
 
 - Conversation list.
-- Chat detail.
+- Chat detail screen.
 - Message bubbles.
 - Send message loading state.
 - Duplicate-send prevention.
 - Mark received messages as read when supported by the backend.
 
-## Settings
+## 10. Safety And Moderation
+
+- Block/unblock users.
+- Blocked users settings screen.
+- Report posts, comments, users, and generic targets.
+- Blocking checks across feed, discovery, profile, chat, and follow flows.
+- Private-account visibility checks.
+
+## 11. Admin
+
+- Admin dashboard.
+- Admin report list.
+- Admin report detail and status updates.
+- Admin user routes.
+- Admin post/comment moderation routes.
+
+## 12. Settings
 
 - Account settings.
 - Privacy settings.
@@ -101,13 +112,13 @@ SnapCircle is a Flutter Android and Laravel REST API social media app for a univ
 - Appearance note using system theme.
 - Logout and account danger-zone flows.
 
-## Android Demo Support
+## 13. Android And Demo Support
 
 - Android emulator API URL: `http://10.0.2.2:8000/api`.
 - Physical device API URL: `http://YOUR_COMPUTER_LAN_IP:8000/api`.
 - Debug APK build command documented.
 - Local HTTP enabled for debug/profile Android builds.
-- Presentation flow, screenshot guide, and testing checklist included.
+- Final demo script, screenshot guide, architecture doc, testing checklist, and final submission checklist.
 
 ## Known Limitations
 

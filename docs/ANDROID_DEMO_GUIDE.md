@@ -113,6 +113,20 @@ cd frontend
 flutter build apk --debug --dart-define=SNAPCIRCLE_API_BASE_URL=http://172.20.10.3:8000/api
 ```
 
+Generic physical-device APK command:
+
+```bash
+cd frontend
+flutter build apk --debug --dart-define=SNAPCIRCLE_API_BASE_URL=http://YOUR_COMPUTER_LAN_IP:8000/api
+```
+
+Physical-device APK notes:
+
+- Phone and computer must be on the same Wi-Fi.
+- Backend should run with `php artisan serve --host=0.0.0.0 --port=8000`.
+- Firewall must allow inbound access to port `8000`.
+- Do not commit `frontend/build/app/outputs/flutter-apk/app-debug.apk` unless explicitly requested.
+
 ## Install A Debug APK
 
 The debug APK is generated at:

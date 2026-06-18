@@ -1,8 +1,8 @@
 # SnapCircle Final Demo Script
 
-Use this script for the final Android presentation. Keep the backend running before the demo starts and use the Android emulator URL unless presenting from a physical phone.
+Use this 5-7 minute script for the final Android presentation. Speak naturally, but keep the order tight so every major feature appears.
 
-## Demo Setup
+## Setup
 
 Backend:
 
@@ -25,46 +25,54 @@ Email: maya@snapcircle.local
 Password: password
 ```
 
-## 5-Minute Walkthrough
+## 5-7 Minute Presentation Script
 
-1. Open SnapCircle and briefly describe it as a Flutter and Laravel social media app for sharing posts, stories, comments, messages, and profile updates.
-2. Login with the demo account or use the demo login button.
-3. Show the home feed, story row, post cards, image carousel, like/comment/save actions, and pull-to-refresh.
-4. Create a quick text post, then mention that the same screen supports single-image and multiple-image carousel posts.
-5. Open a post detail page, add a comment, and show edit/delete/report options where permissions allow them.
-6. Use the post menu to show View profile, Copy post text, Save/unsave, Report, Block, Edit, and Delete.
-7. Open Explore, search for a user or topic, show recommended users, trending tags, and post results.
-8. Open a user profile, show profile header, stats, posts, stories, Follow/Message actions, and private/blocked states if available.
-9. Open Notifications, show unread styling, mark all read, and explain route-aware notification taps.
-10. Open Messages, show conversation list, chat bubbles, send box, loading state, and message read behavior.
-11. Open Settings, show privacy, blocked users, notifications, account actions, and logout confirmation.
-12. Logout and login again to show the auth/session flow.
+1. Introduce SnapCircle.
+   Say: "SnapCircle is a full-stack Android social media app built with Flutter and Laravel. It is designed for sharing posts, image moments, stories, comments, notifications, and private messages."
 
-## Longer Demo Flow
+2. Explain the problem and purpose.
+   Say: "The goal is to show a real mobile social app architecture, not only static screens. Flutter handles the Android experience, while Laravel provides authenticated REST APIs, validation, database storage, and moderation workflows."
 
-Use this when there is enough time:
+3. Show login.
+   Open the app and login with the demo account. Mention email login, demo login, reset password flow, and social login hooks.
 
-1. Login as Maya.
-2. Create a multiple-image post and show carousel swiping in the feed.
-3. Like, unlike, comment, edit your comment, and delete your comment.
-4. Save a post, open Saved Posts, then unsave it.
-5. Search for Dara or Lina from Explore and open the profile.
-6. Follow/unfollow the user and open followers/following lists.
-7. Turn on Private account in Settings > Privacy Settings.
-8. Login as another user and send a follow request.
-9. Return to Maya and approve or reject the follow request.
-10. Report a post or user, then login as an admin account to show report review if the audience asks.
+4. Show the feed.
+   Show the story row, feed tabs, post cards, timestamps, media, like/comment/save actions, and pull-to-refresh. Point out loading, empty, and error states are handled.
 
-## Presenter Notes
+5. Create a post.
+   Open Create Post, type a short caption, and mention that the same flow supports text-only, single-image, and multiple-image carousel posts.
 
-- Keep the phone/emulator on a stable network because demo images may use remote URLs.
-- If push notifications are not configured, explain that in-app notifications work and Android FCM needs Firebase credentials outside git.
-- Do not show `.env`, private Firebase files, local tokens, or service account JSON on screen.
-- If the backend is unreachable, open `http://127.0.0.1:8000/api/health` on the computer and `http://10.0.2.2:8000/api/health` from the emulator browser.
+6. Like, comment, and save.
+   Like/unlike a post, open comments, add a comment, and save/unsave a post. Open Saved Posts if time allows.
 
-## Quick Recovery
+7. Explore users and posts.
+   Open Explore, search for a user or topic, show recommended users, trending tags, and post results.
 
-- Feed is empty: run `php artisan migrate --seed`, then refresh.
-- Images fail: run `php artisan storage:link` and confirm the API URL is reachable from Android.
-- Login fails: use `maya@snapcircle.local` and `password`, then confirm the backend is running.
-- Flutter build fails locally: verify Flutter and Android SDK are on PATH.
+8. Show profile and follow states.
+   Open a user profile, show avatar, cover image, stats, posts/stories, Follow/Message buttons, followers/following lists, and private/requested states if available.
+
+9. Show notifications.
+   Open Notifications, show unread state, mark all read, and explain notification taps can route to posts, profiles, chats, or follow requests.
+
+10. Show chat.
+    Open Messages, enter a conversation, show message bubbles and send a short message.
+
+11. Show safety and report features.
+    Open a post or profile menu and show Report and Block. Mention the backend also supports admin moderation review.
+
+12. Show settings and logout.
+    Open Settings, show privacy, blocked users, notifications, account actions, and logout.
+
+13. Explain backend, admin, and API strength.
+    Say: "The backend has protected Sanctum routes, request validation, Eloquent models, API resources, reports, blocking checks, private-account rules, notifications, chat, and admin moderation routes."
+
+14. End with future improvements.
+    Say: "Next production improvements would be release signing, HTTPS deployment, cloud media storage, saved collections, video posts, stronger real-time chat, and Firebase production push setup."
+
+## Presenter Recovery Notes
+
+- If feed is empty, run `php artisan migrate --seed` and refresh.
+- If port `8000` is occupied, stop the other service or run Laravel on another port and update `SNAPCIRCLE_API_BASE_URL`.
+- If images fail, run `php artisan storage:link` and confirm Android can reach the backend URL.
+- If Flutter build fails, confirm Flutter and Android SDK are on PATH.
+- Do not show `.env`, tokens, Firebase private files, service account JSON, or APK/build folders on screen.

@@ -137,6 +137,19 @@ cd frontend
 flutter build apk --debug --dart-define=SNAPCIRCLE_API_BASE_URL=http://10.0.2.2:8000/api
 ```
 
+Expected local APK path:
+
+```txt
+frontend/build/app/outputs/flutter-apk/app-debug.apk
+```
+
+Build a physical-device debug APK by replacing the emulator host with your computer LAN IP:
+
+```bash
+cd frontend
+flutter build apk --debug --dart-define=SNAPCIRCLE_API_BASE_URL=http://YOUR_COMPUTER_LAN_IP:8000/api
+```
+
 Demo login:
 
 ```txt
@@ -147,6 +160,9 @@ Password: password
 Android notes:
 
 - `10.0.2.2` is only for Android emulators. Physical devices need your computer's LAN IP.
+- Phone and computer must be on the same Wi-Fi for physical-device demos.
+- The backend should run with `php artisan serve --host=0.0.0.0 --port=8000`.
+- Firewall rules must allow port `8000`.
 - Local HTTP is enabled for Android debug/profile builds only; release builds should use HTTPS.
 - If image uploads fail, confirm `php artisan storage:link` has run and `APP_URL`/API URL are reachable from the Android device.
 
@@ -247,6 +263,7 @@ SnapCircle now has a more complete Android-first social action surface:
 - [Feature List](docs/FEATURE_LIST.md)
 - [Technical Architecture](docs/TECHNICAL_ARCHITECTURE.md)
 - [Screenshot Guide](docs/SCREENSHOT_GUIDE.md)
+- [Final Submission Checklist](docs/FINAL_SUBMISSION_CHECKLIST.md)
 - [Testing Checklist](docs/TESTING_CHECKLIST.md)
 - [Assignment Report Draft](docs/ASSIGNMENT_REPORT.md)
 - [Submission Guide](docs/SUBMISSION_GUIDE.md)
@@ -291,6 +308,14 @@ SnapCircle demonstrates a modern full-stack mobile application architecture. Flu
 The current Android demo build also includes safety and moderation workflows: user blocking, filtered feed/discovery/chat behavior for blocked users, expanded report reasons, and an admin report detail screen.
 
 This project is for academic assignment purposes. A real production deployment would require stronger security configuration, production OAuth credentials, HTTPS, cloud storage, monitoring, and server deployment hardening.
+
+## Known Limitations
+
+- Debug APKs are for local demo/testing, not Play Store release.
+- Release signing is not configured.
+- Firebase push delivery requires real Firebase files and backend service account credentials outside git.
+- Saved collections, video posts, and real-time typing indicators are future improvements.
+- Local Android demos require Flutter/Android tooling on PATH and a reachable Laravel backend.
 
 ## Author
 

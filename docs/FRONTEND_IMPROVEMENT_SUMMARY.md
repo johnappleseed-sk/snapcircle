@@ -706,3 +706,36 @@ Remaining limitations:
 - Manual Android device QA still needs a machine with Flutter and Android tooling available.
 - Local backend verification needs the configured PDO driver and PHP `mbstring` extension.
 - Firebase push delivery still requires project credentials outside git.
+
+## APK Build and Final Presentation Package
+
+Date: 2026-06-18
+
+Package documentation completed:
+
+- Refreshed the final screenshot guide with the requested 16-screen checklist.
+- Refreshed the final demo script with a 5-7 minute presentation flow.
+- Reorganized the feature list by final submission categories.
+- Added `docs/FINAL_SUBMISSION_CHECKLIST.md`.
+- Updated README and Android demo guide with APK path and physical-device build notes.
+
+Backend package verification:
+
+- `composer install`: blocked because `composer` is not available on PATH.
+- `php artisan migrate:fresh --seed`: blocked by missing local SQLite PDO driver.
+- `php artisan storage:link`: link already exists.
+- `php artisan serve --host=0.0.0.0 --port=8000`: could not be confirmed on port `8000` because another local service, C-Lodop, is already responding there.
+- Health check `http://127.0.0.1:8000/api/health`: reached the C-Lodop service instead of SnapCircle because port `8000` is occupied.
+- Demo login `maya@snapcircle.local` / `password`: not reverified because database seeding and Laravel health check were blocked by local environment/port issues.
+
+Android package verification:
+
+- `flutter pub get`: blocked because `flutter` is not available on PATH.
+- `flutter analyze`: blocked because `flutter` is not available on PATH.
+- `flutter test`: blocked because `flutter` is not available on PATH.
+- `flutter build apk --debug --dart-define=SNAPCIRCLE_API_BASE_URL=http://10.0.2.2:8000/api`: blocked because `flutter` is not available on PATH.
+- Expected APK path when built on a configured machine: `frontend/build/app/outputs/flutter-apk/app-debug.apk`.
+- Local APK presence check: `frontend/build/app/outputs/flutter-apk/app-debug.apk` does not exist because the APK build was blocked.
+- Final `php artisan route:list`: passed and listed 114 routes.
+- Final `php artisan test`: blocked by missing PHP `mbstring` extension.
+- Final `flutter analyze`, `flutter test`, and Android debug APK build: blocked because `flutter` is not available on PATH.
