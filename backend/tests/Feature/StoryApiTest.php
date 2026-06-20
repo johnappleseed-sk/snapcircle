@@ -157,6 +157,79 @@ class StoryApiTest extends TestCase
             ->assertJsonPath('data.story.can_delete', true);
     }
 
+    public function test_authenticated_user_can_react_to_story(): void
+    {
+        [$owner, $viewer] = [User::factory()->create(), User::factory()->create()];
+        $story = $this->storyFor($owner);
+
+        Sanctum::actingAs($viewer);
+
+        $this->postJson("/api/stories/{$story->id}/reaction", [
+            'reaction' => 'love',
+        ])
+            ->assertOk()
+            ->assertJsonPath('data.reaction', 'love')
+            ->assertJsonPath('data.reactions_count', 1);
+
+        $this->assertDatabaseHas('story_reactions', [
+            'story_id' => $story->id,
+            'user_id' => $viewer->id,
+            'reaction' => 'love',
+        ]);
+
+        $this->getJson("/api/stories/{$story->id}")
+            ->assertOk()
+            ->assertJsonPath('data.story.my_reaction', 'love')
+            ->assertJsonPath('data.story.reactions_count', 1);
+    }
+
+    public function test_authenticated_user_can_remove_story_reaction(): void
+    {
+        [$owner, $viewer] = [User::factory()->create(), User::factory()->create()];
+        $story = $this->storyFor($owner);
+
+        Sanctum::actingAs($viewer);
+
+        $this->postJson("/api/stories/{$story->id}/reaction", [
+            'reaction' => 'fire',
+        ])->assertOk();
+
+        $this->deleteJson("/api/stories/{$story->id}/reaction")
+            ->assertOk()
+            ->assertJsonPath('data.reaction', null)
+            ->assertJsonPath('data.reactions_count', 0);
+
+        $this->assertDatabaseMissing('story_reactions', [
+            'story_id' => $story->id,
+            'user_id' => $viewer->id,
+        ]);
+    }
+
+    public function test_authenticated_user_can_reply_to_story(): void
+    {
+        [$owner, $viewer] = [User::factory()->create(), User::factory()->create()];
+        $story = $this->storyFor($owner);
+
+        Sanctum::actingAs($viewer);
+
+        $this->postJson("/api/stories/{$story->id}/replies", [
+            'message' => 'This is a great update.',
+        ])
+            ->assertCreated()
+            ->assertJsonPath('data.story_id', $story->id)
+            ->assertJsonPath('data.replies_count', 1);
+
+        $this->assertDatabaseHas('story_replies', [
+            'story_id' => $story->id,
+            'user_id' => $viewer->id,
+            'message' => 'This is a great update.',
+        ]);
+
+        $this->getJson("/api/stories/{$story->id}")
+            ->assertOk()
+            ->assertJsonPath('data.story.replies_count', 1);
+    }
+
     /**
      * @param  array<string, mixed>  $attributes
      */

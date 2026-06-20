@@ -40,6 +40,16 @@ class Story extends Model
         return $this->hasMany(StoryView::class);
     }
 
+    public function reactions(): HasMany
+    {
+        return $this->hasMany(StoryReaction::class);
+    }
+
+    public function replies(): HasMany
+    {
+        return $this->hasMany(StoryReply::class);
+    }
+
     public function viewedByUsers(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'story_views')

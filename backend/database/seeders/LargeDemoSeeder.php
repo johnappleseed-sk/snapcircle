@@ -22,9 +22,9 @@ use Illuminate\Support\Str;
 
 class LargeDemoSeeder extends Seeder
 {
-    private const USER_COUNT = 120;
-    private const POST_COUNT = 1000;
-    private const STORY_COUNT = 120;
+    private const DEFAULT_USER_COUNT = 5000;
+    private const DEFAULT_POST_COUNT = 5000;
+    private const DEFAULT_STORY_COUNT = 500;
     private const DEMO_DOMAIN = 'snapcircle.demo';
 
     /**
@@ -41,52 +41,65 @@ class LargeDemoSeeder extends Seeder
                 ->each(fn (User $user) => $user->delete());
 
             $now = now();
-            $users = $this->createUsers($now);
+            $userCount = (int) env('SNAPCIRCLE_DEMO_USER_COUNT', self::DEFAULT_USER_COUNT);
+            $postCount = (int) env('SNAPCIRCLE_DEMO_POST_COUNT', self::DEFAULT_POST_COUNT);
+            $storyCount = (int) env('SNAPCIRCLE_DEMO_STORY_COUNT', min(self::DEFAULT_STORY_COUNT, $userCount));
+
+            $users = $this->createUsers($now, max(1, $userCount));
             $userIds = $users->pluck('id')->values()->all();
 
             $this->createFollows($userIds, $now);
-            $posts = $this->createPosts($userIds, $now);
+            $posts = $this->createPosts($userIds, $now, max(1, $postCount));
             $postIds = $posts->pluck('id')->values()->all();
 
             $this->createPostMedia($posts, $now);
             $this->createLikes($userIds, $postIds, $now);
             $this->createComments($userIds, $postIds, $now);
             $this->createSavedPosts($userIds, $postIds, $now);
-            $this->createStories($userIds, $now);
+            $this->createStories($userIds, $now, max(0, $storyCount));
             $this->createConversations($userIds, $now);
         });
     }
 
-    private function createUsers(Carbon $now)
+    private function createUsers(Carbon $now, int $userCount)
     {
         $firstNames = [
             'Maya', 'Dara', 'Lina', 'Soriya', 'Nika', 'Vannak', 'Sopheak', 'Rina',
             'Kiri', 'Thea', 'Arun', 'Sovan', 'Malis', 'Chan', 'Bopha', 'Rithy',
             'Kanya', 'Sela', 'Narin', 'Vicheka', 'Sokha', 'Reaksa', 'Samnang', 'Pich',
+            'Aiden', 'Emma', 'Noah', 'Olivia', 'Leo', 'Mia', 'Ethan', 'Ava',
+            'Kai', 'Sofia', 'Lucas', 'Amelia', 'Minh', 'Hana', 'Jisoo', 'Aria',
         ];
         $lastNames = [
             'Sok', 'Chen', 'Kim', 'Heng', 'Ly', 'Nguyen', 'Tran', 'Lim', 'Park',
             'Som', 'Keo', 'Long', 'Sun', 'Tan', 'Mao', 'Yin', 'Chhay', 'Phan',
+            'Garcia', 'Smith', 'Johnson', 'Brown', 'Lee', 'Wong', 'Patel', 'Singh',
+            'Martinez', 'Davis', 'Wilson', 'Anderson', 'Khan', 'Rahman', 'Sato',
         ];
         $locations = [
             'Phnom Penh', 'Siem Reap', 'Battambang', 'Kampot', 'Sihanoukville',
             'Bangkok', 'Ho Chi Minh City', 'Kuala Lumpur', 'Singapore', 'Da Nang',
+            'Hanoi', 'Tokyo', 'Seoul', 'Taipei', 'Manila', 'Jakarta', 'Melbourne',
+            'Paris', 'London', 'New York',
         ];
 
         $users = collect();
-        for ($i = 1; $i <= self::USER_COUNT; $i++) {
+        $passwordHash = Hash::make('password');
+        for ($i = 1; $i <= $userCount; $i++) {
             $name = $firstNames[($i - 1) % count($firstNames)].' '.$lastNames[($i * 7) % count($lastNames)];
             $username = Str::slug($name, '.').'.'.$i;
             $createdAt = $now->copy()->subDays(180 - ($i % 150))->subMinutes($i * 11);
+            $portraitNumber = (($i - 1) % 99) + 1;
+            $portraitGroup = $i % 2 === 0 ? 'women' : 'men';
 
             $user = User::query()->create([
                 'name' => $name,
                 'email' => sprintf('demo%03d@%s', $i, self::DEMO_DOMAIN),
                 'email_verified_at' => $createdAt,
                 'username' => $username,
-                'password' => Hash::make('password'),
-                'avatar' => "https://i.pravatar.cc/300?u=snapcircle-demo-$i",
-                'cover_image' => "https://picsum.photos/seed/snapcircle-cover-$i/1200/480",
+                'password' => $passwordHash,
+                'avatar' => "https://randomuser.me/api/portraits/$portraitGroup/$portraitNumber.jpg",
+                'cover_image' => $this->photoUrl('cover', $i, 1200, 480),
                 'bio' => $this->bioFor($i),
                 'location' => $locations[$i % count($locations)],
                 'website' => $i % 4 === 0 ? "https://example.com/$username" : null,
@@ -151,12 +164,12 @@ class LargeDemoSeeder extends Seeder
         collect($rows)->chunk(500)->each(fn ($chunk) => Follow::query()->insert($chunk->all()));
     }
 
-    private function createPosts(array $userIds, Carbon $now)
+    private function createPosts(array $userIds, Carbon $now, int $postCount)
     {
         $posts = collect();
         $count = count($userIds);
 
-        for ($i = 1; $i <= self::POST_COUNT; $i++) {
+        for ($i = 1; $i <= $postCount; $i++) {
             $createdAt = $now->copy()->subDays($i % 75)->subMinutes($i * 17);
             $photoUrl = $this->photoUrl('post', $i, 1080, 1080);
 
@@ -281,10 +294,10 @@ class LargeDemoSeeder extends Seeder
         collect($rows)->chunk(1000)->each(fn ($chunk) => SavedPost::query()->insert($chunk->all()));
     }
 
-    private function createStories(array $userIds, Carbon $now): void
+    private function createStories(array $userIds, Carbon $now, int $storyCount): void
     {
         $stories = collect();
-        foreach (array_slice($userIds, 0, self::STORY_COUNT) as $index => $userId) {
+        foreach (array_slice($userIds, 0, $storyCount) as $index => $userId) {
             $createdAt = $now->copy()->subHours($index % 20)->subMinutes($index * 3);
             $stories->push(Story::query()->create([
                 'user_id' => $userId,

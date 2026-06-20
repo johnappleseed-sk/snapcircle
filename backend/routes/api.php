@@ -120,6 +120,9 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::get('/stories/{story}', [StoryController::class, 'show']);
         Route::delete('/stories/{story}', [StoryController::class, 'destroy']);
         Route::post('/stories/{story}/view', [StoryController::class, 'markAsViewed']);
+        Route::post('/stories/{story}/reaction', [StoryController::class, 'react'])->middleware('throttle:60,1');
+        Route::delete('/stories/{story}/reaction', [StoryController::class, 'removeReaction']);
+        Route::post('/stories/{story}/replies', [StoryController::class, 'reply'])->middleware('throttle:30,1');
 
         Route::get('/notifications', [NotificationController::class, 'index']);
         Route::get('/notifications/unread-count', [NotificationController::class, 'unreadCount']);

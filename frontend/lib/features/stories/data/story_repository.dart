@@ -1,6 +1,8 @@
 import 'dart:io';
 
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../core/api/api_client.dart';
 import '../../../core/api/api_endpoints.dart';
@@ -44,13 +46,26 @@ class StoryRepository {
     );
   }
 
-  Future<StoryModel> createStory({required File media, String? caption}) async {
-    final uploadMedia = await _imageCompressor.compressStoryImage(media);
+  Future<StoryModel> createStory({
+    required XFile media,
+    Uint8List? mediaBytes,
+    String? caption,
+  }) async {
+    final uploadMedia = kIsWeb
+        ? null
+        : await _imageCompressor.compressStoryImage(File(media.path));
     final data = <String, dynamic>{
-      'media': await MultipartFile.fromFile(
-        uploadMedia.path,
-        filename: uploadMedia.path.split(Platform.pathSeparator).last,
-      ),
+      'media': kIsWeb
+          ? MultipartFile.fromBytes(
+              mediaBytes ?? await media.readAsBytes(),
+              filename: media.name,
+            )
+          : await MultipartFile.fromFile(
+              uploadMedia!.path,
+              filename: media.name.isNotEmpty
+                  ? media.name
+                  : uploadMedia.path.split(Platform.pathSeparator).last,
+            ),
     };
     final trimmedCaption = caption?.trim();
     if (trimmedCaption != null && trimmedCaption.isNotEmpty) {
@@ -85,6 +100,54 @@ class StoryRepository {
 
     if (data is! Map<String, dynamic>) {
       throw const StoryException('Invalid story view response.');
+    }
+
+    return data;
+  }
+
+  Future<Map<String, dynamic>> reactToStory(
+    int storyId, {
+    required String reaction,
+  }) async {
+    final result = await _apiClient.post(
+      ApiEndpoints.storyReaction(storyId),
+      data: {'reaction': reaction},
+    );
+    final response = _readResponse(result.data?.data, result.error);
+    final data = response['data'];
+
+    if (data is! Map<String, dynamic>) {
+      throw const StoryException('Invalid story reaction response.');
+    }
+
+    return data;
+  }
+
+  Future<Map<String, dynamic>> removeStoryReaction(int storyId) async {
+    final result = await _apiClient.delete(ApiEndpoints.storyReaction(storyId));
+    final response = _readResponse(result.data?.data, result.error);
+    final data = response['data'];
+
+    if (data is! Map<String, dynamic>) {
+      throw const StoryException('Invalid story reaction response.');
+    }
+
+    return data;
+  }
+
+  Future<Map<String, dynamic>> replyToStory(
+    int storyId, {
+    required String message,
+  }) async {
+    final result = await _apiClient.post(
+      ApiEndpoints.storyReplies(storyId),
+      data: {'message': message},
+    );
+    final response = _readResponse(result.data?.data, result.error);
+    final data = response['data'];
+
+    if (data is! Map<String, dynamic>) {
+      throw const StoryException('Invalid story reply response.');
     }
 
     return data;
@@ -134,5 +197,4 @@ class StoryRepository {
 
     return responseData;
   }
-
 }

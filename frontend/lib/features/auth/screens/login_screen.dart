@@ -1,4 +1,3 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -58,15 +57,6 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _loginWithFacebook(BuildContext context) async {
     final authProvider = context.read<AuthProvider>();
     final success = await authProvider.loginWithFacebook();
-
-    if (success && context.mounted) {
-      context.go('/home');
-    }
-  }
-
-  Future<void> _loginWithDemo(BuildContext context) async {
-    final authProvider = context.read<AuthProvider>();
-    final success = await authProvider.loginWithDemo();
 
     if (success && context.mounted) {
       context.go('/home');
@@ -182,20 +172,6 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: () => _loginWithFacebook(context),
                   variant: AppButtonVariant.outline,
                 ),
-                if (kDebugMode ||
-                    defaultTargetPlatform == TargetPlatform.android) ...[
-                  const SizedBox(height: AppSizes.paddingMedium),
-                  const _DemoCredentialsCard(),
-                  const SizedBox(height: AppSizes.paddingMedium),
-                  AppButton(
-                    label: 'Use local demo account',
-                    icon: Icons.bolt_outlined,
-                    variant: AppButtonVariant.outline,
-                    onPressed: authProvider.isLoading
-                        ? null
-                        : () => _loginWithDemo(context),
-                  ),
-                ],
                 const SizedBox(height: AppSizes.paddingLarge),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -238,44 +214,6 @@ class _LoginScreenState extends State<LoginScreen> {
       return 'Password is required.';
     }
     return null;
-  }
-}
-
-class _DemoCredentialsCard extends StatelessWidget {
-  const _DemoCredentialsCard();
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(AppSizes.paddingMedium),
-      decoration: BoxDecoration(
-        color: AppColors.primary.withValues(alpha: 0.08),
-        border: Border.all(color: AppColors.primary.withValues(alpha: 0.18)),
-        borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Android demo account',
-            style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              fontWeight: FontWeight.w800,
-              color: Theme.of(context).colorScheme.onSurface,
-            ),
-          ),
-          const SizedBox(height: 6),
-          Text(
-            'Email: maya@snapcircle.local',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-          Text(
-            'Password: password',
-            style: Theme.of(context).textTheme.bodyMedium,
-          ),
-        ],
-      ),
-    );
   }
 }
 

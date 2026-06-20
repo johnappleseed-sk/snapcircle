@@ -8,7 +8,10 @@ class StoryModel {
   final DateTime? createdAt;
   final bool isExpired;
   final int viewsCount;
+  final int reactionsCount;
+  final int repliesCount;
   final bool viewedByMe;
+  final String? myReaction;
   final bool isOwner;
   final bool canDelete;
   final UserModel user;
@@ -22,7 +25,10 @@ class StoryModel {
     this.createdAt,
     this.isExpired = false,
     this.viewsCount = 0,
+    this.reactionsCount = 0,
+    this.repliesCount = 0,
     this.viewedByMe = false,
+    this.myReaction,
     this.isOwner = false,
     this.canDelete = false,
   });
@@ -38,7 +44,10 @@ class StoryModel {
       createdAt: _parseDate(json['created_at']),
       isExpired: _parseBool(json['is_expired']),
       viewsCount: _parseInt(json['views_count']),
+      reactionsCount: _parseInt(json['reactions_count']),
+      repliesCount: _parseInt(json['replies_count']),
       viewedByMe: _parseBool(json['viewed_by_me']),
+      myReaction: _parseString(json['my_reaction']),
       isOwner: _parseBool(json['is_owner']),
       canDelete: _parseBool(json['can_delete']),
       user: userJson is Map<String, dynamic>
@@ -56,7 +65,10 @@ class StoryModel {
       'created_at': createdAt?.toIso8601String(),
       'is_expired': isExpired,
       'views_count': viewsCount,
+      'reactions_count': reactionsCount,
+      'replies_count': repliesCount,
       'viewed_by_me': viewedByMe,
+      'my_reaction': myReaction,
       'is_owner': isOwner,
       'can_delete': canDelete,
       'user': user.toJson(),
@@ -71,7 +83,11 @@ class StoryModel {
     DateTime? createdAt,
     bool? isExpired,
     int? viewsCount,
+    int? reactionsCount,
+    int? repliesCount,
     bool? viewedByMe,
+    String? myReaction,
+    bool clearMyReaction = false,
     bool? isOwner,
     bool? canDelete,
     UserModel? user,
@@ -84,7 +100,10 @@ class StoryModel {
       createdAt: createdAt ?? this.createdAt,
       isExpired: isExpired ?? this.isExpired,
       viewsCount: viewsCount ?? this.viewsCount,
+      reactionsCount: reactionsCount ?? this.reactionsCount,
+      repliesCount: repliesCount ?? this.repliesCount,
       viewedByMe: viewedByMe ?? this.viewedByMe,
+      myReaction: clearMyReaction ? null : myReaction ?? this.myReaction,
       isOwner: isOwner ?? this.isOwner,
       canDelete: canDelete ?? this.canDelete,
       user: user ?? this.user,
@@ -112,5 +131,10 @@ class StoryModel {
 
   static DateTime? _parseDate(dynamic value) {
     return DateTime.tryParse(value?.toString() ?? '');
+  }
+
+  static String? _parseString(dynamic value) {
+    final text = value?.toString().trim();
+    return text == null || text.isEmpty ? null : text;
   }
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -18,6 +19,9 @@ class AuthException implements Exception {
 }
 
 class AuthRepository {
+  static const String _googleWebClientId =
+      '928234105384-54ji20nah7j584dq06jub54t56jrlmg2.apps.googleusercontent.com';
+
   final ApiClient _apiClient;
   final TokenStorage _tokenStorage;
   final GoogleSignIn _googleSignIn;
@@ -37,13 +41,26 @@ class AuthRepository {
 
   Future<AuthResponse> signInWithGoogle() async {
     try {
+      await _initializeGoogleSignIn();
+
       if (kIsWeb) {
-        throw const AuthException(
-          'Google login in Chrome needs web OAuth setup. Use the local demo account for development.',
+        final provider = GoogleAuthProvider()
+          ..addScope('email')
+          ..addScope('profile');
+        final userCredential = await FirebaseAuth.instance.signInWithPopup(
+          provider,
+        );
+        final accessToken = userCredential.credential?.accessToken;
+
+        if (accessToken == null || accessToken.isEmpty) {
+          throw const AuthException('Google access token was missing.');
+        }
+
+        return _loginWithSocialToken(
+          endpoint: ApiEndpoints.authGoogle,
+          accessToken: accessToken,
         );
       }
-
-      await _initializeGoogleSignIn();
 
       if (!_googleSignIn.supportsAuthenticate()) {
         throw const AuthException(
@@ -68,6 +85,12 @@ class AuthRepository {
       if (accessToken.isEmpty) {
         throw const AuthException('Google access token was missing.');
       }
+
+      final credential = GoogleAuthProvider.credential(
+        accessToken: accessToken,
+        idToken: account.authentication.idToken,
+      );
+      await FirebaseAuth.instance.signInWithCredential(credential);
 
       return _loginWithSocialToken(
         endpoint: ApiEndpoints.authGoogle,
@@ -221,6 +244,7 @@ class AuthRepository {
     }
 
     await _tokenStorage.deleteToken();
+    await FirebaseAuth.instance.signOut();
     await _initializeGoogleSignIn();
     await _googleSignIn.signOut();
     await _facebookAuth.logOut();
@@ -248,10 +272,7 @@ class AuthRepository {
     required String endpoint,
     required Map<String, dynamic> data,
   }) async {
-    final result = await _apiClient.post(
-      endpoint,
-      data: data,
-    );
+    final result = await _apiClient.post(endpoint, data: data);
 
     if (!result.isSuccess || result.data == null) {
       throw AuthException(result.error ?? 'Unable to connect to Laravel API.');
@@ -271,7 +292,10 @@ class AuthRepository {
     }
   }
 
-  String _messageFromResponse(dynamic responseData, {required String fallback}) {
+  String _messageFromResponse(
+    dynamic responseData, {
+    required String fallback,
+  }) {
     if (responseData is Map<String, dynamic>) {
       final message = responseData['message']?.toString().trim();
       if (message != null && message.isNotEmpty) {
@@ -308,7 +332,9 @@ class AuthRepository {
       return;
     }
 
-    await _googleSignIn.initialize();
+    await _googleSignIn.initialize(
+      clientId: kIsWeb ? _googleWebClientId : null,
+    );
     _isGoogleInitialized = true;
   }
 }

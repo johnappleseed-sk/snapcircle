@@ -1,6 +1,5 @@
-import 'dart:io';
-
 import 'package:flutter/foundation.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../data/story_repository.dart';
 import '../models/story_model.dart';
@@ -100,7 +99,11 @@ class StoriesProvider extends ChangeNotifier {
     }
   }
 
-  Future<bool> createStory({required File media, String? caption}) async {
+  Future<bool> createStory({
+    required XFile media,
+    Uint8List? mediaBytes,
+    String? caption,
+  }) async {
     _isCreating = true;
     _errorMessage = null;
     notifyListeners();
@@ -108,6 +111,7 @@ class StoriesProvider extends ChangeNotifier {
     try {
       final story = await _repository.createStory(
         media: media,
+        mediaBytes: mediaBytes,
         caption: caption,
       );
       _stories = [story, ..._stories];
@@ -160,6 +164,71 @@ class StoriesProvider extends ChangeNotifier {
     }
   }
 
+  Future<bool> reactToStory(int storyId, String reaction) async {
+    _errorMessage = null;
+
+    try {
+      final data = await _repository.reactToStory(storyId, reaction: reaction);
+      _updateStoryInteraction(
+        storyId,
+        myReaction: data['reaction']?.toString(),
+        reactionsCount: _parseInt(data['reactions_count']),
+      );
+      return true;
+    } on StoryException catch (error) {
+      _errorMessage = error.message;
+      notifyListeners();
+      return false;
+    } catch (_) {
+      _errorMessage = 'Unable to react to story.';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> removeStoryReaction(int storyId) async {
+    _errorMessage = null;
+
+    try {
+      final data = await _repository.removeStoryReaction(storyId);
+      _updateStoryInteraction(
+        storyId,
+        clearMyReaction: true,
+        reactionsCount: _parseInt(data['reactions_count']),
+      );
+      return true;
+    } on StoryException catch (error) {
+      _errorMessage = error.message;
+      notifyListeners();
+      return false;
+    } catch (_) {
+      _errorMessage = 'Unable to remove story reaction.';
+      notifyListeners();
+      return false;
+    }
+  }
+
+  Future<bool> replyToStory(int storyId, String message) async {
+    _errorMessage = null;
+
+    try {
+      final data = await _repository.replyToStory(storyId, message: message);
+      _updateStoryInteraction(
+        storyId,
+        repliesCount: _parseInt(data['replies_count']),
+      );
+      return true;
+    } on StoryException catch (error) {
+      _errorMessage = error.message;
+      notifyListeners();
+      return false;
+    } catch (_) {
+      _errorMessage = 'Unable to send story reply.';
+      notifyListeners();
+      return false;
+    }
+  }
+
   Future<void> changeMode(String mode) {
     if (_currentMode == mode) {
       return Future.value();
@@ -179,8 +248,33 @@ class StoriesProvider extends ChangeNotifier {
     return int.tryParse(value?.toString() ?? '') ?? 0;
   }
 
-  List<StoryModel> _mergeStories(List<StoryModel> current, List<StoryModel> next) {
+  List<StoryModel> _mergeStories(
+    List<StoryModel> current,
+    List<StoryModel> next,
+  ) {
     final seenIds = current.map((story) => story.id).toSet();
     return [...current, ...next.where((story) => seenIds.add(story.id))];
+  }
+
+  void _updateStoryInteraction(
+    int storyId, {
+    String? myReaction,
+    bool clearMyReaction = false,
+    int? reactionsCount,
+    int? repliesCount,
+  }) {
+    _stories = _stories.map((story) {
+      if (story.id != storyId) {
+        return story;
+      }
+
+      return story.copyWith(
+        myReaction: myReaction,
+        clearMyReaction: clearMyReaction,
+        reactionsCount: reactionsCount,
+        repliesCount: repliesCount,
+      );
+    }).toList();
+    notifyListeners();
   }
 }

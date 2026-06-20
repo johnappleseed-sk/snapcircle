@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -23,7 +24,8 @@ class CreateStoryScreen extends StatefulWidget {
 class _CreateStoryScreenState extends State<CreateStoryScreen> {
   final _captionController = TextEditingController();
   final _imagePicker = ImagePicker();
-  File? _selectedImage;
+  XFile? _selectedImage;
+  Uint8List? _selectedImageBytes;
   String? _localError;
 
   @override
@@ -42,8 +44,11 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
       return;
     }
 
+    final pickedImageBytes = kIsWeb ? await pickedImage.readAsBytes() : null;
+
     setState(() {
-      _selectedImage = File(pickedImage.path);
+      _selectedImage = pickedImage;
+      _selectedImageBytes = pickedImageBytes;
       _localError = null;
     });
   }
@@ -58,6 +63,7 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
     final provider = context.read<StoriesProvider>();
     final created = await provider.createStory(
       media: image,
+      mediaBytes: _selectedImageBytes,
       caption: _captionController.text,
     );
 
@@ -158,8 +164,9 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                           ),
                           child: AspectRatio(
                             aspectRatio: 9 / 16,
-                            child: Image.file(
-                              _selectedImage!,
+                            child: _LocalImagePreview(
+                              image: _selectedImage!,
+                              imageBytes: _selectedImageBytes,
                               fit: BoxFit.cover,
                             ),
                           ),
@@ -170,7 +177,10 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
                           child: IconButton.filled(
                             onPressed: provider.isCreating
                                 ? null
-                                : () => setState(() => _selectedImage = null),
+                                : () => setState(() {
+                                    _selectedImage = null;
+                                    _selectedImageBytes = null;
+                                  }),
                             icon: const Icon(Icons.close),
                             tooltip: 'Remove image',
                           ),
@@ -203,6 +213,32 @@ class _CreateStoryScreenState extends State<CreateStoryScreen> {
         ),
       ),
     );
+  }
+}
+
+class _LocalImagePreview extends StatelessWidget {
+  final XFile image;
+  final Uint8List? imageBytes;
+  final BoxFit fit;
+
+  const _LocalImagePreview({
+    required this.image,
+    required this.imageBytes,
+    required this.fit,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    if (!kIsWeb) {
+      return Image.file(File(image.path), fit: fit);
+    }
+
+    final bytes = imageBytes;
+    if (bytes == null) {
+      return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+    }
+
+    return Image.memory(bytes, fit: fit);
   }
 }
 

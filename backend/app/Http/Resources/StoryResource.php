@@ -16,11 +16,18 @@ class StoryResource extends JsonResource
         $authUser = $request->user();
         $isOwner = $authUser?->id === $this->user_id;
         $viewedByMe = $this->viewed_by_me;
+        $myReaction = $this->my_reaction;
 
         if ($viewedByMe === null && $authUser) {
             $viewedByMe = $this->views()
                 ->where('user_id', $authUser->id)
                 ->exists();
+        }
+
+        if ($myReaction === null && $authUser) {
+            $myReaction = $this->reactions()
+                ->where('user_id', $authUser->id)
+                ->value('reaction');
         }
 
         return [
@@ -35,7 +42,14 @@ class StoryResource extends JsonResource
             'views_count' => array_key_exists('views_count', $this->resource->getAttributes())
                 ? (int) $this->views_count
                 : $this->views()->count(),
+            'reactions_count' => array_key_exists('reactions_count', $this->resource->getAttributes())
+                ? (int) $this->reactions_count
+                : $this->reactions()->count(),
+            'replies_count' => array_key_exists('replies_count', $this->resource->getAttributes())
+                ? (int) $this->replies_count
+                : $this->replies()->count(),
             'viewed_by_me' => (bool) $viewedByMe,
+            'my_reaction' => $myReaction,
             'is_owner' => $isOwner,
             'can_delete' => $isOwner,
             'user' => UserResource::make($this->whenLoaded('user')),

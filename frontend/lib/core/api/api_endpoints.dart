@@ -67,6 +67,8 @@ class ApiEndpoints {
   static String markMessageRead(int messageId) => '/messages/$messageId/read';
   static String storyById(int id) => '/stories/$id';
   static String storyView(int id) => '/stories/$id/view';
+  static String storyReaction(int id) => '/stories/$id/reaction';
+  static String storyReplies(int id) => '/stories/$id/replies';
   static String userStories(int userId) => '/users/$userId/stories';
   static String tagPosts(String tag) => '/explore/tags/$tag/posts';
   static String reportPost(int postId) => '/posts/$postId/report';

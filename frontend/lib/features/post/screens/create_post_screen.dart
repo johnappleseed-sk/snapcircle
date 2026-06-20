@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
@@ -385,7 +386,7 @@ class _SelectedImagePreviewGrid extends StatelessWidget {
               child: Stack(
                 fit: StackFit.expand,
                 children: [
-                  Image.file(images[index], fit: BoxFit.cover),
+                  _LocalImagePreview(image: images[index], fit: BoxFit.cover),
                   Positioned(
                     top: 4,
                     right: 4,
@@ -437,6 +438,31 @@ class _SelectedImagePreviewGrid extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+}
+
+class _LocalImagePreview extends StatelessWidget {
+  final File image;
+  final BoxFit fit;
+
+  const _LocalImagePreview({required this.image, required this.fit});
+
+  @override
+  Widget build(BuildContext context) {
+    if (!kIsWeb) {
+      return Image.file(image, fit: fit);
+    }
+
+    return FutureBuilder<Uint8List>(
+      future: image.readAsBytes(),
+      builder: (context, snapshot) {
+        if (!snapshot.hasData) {
+          return const Center(child: CircularProgressIndicator(strokeWidth: 2));
+        }
+
+        return Image.memory(snapshot.data!, fit: fit);
+      },
     );
   }
 }
