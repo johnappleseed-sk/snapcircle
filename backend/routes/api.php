@@ -36,6 +36,7 @@ Route::get('/health', fn() => response()->json([
 
 Route::post('/auth/google', [AuthController::class, 'google'])->middleware('throttle:10,1');
 Route::post('/auth/facebook', [AuthController::class, 'facebook'])->middleware('throttle:10,1');
+Route::post('/auth/phone', [AuthController::class, 'phone'])->middleware('throttle:5,1');
 Route::post('/auth/demo', [AuthController::class, 'demo'])->middleware('throttle:10,1');
 Route::post('/auth/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
 Route::post('/auth/login', [AuthController::class, 'login'])->middleware('throttle:10,1');

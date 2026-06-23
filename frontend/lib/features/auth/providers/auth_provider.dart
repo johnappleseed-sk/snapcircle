@@ -60,6 +60,28 @@ class AuthProvider extends ChangeNotifier {
     return _login(() => _authRepository.signInWithFacebook());
   }
 
+  Future<bool> sendPhoneOtp(String phoneNumber) async {
+    _setLoading(true);
+    _errorMessage = null;
+
+    try {
+      await _authRepository.sendPhoneOtp(phoneNumber);
+      return true;
+    } on AuthException catch (error) {
+      _errorMessage = error.message;
+      return false;
+    } catch (_) {
+      _errorMessage = 'Unable to send OTP. Please try again.';
+      return false;
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<bool> verifyPhoneOtp(String smsCode) async {
+    return _login(() => _authRepository.verifyPhoneOtp(smsCode));
+  }
+
   Future<bool> loginWithDemo() async {
     return _login(() => _authRepository.signInWithDemo());
   }

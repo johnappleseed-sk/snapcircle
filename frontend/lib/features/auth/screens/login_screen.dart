@@ -21,11 +21,16 @@ class _LoginScreenState extends State<LoginScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _phoneController = TextEditingController(text: '+16505553434');
+  final _otpController = TextEditingController();
+  bool _otpRequested = false;
 
   @override
   void dispose() {
     _emailController.dispose();
     _passwordController.dispose();
+    _phoneController.dispose();
+    _otpController.dispose();
     super.dispose();
   }
 
@@ -57,6 +62,27 @@ class _LoginScreenState extends State<LoginScreen> {
   Future<void> _loginWithFacebook(BuildContext context) async {
     final authProvider = context.read<AuthProvider>();
     final success = await authProvider.loginWithFacebook();
+
+    if (success && context.mounted) {
+      context.go('/home');
+    }
+  }
+
+  Future<void> _sendPhoneOtp(BuildContext context) async {
+    final authProvider = context.read<AuthProvider>();
+    final success = await authProvider.sendPhoneOtp(_phoneController.text);
+
+    if (success && context.mounted) {
+      setState(() => _otpRequested = true);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('OTP sent. Enter the SMS code.')),
+      );
+    }
+  }
+
+  Future<void> _verifyPhoneOtp(BuildContext context) async {
+    final authProvider = context.read<AuthProvider>();
+    final success = await authProvider.verifyPhoneOtp(_otpController.text);
 
     if (success && context.mounted) {
       context.go('/home');
@@ -172,6 +198,41 @@ class _LoginScreenState extends State<LoginScreen> {
                   onPressed: () => _loginWithFacebook(context),
                   variant: AppButtonVariant.outline,
                 ),
+                const SizedBox(height: AppSizes.paddingLarge),
+                AppTextField(
+                  label: 'Phone number',
+                  hint: '+16505553434',
+                  controller: _phoneController,
+                  enabled: !authProvider.isLoading,
+                  keyboardType: TextInputType.phone,
+                  prefixIcon: const Icon(Icons.phone_outlined),
+                ),
+                const SizedBox(height: AppSizes.paddingMedium),
+                AppButton(
+                  label: _otpRequested ? 'Send OTP again' : 'Send phone OTP',
+                  icon: Icons.sms_outlined,
+                  isLoading: authProvider.isLoading,
+                  onPressed: () => _sendPhoneOtp(context),
+                  variant: AppButtonVariant.secondary,
+                ),
+                if (_otpRequested) ...[
+                  const SizedBox(height: AppSizes.paddingMedium),
+                  AppTextField(
+                    label: 'OTP code',
+                    hint: '123456',
+                    controller: _otpController,
+                    enabled: !authProvider.isLoading,
+                    keyboardType: TextInputType.number,
+                    prefixIcon: const Icon(Icons.pin_outlined),
+                  ),
+                  const SizedBox(height: AppSizes.paddingMedium),
+                  AppButton(
+                    label: 'Verify OTP',
+                    icon: Icons.verified_user_outlined,
+                    isLoading: authProvider.isLoading,
+                    onPressed: () => _verifyPhoneOtp(context),
+                  ),
+                ],
                 const SizedBox(height: AppSizes.paddingLarge),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,

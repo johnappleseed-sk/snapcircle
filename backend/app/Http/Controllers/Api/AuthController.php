@@ -9,6 +9,7 @@ use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\ResetPasswordRequest;
 use App\Models\User;
+use App\Services\FirebaseAuthService;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -103,6 +104,64 @@ class AuthController extends Controller
     public function facebook(Request $request): JsonResponse
     {
         return $this->loginWithProvider($request, 'facebook');
+    }
+
+    public function phone(Request $request, FirebaseAuthService $firebaseAuth): JsonResponse
+    {
+        $validator = Validator::make($request->all(), [
+            'id_token' => ['required', 'string'],
+        ]);
+
+        if ($validator->fails()) {
+            return ApiResponse::error('Validation failed', $validator->errors()->toArray(), 422);
+        }
+
+        try {
+            $claims = $firebaseAuth->verifyIdToken($request->string('id_token')->toString());
+            $providerClaims = $claims['firebase'] ?? [];
+            $signInProvider = is_array($providerClaims) ? ($providerClaims['sign_in_provider'] ?? null) : null;
+            $phoneNumber = $claims['phone_number'] ?? null;
+            $firebaseUid = (string) $claims['sub'];
+
+            if ($signInProvider !== 'phone' || ! is_string($phoneNumber) || trim($phoneNumber) === '') {
+                return ApiResponse::error('Firebase phone credential is required', [], 422);
+            }
+
+            $user = User::query()
+                ->where('provider', 'firebase_phone')
+                ->where('provider_id', $firebaseUid)
+                ->first();
+
+            if ($user) {
+                if ($user->account_status !== 'active') {
+                    return ApiResponse::error('This account is not active.', [], 403);
+                }
+
+                $user->update([
+                    'name' => $user->name ?: 'SnapCircle User',
+                    'provider' => 'firebase_phone',
+                    'provider_id' => $firebaseUid,
+                ]);
+            } else {
+                $user = User::query()->create([
+                    'name' => 'SnapCircle User',
+                    'email' => $this->phoneEmail($firebaseUid),
+                    'provider' => 'firebase_phone',
+                    'provider_id' => $firebaseUid,
+                    'email_verified_at' => now(),
+                ]);
+            }
+
+            $token = $user->createToken('snapcircle-api-token')->plainTextToken;
+
+            return ApiResponse::success('Login successful', [
+                'user' => $user,
+                'token' => $token,
+                'token_type' => 'Bearer',
+            ]);
+        } catch (Throwable) {
+            return ApiResponse::error('Invalid Firebase phone token', [], 401);
+        }
     }
 
     public function demo(): JsonResponse
@@ -212,5 +271,10 @@ class AuthController extends Controller
         } catch (Throwable) {
             return ApiResponse::error('Invalid social token', [], 401);
         }
+    }
+
+    private function phoneEmail(string $firebaseUid): string
+    {
+        return 'phone_'.hash('sha256', $firebaseUid).'@snapcircle.local';
     }
 }

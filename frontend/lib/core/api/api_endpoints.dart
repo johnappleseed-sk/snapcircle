@@ -2,6 +2,7 @@ class ApiEndpoints {
   static const String health = '/health';
   static const String authGoogle = '/auth/google';
   static const String authFacebook = '/auth/facebook';
+  static const String authPhone = '/auth/phone';
   static const String authDemo = '/auth/demo';
   static const String authRegister = '/auth/register';
   static const String authLogin = '/auth/login';
