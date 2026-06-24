@@ -504,10 +504,10 @@ class _FeedControls extends StatelessWidget {
   });
 
   static const _modes = [
-    ('all', 'For You'),
-    ('following', 'Following'),
-    ('popular', 'Popular'),
-    ('mine', 'Mine'),
+    ('all', 'For You', Icons.auto_awesome_outlined),
+    ('following', 'Following', Icons.people_outline),
+    ('popular', 'Popular', Icons.trending_up),
+    ('mine', 'Mine', Icons.person_outline),
   ];
 
   @override
@@ -517,21 +517,20 @@ class _FeedControls extends StatelessWidget {
       children: [
         const SectionHeader(title: 'Feed'),
         const SizedBox(height: AppSizes.paddingSmall),
-        SizedBox(
-          height: 42,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            itemCount: _modes.length,
-            separatorBuilder: (context, index) =>
-                const SizedBox(width: AppSizes.paddingSmall),
-            itemBuilder: (context, index) {
-              final mode = _modes[index];
-              return ChoiceChip(
-                label: Text(mode.$2),
-                selected: selectedMode == mode.$1,
-                onSelected: (_) => onModeChanged(mode.$1),
-              );
-            },
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: SegmentedButton<String>(
+            showSelectedIcon: false,
+            segments: [
+              for (final mode in _modes)
+                ButtonSegment(
+                  value: mode.$1,
+                  icon: Icon(mode.$3, size: 18),
+                  label: Text(mode.$2),
+                ),
+            ],
+            selected: {selectedMode},
+            onSelectionChanged: (values) => onModeChanged(values.first),
           ),
         ),
       ],

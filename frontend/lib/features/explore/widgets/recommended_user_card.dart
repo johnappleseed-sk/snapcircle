@@ -41,26 +41,33 @@ class RecommendedUserCard extends StatelessWidget {
           children: [
             AppAvatar(
               name: user.name,
-              imageUrl: user.avatar,
+              imageUrl: user.avatarUrl ?? user.avatar,
               size: AppAvatarSize.large,
             ),
             const SizedBox(height: AppSizes.paddingSmall),
-            Text(
-              user.name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: Theme.of(
-                context,
-              ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w900),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Flexible(
+                  child: Text(
+                    user.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ),
+                if (user.isPrivate) ...[
+                  const SizedBox(width: 4),
+                  const Icon(
+                    Icons.lock_outline,
+                    size: 15,
+                    color: AppColors.textSecondary,
+                  ),
+                ],
+              ],
             ),
-            if (user.isPrivate) ...[
-              const SizedBox(height: 2),
-              const Icon(
-                Icons.lock_outline,
-                size: 16,
-                color: AppColors.textSecondary,
-              ),
-            ],
             const SizedBox(height: 4),
             Text(
               subtitle,
@@ -72,11 +79,34 @@ class RecommendedUserCard extends StatelessWidget {
               ).textTheme.bodySmall?.copyWith(color: AppColors.mutedText),
             ),
             const SizedBox(height: AppSizes.paddingSmall),
-            Text(
-              '${user.followersCount} followers',
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: AppColors.textSecondary,
-                fontWeight: FontWeight.w700,
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+              decoration: BoxDecoration(
+                color: AppColors.surfaceMuted,
+                borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
+              ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(
+                    Icons.group_outlined,
+                    size: 15,
+                    color: AppColors.textSecondary,
+                  ),
+                  const SizedBox(width: 4),
+                  Flexible(
+                    child: Text(
+                      '${user.followersCount} followers',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                        color: AppColors.textSecondary,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             const SizedBox(height: AppSizes.paddingSmall),

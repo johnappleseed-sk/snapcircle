@@ -287,9 +287,7 @@ class PostCard extends StatelessWidget {
                         post.savedByMe ? 'Post unsaved.' : 'Post saved.',
                       );
                     } else {
-                      final message = context
-                          .read<FeedProvider>()
-                          .errorMessage;
+                      final message = context.read<FeedProvider>().errorMessage;
                       if (message != null) {
                         SnackbarHelper.showError(context, message);
                       }
@@ -370,6 +368,7 @@ class _PostActionState extends State<_PostAction> {
   @override
   Widget build(BuildContext context) {
     final foreground = widget.color ?? AppColors.mutedText;
+    final hasAccent = widget.color != null;
     final visibleLabel = widget.compact && widget.label.length > 3
         ? ''
         : widget.label;
@@ -385,44 +384,50 @@ class _PostActionState extends State<_PostAction> {
           child: InkWell(
             borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
             onTap: widget.isLoading || widget.onTap == null ? null : _handleTap,
-            child: ConstrainedBox(
+            child: AnimatedContainer(
+              duration: const Duration(milliseconds: 160),
+              curve: Curves.easeOutCubic,
               constraints: const BoxConstraints(minHeight: 40, minWidth: 40),
-              child: Padding(
-                padding: EdgeInsets.symmetric(
-                  horizontal: widget.compact ? 4 : 6,
-                  vertical: 6,
-                ),
-                child: AnimatedSwitcher(
-                  duration: const Duration(milliseconds: 160),
-                  transitionBuilder: (child, animation) {
-                    return ScaleTransition(scale: animation, child: child);
-                  },
-                  child: widget.isLoading
-                      ? const SizedBox(
-                          key: ValueKey('loading'),
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : Row(
-                          key: ValueKey('${widget.icon}-$visibleLabel'),
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Icon(widget.icon, size: 22, color: foreground),
-                            if (visibleLabel.isNotEmpty) ...[
-                              const SizedBox(width: 5),
-                              Text(
-                                visibleLabel,
-                                style: Theme.of(context).textTheme.bodyMedium
-                                    ?.copyWith(
-                                      color: foreground,
-                                      fontWeight: FontWeight.w800,
-                                    ),
-                              ),
-                            ],
+              padding: EdgeInsets.symmetric(
+                horizontal: widget.compact ? 8 : 10,
+                vertical: 6,
+              ),
+              decoration: BoxDecoration(
+                color: hasAccent
+                    ? foreground.withValues(alpha: 0.10)
+                    : Colors.transparent,
+                borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
+              ),
+              child: AnimatedSwitcher(
+                duration: const Duration(milliseconds: 160),
+                transitionBuilder: (child, animation) {
+                  return ScaleTransition(scale: animation, child: child);
+                },
+                child: widget.isLoading
+                    ? const SizedBox(
+                        key: ValueKey('loading'),
+                        height: 20,
+                        width: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      )
+                    : Row(
+                        key: ValueKey('${widget.icon}-$visibleLabel'),
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(widget.icon, size: 22, color: foreground),
+                          if (visibleLabel.isNotEmpty) ...[
+                            const SizedBox(width: 5),
+                            Text(
+                              visibleLabel,
+                              style: Theme.of(context).textTheme.bodyMedium
+                                  ?.copyWith(
+                                    color: foreground,
+                                    fontWeight: FontWeight.w800,
+                                  ),
+                            ),
                           ],
-                        ),
-                ),
+                        ],
+                      ),
               ),
             ),
           ),
