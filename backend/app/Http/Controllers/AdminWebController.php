@@ -66,6 +66,25 @@ class AdminWebController extends Controller
 
     public function dashboard(): View
     {
+        $statusCounts = Report::query()
+            ->selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+        $reasonCounts = Report::query()
+            ->selectRaw('reason, count(*) as total')
+            ->groupBy('reason')
+            ->orderByDesc('total')
+            ->limit(5)
+            ->pluck('total', 'reason');
+        $totalReports = (int) $statusCounts->sum();
+        $resolvedReports = (int) $statusCounts
+            ->only([Report::STATUS_REVIEWED, Report::STATUS_DISMISSED, Report::STATUS_ACTION_TAKEN])
+            ->sum();
+        $oldestPendingReport = Report::query()
+            ->where('status', Report::STATUS_PENDING)
+            ->oldest()
+            ->first();
+
         return view('admin.dashboard', [
             'stats' => [
                 'total_users' => User::query()->count(),
@@ -80,8 +99,52 @@ class AdminWebController extends Controller
                 'new_users_today' => User::query()->whereDate('created_at', today())->count(),
                 'new_posts_today' => Post::query()->whereDate('created_at', today())->count(),
                 'reports_today' => Report::query()->whereDate('created_at', today())->count(),
+                'active_last_24h' => User::query()->where('last_active_at', '>=', now()->subDay())->count(),
+                'reviewed_today' => Report::query()->whereDate('reviewed_at', today())->count(),
+                'pending_older_than_day' => Report::query()
+                    ->where('status', Report::STATUS_PENDING)
+                    ->where('created_at', '<=', now()->subDay())
+                    ->count(),
+                'resolution_rate' => $totalReports > 0 ? round(($resolvedReports / $totalReports) * 100) : 0,
             ],
+            'statusCounts' => collect(Report::statuses())
+                ->mapWithKeys(fn (string $status): array => [$status => (int) ($statusCounts[$status] ?? 0)]),
+            'reasonCounts' => $reasonCounts,
+            'activitySeries' => collect(range(6, 0))->map(function (int $daysAgo): array {
+                $date = now()->subDays($daysAgo);
+
+                return [
+                    'label' => $date->format('M j'),
+                    'users' => User::query()->whereDate('created_at', $date)->count(),
+                    'posts' => Post::query()->whereDate('created_at', $date)->count(),
+                    'reports' => Report::query()->whereDate('created_at', $date)->count(),
+                ];
+            }),
             'recentReports' => $this->reportsQuery(request())
+                ->limit(5)
+                ->get(),
+            'oldestPendingReport' => $oldestPendingReport,
+            'recentUsers' => User::query()
+                ->withCount(['posts', 'followers'])
+                ->latest()
+                ->limit(5)
+                ->get(),
+            'recentPosts' => Post::query()
+                ->with('user')
+                ->withCount(['likes', 'comments', 'reports'])
+                ->latest()
+                ->limit(5)
+                ->get(),
+            'recentComments' => Comment::query()
+                ->with(['user', 'post.user'])
+                ->withCount('reports')
+                ->latest()
+                ->limit(5)
+                ->get(),
+            'flaggedUsers' => User::query()
+                ->withCount('receivedReports')
+                ->whereHas('receivedReports')
+                ->orderByDesc('received_reports_count')
                 ->limit(5)
                 ->get(),
         ]);
