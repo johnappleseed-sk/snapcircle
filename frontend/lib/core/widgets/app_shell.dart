@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../constants/app_colors.dart';
 import '../constants/app_sizes.dart';
 
 class AppShell extends StatelessWidget {
@@ -27,55 +28,65 @@ class AppShell extends StatelessWidget {
           Expanded(child: child),
           SafeArea(
             top: false,
-            child: Container(
-              padding: const EdgeInsets.fromLTRB(10, 8, 10, 10),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-                border: Border(top: BorderSide(color: theme.dividerColor)),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withValues(alpha: isDark ? 0.26 : 0.06),
-                    blurRadius: 18,
-                    offset: const Offset(0, -6),
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(12, 6, 12, 10),
+              child: Container(
+                padding: const EdgeInsets.fromLTRB(8, 7, 8, 8),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surface.withValues(
+                    alpha: isDark ? 0.92 : 0.96,
                   ),
-                ],
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  _NavItem(
-                    icon: Icons.home_outlined,
-                    selectedIcon: Icons.home,
-                    label: 'Home',
-                    isSelected: currentIndex == 0,
-                    onTap: () => _go(context, 0),
+                  border: Border.all(
+                    color: theme.dividerColor.withValues(alpha: 0.84),
                   ),
-                  _NavItem(
-                    icon: Icons.search,
-                    selectedIcon: Icons.travel_explore,
-                    label: 'Explore',
-                    isSelected: currentIndex == 1,
-                    onTap: () => _go(context, 1),
-                  ),
-                  _CreateNavItem(
-                    isSelected: currentIndex == 2,
-                    onTap: () => _go(context, 2),
-                  ),
-                  _NavItem(
-                    icon: Icons.favorite_border,
-                    selectedIcon: Icons.favorite,
-                    label: 'Activity',
-                    isSelected: currentIndex == 3,
-                    onTap: () => _go(context, 3),
-                  ),
-                  _NavItem(
-                    icon: Icons.person_outline,
-                    selectedIcon: Icons.person,
-                    label: 'Profile',
-                    isSelected: currentIndex == 4,
-                    onTap: () => _go(context, 4),
-                  ),
-                ],
+                  borderRadius: BorderRadius.circular(28),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(
+                        alpha: isDark ? 0.34 : 0.11,
+                      ),
+                      blurRadius: 24,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _NavItem(
+                      icon: Icons.home_outlined,
+                      selectedIcon: Icons.home,
+                      label: 'Home',
+                      isSelected: currentIndex == 0,
+                      onTap: () => _go(context, 0),
+                    ),
+                    _NavItem(
+                      icon: Icons.search,
+                      selectedIcon: Icons.travel_explore,
+                      label: 'Explore',
+                      isSelected: currentIndex == 1,
+                      onTap: () => _go(context, 1),
+                    ),
+                    _CreateNavItem(
+                      isSelected: currentIndex == 2,
+                      onTap: () => _go(context, 2),
+                    ),
+                    _NavItem(
+                      icon: Icons.favorite_border,
+                      selectedIcon: Icons.favorite,
+                      label: 'Activity',
+                      isSelected: currentIndex == 3,
+                      onTap: () => _go(context, 3),
+                    ),
+                    _NavItem(
+                      icon: Icons.person_outline,
+                      selectedIcon: Icons.person,
+                      label: 'Profile',
+                      isSelected: currentIndex == 4,
+                      onTap: () => _go(context, 4),
+                    ),
+                  ],
+                ),
               ),
             ),
           ),
@@ -118,7 +129,7 @@ class _NavItem extends StatelessWidget {
         message: label,
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+          borderRadius: BorderRadius.circular(22),
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 180),
             curve: Curves.easeOutCubic,
@@ -127,19 +138,19 @@ class _NavItem extends StatelessWidget {
               color: isSelected
                   ? theme.colorScheme.primary.withValues(alpha: 0.10)
                   : Colors.transparent,
-              borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+              borderRadius: BorderRadius.circular(22),
             ),
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
                 AnimatedScale(
                   duration: const Duration(milliseconds: 160),
-                  curve: Curves.easeOutCubic,
-                  scale: isSelected ? 1.06 : 1,
+                  curve: Curves.easeOutBack,
+                  scale: isSelected ? 1.10 : 1,
                   child: Icon(
                     isSelected ? selectedIcon : icon,
                     color: color,
-                    size: 24,
+                    size: 23,
                   ),
                 ),
                 const SizedBox(height: 4),
@@ -191,25 +202,23 @@ class _CreateNavItem extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  height: 38,
-                  width: 38,
+                  height: 42,
+                  width: 42,
                   decoration: BoxDecoration(
-                    color: isSelected
-                        ? theme.colorScheme.primary
-                        : theme.colorScheme.onSurface,
+                    gradient: const LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [AppColors.primary, AppColors.secondary],
+                    ),
                     border: Border.all(
-                      color: isSelected
-                          ? theme.colorScheme.primary
-                          : theme.dividerColor,
+                      color: Colors.white.withValues(alpha: 0.36),
                     ),
                     shape: BoxShape.circle,
                     boxShadow: [
                       BoxShadow(
-                        color: theme.colorScheme.primary.withValues(
-                          alpha: isSelected ? 0.22 : 0.12,
-                        ),
-                        blurRadius: 12,
-                        offset: const Offset(0, 4),
+                        color: AppColors.primary.withValues(alpha: 0.30),
+                        blurRadius: 16,
+                        offset: const Offset(0, 7),
                       ),
                     ],
                   ),

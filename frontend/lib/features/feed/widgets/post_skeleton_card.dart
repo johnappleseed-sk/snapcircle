@@ -5,10 +5,43 @@ import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/skeleton_box.dart';
 
 class PostSkeletonCard extends StatelessWidget {
-  const PostSkeletonCard({super.key});
+  final bool compact;
+
+  const PostSkeletonCard({super.key, this.compact = false});
 
   @override
   Widget build(BuildContext context) {
+    if (compact) {
+      return const AppCard(
+        padding: EdgeInsets.zero,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SkeletonBox(height: 168),
+            Padding(
+              padding: EdgeInsets.all(AppSizes.paddingSmall),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _SkeletonLine(widthFactor: 0.92),
+                  SizedBox(height: AppSizes.paddingSmall),
+                  _SkeletonLine(widthFactor: 0.62),
+                  SizedBox(height: AppSizes.paddingSmall),
+                  Row(
+                    children: [
+                      _SkeletonCircle(size: AppSizes.avatarSmall),
+                      SizedBox(width: AppSizes.paddingSmall),
+                      Expanded(child: _SkeletonLine(widthFactor: 0.72)),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     return const AppCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

@@ -7,8 +7,16 @@ import '../../../core/utils/hashtag_utils.dart';
 class HashtagCaption extends StatelessWidget {
   final String text;
   final ValueChanged<String> onTagTap;
+  final int? maxLines;
+  final TextStyle? textStyle;
 
-  const HashtagCaption({super.key, required this.text, required this.onTagTap});
+  const HashtagCaption({
+    super.key,
+    required this.text,
+    required this.onTagTap,
+    this.maxLines,
+    this.textStyle,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +30,10 @@ class HashtagCaption extends StatelessWidget {
         if (caption.isNotEmpty)
           Text(
             caption,
-            style: theme.textTheme.bodyLarge?.copyWith(height: 1.4),
+            maxLines: maxLines,
+            overflow: maxLines == null ? null : TextOverflow.ellipsis,
+            style:
+                textStyle ?? theme.textTheme.bodyLarge?.copyWith(height: 1.4),
           ),
         if (tags.isNotEmpty) ...[
           if (caption.isNotEmpty) const SizedBox(height: AppSizes.paddingSmall),

@@ -47,7 +47,7 @@ class AppTheme {
         elevation: 0,
         margin: EdgeInsets.zero,
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
+          borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
           side: const BorderSide(color: AppColors.border),
         ),
       ),
@@ -109,7 +109,7 @@ class AppTheme {
           foregroundColor: Colors.white,
           minimumSize: const Size.fromHeight(52),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
+            borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
           ),
           textStyle: AppTextStyles.button,
         ),
@@ -120,7 +120,7 @@ class AppTheme {
           minimumSize: const Size.fromHeight(48),
           side: const BorderSide(color: AppColors.border),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
+            borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
           ),
           textStyle: AppTextStyles.button,
         ),
@@ -141,23 +141,23 @@ class AppTheme {
           vertical: 14,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
+          borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
+          borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
+          borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
           borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
+          borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
           borderSide: const BorderSide(color: AppColors.error),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
+          borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
           borderSide: const BorderSide(color: AppColors.error, width: 1.5),
         ),
       ),
@@ -188,17 +188,17 @@ class AppTheme {
   }
 
   static ThemeData get darkTheme {
-    const darkBackground = Color(0xFF000000);
-    const darkSurface = Color(0xFF0A0A0A);
-    const darkCard = Color(0xFF111111);
-    const darkText = Color(0xFFF8FAFC);
-    const darkMuted = Color(0xFFCBD5E1);
-    const darkBorder = Color(0xFF27272A);
+    const darkBackground = Color(0xFF12090B);
+    const darkSurface = Color(0xFF1A1012);
+    const darkCard = Color(0xFF211517);
+    const darkText = Color(0xFFFFF6F7);
+    const darkMuted = Color(0xFFD8C4C8);
+    const darkBorder = Color(0xFF3A262A);
     final colorScheme = ColorScheme.fromSeed(
       seedColor: AppColors.primary,
       brightness: Brightness.dark,
-      primary: const Color(0xFF60A5FA),
-      secondary: const Color(0xFFA78BFA),
+      primary: const Color(0xFFFF5A70),
+      secondary: const Color(0xFFFF9AAD),
       surface: darkSurface,
     );
 
@@ -254,8 +254,8 @@ class AppTheme {
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
-          borderSide: const BorderSide(color: Color(0xFF60A5FA), width: 1.5),
+          borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
+          borderSide: const BorderSide(color: Color(0xFFFF5A70), width: 1.5),
         ),
       ),
       navigationBarTheme: NavigationBarThemeData(

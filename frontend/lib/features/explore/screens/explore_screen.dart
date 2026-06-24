@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/widgets/app_button.dart';
+import '../../../core/widgets/app_masonry_grid.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/loading_view.dart';
@@ -64,7 +65,16 @@ class _ExploreScreenState extends State<ExploreScreen> {
         : AppSizes.paddingMedium;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Explore')),
+      appBar: AppBar(
+        title: const Text('Discover'),
+        actions: [
+          IconButton(
+            onPressed: () => provider.fetchExploreData(refresh: true),
+            icon: const Icon(Icons.refresh_rounded),
+            tooltip: 'Refresh discovery',
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: () => provider.fetchExploreData(refresh: true),
         child: ListView(
@@ -80,6 +90,8 @@ class _ExploreScreenState extends State<ExploreScreen> {
               onSearch: provider.searchExplore,
               onClear: provider.clearSearch,
             ),
+            const SizedBox(height: AppSizes.paddingSmall),
+            _DiscoveryTopics(provider: provider),
             if (provider.searchQuery.isEmpty &&
                 provider.recentSearches.isNotEmpty) ...[
               const SizedBox(height: AppSizes.paddingSmall),
@@ -138,19 +150,72 @@ class _ExploreSkeleton extends StatelessWidget {
           ),
         ),
         const SizedBox(height: AppSizes.paddingLarge),
-        GridView.builder(
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
+        AppMasonryGrid(
           itemCount: 4,
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            crossAxisSpacing: AppSizes.paddingSmall,
-            mainAxisSpacing: AppSizes.paddingSmall,
-            childAspectRatio: 0.82,
-          ),
-          itemBuilder: (context, index) => const SkeletonBox(height: 180),
+          itemBuilder: (context, index) =>
+              SkeletonBox(height: index.isEven ? 210 : 168),
         ),
       ],
+    );
+  }
+}
+
+class _DiscoveryTopics extends StatelessWidget {
+  final ExploreProvider provider;
+
+  const _DiscoveryTopics({required this.provider});
+
+  static const _topics = [
+    ('For You', Icons.auto_awesome_rounded, null),
+    ('Food', Icons.restaurant_outlined, 'food'),
+    ('Style', Icons.checkroom_outlined, 'style'),
+    ('Travel', Icons.flight_takeoff_rounded, 'travel'),
+    ('Home', Icons.chair_outlined, 'home'),
+    ('Fitness', Icons.fitness_center_rounded, 'fitness'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return SizedBox(
+      height: 42,
+      child: ListView.separated(
+        scrollDirection: Axis.horizontal,
+        itemCount: _topics.length,
+        separatorBuilder: (_, _) => const SizedBox(width: 8),
+        itemBuilder: (context, index) {
+          final topic = _topics[index];
+          final tag = topic.$3;
+          final selected =
+              (tag == null && provider.selectedTag == null) ||
+              provider.selectedTag == tag;
+          return ChoiceChip(
+            selected: selected,
+            avatar: Icon(
+              topic.$2,
+              size: 17,
+              color: selected ? Colors.white : AppColors.primary,
+            ),
+            label: Text(topic.$1),
+            labelStyle: theme.textTheme.labelLarge?.copyWith(
+              color: selected ? Colors.white : theme.colorScheme.onSurface,
+              fontWeight: FontWeight.w900,
+            ),
+            selectedColor: AppColors.primary,
+            backgroundColor: theme.colorScheme.surface,
+            side: BorderSide(
+              color: selected ? AppColors.primary : theme.dividerColor,
+            ),
+            onSelected: (_) {
+              if (tag == null) {
+                provider.clearSearch();
+              } else {
+                provider.selectTagName(tag);
+              }
+            },
+          );
+        },
+      ),
     );
   }
 }
@@ -411,21 +476,16 @@ class _ExplorePostsSection extends StatelessWidget {
             subtitle: 'Try another search or check back after more posts.',
           )
         else
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
+          AppMasonryGrid(
             itemCount: posts.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 2,
-              crossAxisSpacing: AppSizes.paddingSmall,
-              mainAxisSpacing: AppSizes.paddingSmall,
-              childAspectRatio: 0.82,
-            ),
             itemBuilder: (context, index) {
               final post = posts[index];
-              return ExplorePostGridItem(
-                post: post,
-                onTap: () => context.push('/posts/${post.id}', extra: post),
+              return SizedBox(
+                height: _tileHeight(post.id),
+                child: ExplorePostGridItem(
+                  post: post,
+                  onTap: () => context.push('/posts/${post.id}', extra: post),
+                ),
               );
             },
           ),
@@ -450,6 +510,16 @@ class _ExplorePostsSection extends StatelessWidget {
         ],
       ],
     );
+  }
+
+  double _tileHeight(int postId) {
+    return switch (postId % 5) {
+      0 => 260,
+      1 => 214,
+      2 => 238,
+      3 => 188,
+      _ => 230,
+    };
   }
 }
 

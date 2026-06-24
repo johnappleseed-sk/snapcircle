@@ -93,7 +93,7 @@ class ProfileHeader extends StatelessWidget {
                             child: Text(
                               user.name,
                               style: Theme.of(context).textTheme.headlineMedium
-                                  ?.copyWith(fontSize: 26),
+                                  ?.copyWith(fontSize: 28, height: 1.08),
                             ),
                           ),
                           if (user.isPrivate)
@@ -312,10 +312,11 @@ class _FollowButton extends StatelessWidget {
       );
     }
 
-    return FilledButton(
+    return FilledButton.icon(
       style: filledStyle,
       onPressed: isUpdating ? null : onFollow,
-      child: Text(isUpdating ? 'Updating' : 'Follow'),
+      icon: const Icon(Icons.add_rounded),
+      label: Text(isUpdating ? 'Updating' : 'Follow'),
     );
   }
 }
@@ -365,7 +366,7 @@ class _CoverImage extends StatelessWidget {
         top: Radius.circular(AppSizes.radiusSmall),
       ),
       child: SizedBox(
-        height: 150,
+        height: 170,
         child: url == null || url.isEmpty
             ? DecoratedBox(
                 decoration: BoxDecoration(
@@ -373,9 +374,9 @@ class _CoverImage extends StatelessWidget {
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
                     colors: [
-                      AppColors.primary.withValues(alpha: 0.92),
-                      AppColors.info.withValues(alpha: 0.78),
-                      AppColors.accent.withValues(alpha: 0.74),
+                      AppColors.primary.withValues(alpha: 0.95),
+                      AppColors.secondary.withValues(alpha: 0.82),
+                      AppColors.accent.withValues(alpha: 0.70),
                     ],
                   ),
                 ),

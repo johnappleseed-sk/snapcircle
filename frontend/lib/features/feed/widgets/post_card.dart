@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -321,6 +322,369 @@ class PostCard extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class PostWaterfallCard extends StatelessWidget {
+  final PostModel post;
+  final VoidCallback? onTap;
+  final VoidCallback? onCommentsTap;
+  final Future<bool> Function()? onSaveTap;
+  final ValueChanged<String>? onTagTap;
+
+  const PostWaterfallCard({
+    super.key,
+    required this.post,
+    this.onTap,
+    this.onCommentsTap,
+    this.onSaveTap,
+    this.onTagTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final thumbnailUrl = post.media.isNotEmpty
+        ? post.media.first.url
+        : post.imageUrl;
+    final title = post.content?.trim().isNotEmpty == true
+        ? post.content!.trim()
+        : 'A SnapCircle moment';
+    final aspectRatio = _aspectRatioFor(post.id, thumbnailUrl != null);
+    final isLikeUpdating = context.select<FeedProvider, bool>(
+      (provider) => provider.isLikeUpdating(post.id),
+    );
+    final isSaveUpdating = context.select<FeedProvider, bool>(
+      (provider) => provider.isSaveUpdating(post.id),
+    );
+
+    return Semantics(
+      button: true,
+      label: 'Open post by ${post.user.name}',
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 180),
+          curve: Curves.easeOutCubic,
+          decoration: BoxDecoration(
+            color: theme.colorScheme.surface,
+            borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
+            border: Border.all(
+              color: theme.dividerColor.withValues(alpha: 0.7),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(
+                  alpha: theme.brightness == Brightness.dark ? 0.22 : 0.07,
+                ),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
+              ),
+            ],
+          ),
+          clipBehavior: Clip.antiAlias,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              AspectRatio(
+                aspectRatio: aspectRatio,
+                child: Stack(
+                  fit: StackFit.expand,
+                  children: [
+                    if (thumbnailUrl == null)
+                      _WaterfallTextPreview(text: title)
+                    else
+                      CachedNetworkImage(
+                        imageUrl: thumbnailUrl,
+                        fit: BoxFit.cover,
+                        memCacheWidth:
+                            (260 * MediaQuery.devicePixelRatioOf(context))
+                                .round(),
+                        placeholder: (_, _) => Container(
+                          color: theme.colorScheme.surfaceContainerHighest,
+                        ),
+                        errorWidget: (_, _, _) =>
+                            _WaterfallTextPreview(text: title),
+                      ),
+                    DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.black.withValues(alpha: 0.02),
+                            Colors.transparent,
+                            Colors.black.withValues(alpha: 0.28),
+                          ],
+                          stops: const [0, 0.54, 1],
+                        ),
+                      ),
+                    ),
+                    if (post.media.length > 1)
+                      Positioned(
+                        top: 8,
+                        right: 8,
+                        child: _OverlayPill(
+                          icon: Icons.collections_outlined,
+                          label: '${post.media.length}',
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 9, 10, 10),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    HashtagCaption(
+                      text: title,
+                      maxLines: 2,
+                      onTagTap: onTagTap ?? (tag) => _openTag(context, tag),
+                    ),
+                    const SizedBox(height: 9),
+                    Row(
+                      children: [
+                        AppAvatar(
+                          name: post.user.name,
+                          imageUrl: post.user.avatarUrl ?? post.user.avatar,
+                          size: AppAvatarSize.small,
+                        ),
+                        const SizedBox(width: 7),
+                        Expanded(
+                          child: Text(
+                            post.user.name.isEmpty
+                                ? 'SnapCircle User'
+                                : post.user.name,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: theme.textTheme.labelMedium?.copyWith(
+                              fontWeight: FontWeight.w800,
+                              color: theme.colorScheme.onSurface.withValues(
+                                alpha: 0.72,
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 9),
+                    Row(
+                      children: [
+                        _MiniAction(
+                          icon: post.likedByMe
+                              ? Icons.favorite
+                              : Icons.favorite_border_rounded,
+                          label: _compactCount(post.likesCount),
+                          color: post.likedByMe ? AppColors.danger : null,
+                          isLoading: isLikeUpdating,
+                          onTap: isLikeUpdating
+                              ? null
+                              : () => context.read<FeedProvider>().toggleLike(
+                                  post.id,
+                                ),
+                        ),
+                        _MiniAction(
+                          icon: Icons.chat_bubble_outline_rounded,
+                          label: _compactCount(post.commentsCount),
+                          onTap: onCommentsTap,
+                        ),
+                        const Spacer(),
+                        _MiniAction(
+                          icon: post.savedByMe
+                              ? Icons.bookmark
+                              : Icons.bookmark_border_rounded,
+                          label: _compactCount(post.savesCount),
+                          color: post.savedByMe ? AppColors.primary : null,
+                          isLoading: isSaveUpdating,
+                          onTap: isSaveUpdating
+                              ? null
+                              : () =>
+                                    onSaveTap?.call() ??
+                                    context.read<FeedProvider>().toggleSave(
+                                      post.id,
+                                    ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _openTag(BuildContext context, String tag) {
+    context.go('/explore/tags/${Uri.encodeComponent(tag)}');
+  }
+
+  double _aspectRatioFor(int id, bool hasImage) {
+    if (!hasImage) {
+      return 1.05;
+    }
+    return switch (id % 5) {
+      0 => 0.72,
+      1 => 0.82,
+      2 => 0.94,
+      3 => 0.78,
+      _ => 0.88,
+    };
+  }
+
+  String _compactCount(int value) {
+    if (value >= 1000000) {
+      return '${(value / 1000000).toStringAsFixed(1)}M';
+    }
+    if (value >= 1000) {
+      return '${(value / 1000).toStringAsFixed(value >= 10000 ? 0 : 1)}K';
+    }
+    return value.toString();
+  }
+}
+
+class _WaterfallTextPreview extends StatelessWidget {
+  final String text;
+
+  const _WaterfallTextPreview({required this.text});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            AppColors.primary.withValues(alpha: 0.13),
+            AppColors.accent.withValues(alpha: 0.08),
+          ],
+        ),
+      ),
+      alignment: Alignment.center,
+      child: Text(
+        text,
+        maxLines: 6,
+        overflow: TextOverflow.ellipsis,
+        textAlign: TextAlign.center,
+        style: theme.textTheme.titleSmall?.copyWith(
+          fontWeight: FontWeight.w900,
+          height: 1.22,
+        ),
+      ),
+    );
+  }
+}
+
+class _OverlayPill extends StatelessWidget {
+  final IconData icon;
+  final String label;
+
+  const _OverlayPill({required this.icon, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+      decoration: BoxDecoration(
+        color: Colors.black.withValues(alpha: 0.46),
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 14, color: Colors.white),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: Theme.of(context).textTheme.labelSmall?.copyWith(
+              color: Colors.white,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _MiniAction extends StatefulWidget {
+  final IconData icon;
+  final String label;
+  final Color? color;
+  final bool isLoading;
+  final FutureOr<void> Function()? onTap;
+
+  const _MiniAction({
+    required this.icon,
+    required this.label,
+    this.color,
+    this.isLoading = false,
+    this.onTap,
+  });
+
+  @override
+  State<_MiniAction> createState() => _MiniActionState();
+}
+
+class _MiniActionState extends State<_MiniAction> {
+  bool _pressed = false;
+
+  Future<void> _handleTap() async {
+    final onTap = widget.onTap;
+    if (onTap == null || widget.isLoading) {
+      return;
+    }
+    setState(() => _pressed = true);
+    await Future<void>.delayed(const Duration(milliseconds: 90));
+    if (mounted) {
+      setState(() => _pressed = false);
+    }
+    await onTap();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final color =
+        widget.color ?? theme.colorScheme.onSurface.withValues(alpha: 0.58);
+    return AnimatedScale(
+      scale: _pressed ? 0.9 : 1,
+      duration: const Duration(milliseconds: 110),
+      curve: Curves.easeOutCubic,
+      child: InkWell(
+        onTap: widget.onTap == null || widget.isLoading ? null : _handleTap,
+        borderRadius: BorderRadius.circular(999),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 4),
+          child: widget.isLoading
+              ? const SizedBox(
+                  height: 16,
+                  width: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2),
+                )
+              : Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(widget.icon, size: 18, color: color),
+                    const SizedBox(width: 3),
+                    Text(
+                      widget.label,
+                      style: theme.textTheme.labelSmall?.copyWith(
+                        color: color,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                  ],
+                ),
+        ),
+      ),
     );
   }
 }

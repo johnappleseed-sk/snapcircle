@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -6,14 +7,11 @@ import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/realtime/realtime_provider.dart';
 import '../../../core/widgets/app_button.dart';
-import '../../../core/widgets/confirmation_dialog.dart';
+import '../../../core/widgets/app_masonry_grid.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/section_header.dart';
-import '../../../core/utils/snackbar_helper.dart';
-import '../../auth/providers/auth_provider.dart';
 import '../../notifications/providers/notifications_provider.dart';
-import '../../profile/providers/profile_provider.dart';
 import '../../stories/providers/stories_provider.dart';
 import '../../stories/widgets/stories_row.dart';
 import '../providers/feed_provider.dart';
@@ -71,7 +69,6 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final feedProvider = context.watch<FeedProvider>();
-    final authProvider = context.watch<AuthProvider>();
     final notificationsProvider = context.watch<NotificationsProvider>();
     final realtimeProvider = context.watch<RealtimeProvider>();
     final unreadCount =
@@ -145,7 +142,6 @@ class _HomeScreenState extends State<HomeScreen> {
           child: _FeedBody(
             feedProvider: feedProvider,
             showNewPostsBanner: realtimeProvider.hasNewPosts,
-            currentUserId: authProvider.user?.id,
             onRefreshNewPosts: () async {
               await feedProvider.refreshPosts();
               if (context.mounted) {
@@ -247,13 +243,11 @@ enum _HomeMenuAction { saved, refresh }
 class _FeedBody extends StatelessWidget {
   final FeedProvider feedProvider;
   final bool showNewPostsBanner;
-  final int? currentUserId;
   final Future<void> Function() onRefreshNewPosts;
 
   const _FeedBody({
     required this.feedProvider,
     required this.showNewPostsBanner,
-    required this.currentUserId,
     required this.onRefreshNewPosts,
   });
 
@@ -264,9 +258,9 @@ class _FeedBody extends StatelessWidget {
         ? AppSizes.paddingSmall
         : AppSizes.paddingMedium;
 
-    return ListView.separated(
+    return ListView(
       key: const PageStorageKey('home-feed-list'),
-      cacheExtent: 1000,
+      scrollCacheExtent: const ScrollCacheExtent.pixels(1000),
       physics: const AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.fromLTRB(
         horizontalPadding,
@@ -274,45 +268,39 @@ class _FeedBody extends StatelessWidget {
         horizontalPadding,
         96,
       ),
-      itemCount: _itemCount,
-      separatorBuilder: (context, index) => const SizedBox(height: 12),
-      itemBuilder: (context, index) {
-        if (index == 0) {
-          return Column(
-            children: [
-              if (showNewPostsBanner) ...[
-                _NewPostsBanner(onRefresh: onRefreshNewPosts),
-                const SizedBox(height: AppSizes.paddingMedium),
-              ],
-              SectionHeader(
-                title: 'Stories',
-                actionLabel: 'Create',
-                onAction: () => context.push('/stories/create'),
-              ),
-              const SizedBox(height: AppSizes.paddingSmall),
-              const StoriesRow(),
-              const SizedBox(height: AppSizes.paddingMedium),
-              _FeedControls(
-                selectedMode: feedProvider.currentMode,
-                onModeChanged: feedProvider.changeMode,
-              ),
-            ],
-          );
-        }
-
-        if (feedProvider.isLoading && feedProvider.posts.isEmpty) {
-          return const PostSkeletonCard();
-        }
-
-        if (feedProvider.errorMessage != null && feedProvider.posts.isEmpty) {
-          return ErrorView(
+      children: [
+        if (showNewPostsBanner) ...[
+          _NewPostsBanner(onRefresh: onRefreshNewPosts),
+          const SizedBox(height: AppSizes.paddingMedium),
+        ],
+        _HomeHero(
+          onSearchTap: () => context.go('/explore'),
+          onSavedTap: () => context.push('/saved-posts'),
+        ),
+        const SizedBox(height: AppSizes.paddingMedium),
+        SectionHeader(
+          title: 'Stories',
+          actionLabel: 'Create',
+          onAction: () => context.push('/stories/create'),
+        ),
+        const SizedBox(height: AppSizes.paddingSmall),
+        const StoriesRow(),
+        const SizedBox(height: AppSizes.paddingMedium),
+        _FeedControls(
+          selectedMode: feedProvider.currentMode,
+          onModeChanged: feedProvider.changeMode,
+        ),
+        const SizedBox(height: AppSizes.paddingMedium),
+        if (feedProvider.isLoading && feedProvider.posts.isEmpty)
+          const _WaterfallSkeleton()
+        else if (feedProvider.errorMessage != null &&
+            feedProvider.posts.isEmpty)
+          ErrorView(
             message: feedProvider.errorMessage!,
             onRetry: () => feedProvider.fetchPosts(refresh: true),
-          );
-        }
-
-        if (feedProvider.posts.isEmpty) {
-          return EmptyView(
+          )
+        else if (feedProvider.posts.isEmpty)
+          EmptyView(
             icon: _emptyIcon,
             title: _emptyTitle,
             subtitle: _emptySubtitle,
@@ -322,45 +310,26 @@ class _FeedBody extends StatelessWidget {
             onAction: feedProvider.currentMode == 'mine'
                 ? () => context.push('/create-post')
                 : null,
-          );
-        }
-
-        final postIndex = index - 1;
-
-        if (postIndex == feedProvider.posts.length) {
-          return _LoadMoreSection(feedProvider: feedProvider);
-        }
-
-        final post = feedProvider.posts[postIndex];
-        return PostCard(
-          post: post,
-          canDelete:
-              post.canDelete ||
-              (currentUserId != null && post.user.id == currentUserId),
-          onTap: () => context.push('/posts/${post.id}', extra: post),
-          onCommentsTap: () {
-            context.push('/posts/${post.id}/comments', extra: post);
-          },
-          onEdit: () => context.push('/posts/${post.id}/edit', extra: post),
-          onDelete: () => _confirmDelete(context, post.id),
-          onBlockUser: post.isOwner
-              ? null
-              : () => _confirmBlockUser(context, post.user.id),
-        );
-      },
+          )
+        else ...[
+          AppMasonryGrid(
+            itemCount: feedProvider.posts.length,
+            itemBuilder: (context, index) {
+              final post = feedProvider.posts[index];
+              return PostWaterfallCard(
+                post: post,
+                onTap: () => context.push('/posts/${post.id}', extra: post),
+                onCommentsTap: () {
+                  context.push('/posts/${post.id}/comments', extra: post);
+                },
+              );
+            },
+          ),
+          const SizedBox(height: AppSizes.paddingMedium),
+          _LoadMoreSection(feedProvider: feedProvider),
+        ],
+      ],
     );
-  }
-
-  int get _itemCount {
-    if (feedProvider.isLoading && feedProvider.posts.isEmpty) {
-      return 5;
-    }
-
-    if (feedProvider.posts.isEmpty) {
-      return 2;
-    }
-
-    return feedProvider.posts.length + 2;
   }
 
   IconData get _emptyIcon {
@@ -389,65 +358,94 @@ class _FeedBody extends StatelessWidget {
       _ => 'Explore people to follow or share your first SnapCircle moment.',
     };
   }
+}
 
-  Future<void> _confirmDelete(BuildContext context, int postId) async {
-    final confirmed = await showConfirmationDialog(
-      context: context,
-      title: 'Delete post?',
-      message: 'This post will be removed from your feed.',
-      confirmLabel: 'Delete',
-      isDestructive: true,
+class _HomeHero extends StatelessWidget {
+  final VoidCallback onSearchTap;
+  final VoidCallback onSavedTap;
+
+  const _HomeHero({required this.onSearchTap, required this.onSavedTap});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
+        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.7)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(
+              alpha: theme.brightness == Brightness.dark ? 0.20 : 0.06,
+            ),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: InkWell(
+              onTap: onSearchTap,
+              borderRadius: BorderRadius.circular(999),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 14,
+                  vertical: 12,
+                ),
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.62,
+                  ),
+                  borderRadius: BorderRadius.circular(999),
+                ),
+                child: Row(
+                  children: [
+                    const Icon(Icons.search_rounded, size: 20),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: Text(
+                        'Search notes, creators, topics',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: theme.colorScheme.onSurface.withValues(
+                            alpha: 0.58,
+                          ),
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+          IconButton.filledTonal(
+            onPressed: onSavedTap,
+            icon: const Icon(Icons.bookmark_border_rounded),
+            tooltip: 'Saved posts',
+          ),
+        ],
+      ),
     );
+  }
+}
 
-    if (!confirmed || !context.mounted) {
-      return;
-    }
+class _WaterfallSkeleton extends StatelessWidget {
+  const _WaterfallSkeleton();
 
-    final deleted = await context.read<FeedProvider>().deletePost(postId);
-    if (!context.mounted) {
-      return;
-    }
-
-    final message = deleted
-        ? 'Post deleted.'
-        : context.read<FeedProvider>().errorMessage ?? 'Unable to delete post.';
-
-    if (deleted) {
-      SnackbarHelper.showSuccess(context, message);
-    } else {
-      SnackbarHelper.showError(context, message);
-    }
+  @override
+  Widget build(BuildContext context) {
+    return const AppMasonryGrid(itemCount: 6, itemBuilder: _buildItem);
   }
 
-  Future<void> _confirmBlockUser(BuildContext context, int userId) async {
-    final confirmed = await showConfirmationDialog(
-      context: context,
-      title: 'Block this user?',
-      message:
-          'Their posts will be hidden and they will not be able to follow or message you.',
-      confirmLabel: 'Block',
-      isDestructive: true,
-    );
-
-    if (!confirmed || !context.mounted) {
-      return;
-    }
-
-    final blocked = await context.read<ProfileProvider>().blockUser(userId);
-    if (!context.mounted) {
-      return;
-    }
-
-    if (blocked) {
-      context.read<FeedProvider>().removePostsByUser(userId);
-      SnackbarHelper.showSuccess(context, 'User blocked.');
-    } else {
-      SnackbarHelper.showError(
-        context,
-        context.read<ProfileProvider>().errorMessage ??
-            'Unable to block this user.',
-      );
-    }
+  static Widget _buildItem(BuildContext context, int index) {
+    return PostSkeletonCard(compact: true);
   }
 }
 

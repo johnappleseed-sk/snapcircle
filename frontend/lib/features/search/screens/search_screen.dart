@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_text_field.dart';
@@ -54,7 +55,7 @@ class _SearchScreenState extends State<SearchScreen> {
     final usersProvider = context.watch<UsersProvider>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Explore')),
+      appBar: AppBar(title: const Text('Search')),
       body: RefreshIndicator(
         onRefresh: () => usersProvider.fetchUsers(
           refresh: true,
@@ -71,16 +72,79 @@ class _SearchScreenState extends State<SearchScreen> {
           ),
           children: [
             AppTextField(
-              label: 'Search users',
-              hint: 'Find by name or email',
+              label: 'Search SnapCircle',
+              hint: 'Creators, friends, interests',
               controller: _searchController,
               onChanged: _onSearchChanged,
               prefixIcon: const Icon(Icons.search_outlined),
+            ),
+            const SizedBox(height: 12),
+            _SearchDiscovery(
+              onSelect: (query) {
+                _searchController.text = query;
+                _onSearchChanged(query);
+              },
             ),
             const SizedBox(height: 16),
             _SearchResults(usersProvider: usersProvider),
           ],
         ),
+      ),
+    );
+  }
+}
+
+class _SearchDiscovery extends StatelessWidget {
+  final ValueChanged<String> onSelect;
+
+  const _SearchDiscovery({required this.onSelect});
+
+  static const _recent = ['design', 'travel', 'food', 'fitness'];
+  static const _trending = ['creator tips', 'weekend finds', 'home cafe'];
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
+        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.7)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Discover faster',
+            style: theme.textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 10),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final item in _recent)
+                ActionChip(
+                  avatar: const Icon(Icons.history_rounded, size: 16),
+                  label: Text(item),
+                  onPressed: () => onSelect(item),
+                ),
+              for (final item in _trending)
+                ActionChip(
+                  avatar: const Icon(
+                    Icons.local_fire_department_rounded,
+                    size: 16,
+                    color: AppColors.primary,
+                  ),
+                  label: Text(item),
+                  onPressed: () => onSelect(item),
+                ),
+            ],
+          ),
+        ],
       ),
     );
   }

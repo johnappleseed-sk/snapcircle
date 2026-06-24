@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
+import '../../../core/widgets/app_masonry_grid.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../feed/models/post_model.dart';
 
@@ -74,19 +75,16 @@ class ProfilePostsSection extends StatelessWidget {
                 : 'This profile does not have posts to show yet.',
           )
         else ...[
-          GridView.builder(
-            shrinkWrap: true,
-            physics: const NeverScrollableScrollPhysics(),
+          AppMasonryGrid(
             itemCount: posts.length,
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              crossAxisCount: 3,
-              crossAxisSpacing: 4,
-              mainAxisSpacing: 4,
-            ),
             itemBuilder: (context, index) {
-              return _ProfilePostPreview(
-                post: posts[index],
-                onTap: () => onPostTap(posts[index]),
+              final post = posts[index];
+              return SizedBox(
+                height: _previewHeight(post.id),
+                child: _ProfilePostPreview(
+                  post: post,
+                  onTap: () => onPostTap(post),
+                ),
               );
             },
           ),
@@ -105,6 +103,15 @@ class ProfilePostsSection extends StatelessWidget {
         ],
       ],
     );
+  }
+
+  double _previewHeight(int postId) {
+    return switch (postId % 4) {
+      0 => 232,
+      1 => 188,
+      2 => 212,
+      _ => 202,
+    };
   }
 }
 
