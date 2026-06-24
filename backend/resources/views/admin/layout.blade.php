@@ -6,34 +6,38 @@
     <title>{{ $title ?? 'SnapCircle Admin' }}</title>
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
-<body class="min-h-screen bg-slate-950 text-slate-100 antialiased">
-    <div class="flex min-h-screen">
+<body class="bg-slate-950 text-slate-100 antialiased @auth h-screen overflow-hidden @else min-h-screen @endauth">
+    <div class="@auth min-h-screen @else flex min-h-screen @endauth">
         @auth
-            <aside class="hidden w-72 border-r border-white/10 bg-slate-900/80 p-6 lg:block">
-                <a href="{{ route('admin.dashboard') }}" class="block">
-                    <div class="text-xl font-bold tracking-tight">SnapCircle</div>
-                    <div class="mt-1 text-sm text-slate-400">Moderation Console</div>
-                </a>
+            <aside class="fixed inset-y-0 left-0 z-30 hidden w-72 overflow-y-auto border-r border-white/10 bg-slate-900/95 p-6 lg:flex lg:flex-col">
+                <div class="flex-1">
+                    <a href="{{ route('admin.dashboard') }}" class="block">
+                        <div class="text-xl font-bold tracking-tight">SnapCircle</div>
+                        <div class="mt-1 text-sm text-slate-400">Moderation Console</div>
+                    </a>
 
-                <nav class="mt-10 space-y-1">
-                    @php
-                        $items = [
-                            ['Dashboard', 'admin.dashboard', 'M3 6h18M3 12h18M3 18h18'],
-                            ['Reports', 'admin.reports.index', 'M12 9v4m0 4h.01M10.29 3.86 1.42-2.46a1.5 1.5 0 0 1 2.58 0l9.87 17.1A1.5 1.5 0 0 1 22.87 21H1.13a1.5 1.5 0 0 1-1.29-2.25l10.45-14.89Z'],
-                            ['Users', 'admin.users.index', 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75'],
-                            ['Posts', 'admin.posts.index', 'M4 4h16v16H4zM8 8h8M8 12h8M8 16h5'],
-                            ['Comments', 'admin.comments.index', 'M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z'],
-                        ];
-                    @endphp
-                    @foreach ($items as [$label, $route, $path])
-                        <a href="{{ route($route) }}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition {{ request()->routeIs($route) ? 'bg-cyan-400 text-slate-950' : 'text-slate-300 hover:bg-white/10 hover:text-white' }}">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $path }}" /></svg>
-                            {{ $label }}
-                        </a>
-                    @endforeach
-                </nav>
+                    <nav class="mt-10 space-y-1">
+                        @php
+                            $items = [
+                                ['Dashboard', 'admin.dashboard', 'M3 6h18M3 12h18M3 18h18'],
+                                ['Reports', 'admin.reports.index', 'M12 9v4m0 4h.01M10.29 3.86 1.42-2.46a1.5 1.5 0 0 1 2.58 0l9.87 17.1A1.5 1.5 0 0 1 22.87 21H1.13a1.5 1.5 0 0 1-1.29-2.25l10.45-14.89Z'],
+                                ['Users', 'admin.users.index', 'M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8M23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75'],
+                                ['Posts', 'admin.posts.index', 'M4 4h16v16H4zM8 8h8M8 12h8M8 16h5'],
+                                ['Comments', 'admin.comments.index', 'M21 15a4 4 0 0 1-4 4H7l-4 4V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z'],
+                                ['Roles', 'admin.roles.index', 'M12 6v6l4 2M5 4h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z'],
+                                ['Audit', 'admin.audit.index', 'M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11'],
+                            ];
+                        @endphp
+                        @foreach ($items as [$label, $route, $path])
+                            <a href="{{ route($route) }}" class="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition {{ request()->routeIs($route) ? 'bg-cyan-400 text-slate-950' : 'text-slate-300 hover:bg-white/10 hover:text-white' }}">
+                                <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $path }}" /></svg>
+                                {{ $label }}
+                            </a>
+                        @endforeach
+                    </nav>
+                </div>
 
-                <div class="absolute bottom-6 w-60 rounded-xl border border-white/10 bg-white/5 p-4">
+                <div class="mt-8 rounded-xl border border-white/10 bg-white/5 p-4">
                     <div class="text-sm font-semibold">{{ auth()->user()->name }}</div>
                     <div class="mt-1 text-xs text-slate-400">{{ auth()->user()->email }}</div>
                     <form method="POST" action="{{ route('admin.logout') }}" class="mt-4">
@@ -44,7 +48,7 @@
             </aside>
         @endauth
 
-        <main class="min-w-0 flex-1">
+        <main class="min-w-0 flex-1 @auth h-screen overflow-y-auto lg:ml-72 @endauth">
             @auth
                 <header class="sticky top-0 z-10 border-b border-white/10 bg-slate-950/80 px-5 py-4 backdrop-blur lg:px-8">
                     <div class="flex items-center justify-between gap-4">

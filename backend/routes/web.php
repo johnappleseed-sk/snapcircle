@@ -14,6 +14,8 @@ Route::prefix('admin')->name('admin.')->group(function (): void {
     Route::middleware(['auth', 'admin'])->group(function (): void {
         Route::post('/logout', [AdminWebController::class, 'logout'])->name('logout');
         Route::get('/', [AdminWebController::class, 'dashboard'])->name('dashboard');
+        Route::get('/roles', [AdminWebController::class, 'roles'])->name('roles.index');
+        Route::get('/audit', [AdminWebController::class, 'audit'])->name('audit.index');
         Route::get('/reports', [AdminWebController::class, 'reports'])->name('reports.index');
         Route::get('/reports/{report}', [AdminWebController::class, 'report'])->name('reports.show');
         Route::put('/reports/{report}', [AdminWebController::class, 'updateReport'])->name('reports.update');
