@@ -210,3 +210,18 @@ Remaining gaps:
 - Real-time typing indicators remain future work because the current chat stack does not include typing presence events.
 - Conversation deletion remains limited by the existing backend behavior.
 - Video posts and per-category notification preferences remain future feature phases.
+
+## Admin Moderation Workflow Pass
+
+Date: 2026-06-26
+
+Bugs/gaps resolved:
+
+- Admin user management now exposes role and account-status filters backed by the existing `GET /admin/users` query parameters.
+- Admin users, posts, and comments now preserve pagination metadata and support loading additional pages from the Flutter moderation screens.
+- Moderation actions refresh the currently active user filters so admins stay in context after role, ban, and unban changes.
+
+Remaining gaps:
+
+- Admin post and comment moderation endpoints do not yet expose server-side search or status filters.
+- Conversation deletion remains limited by the existing backend behavior.

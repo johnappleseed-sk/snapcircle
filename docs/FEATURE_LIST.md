@@ -101,6 +101,8 @@ SnapCircle is a Flutter Android and Laravel REST API social media app built for 
 - Admin report detail and status updates.
 - Admin user routes.
 - Admin post/comment moderation routes.
+- Admin user search with role and account-status filters.
+- Paginated admin user, post, and comment moderation lists.
 
 ## 12. Settings
 

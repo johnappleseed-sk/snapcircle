@@ -22,23 +22,41 @@ class AdminUsersScreen extends StatefulWidget {
 
 class _AdminUsersScreenState extends State<AdminUsersScreen> {
   final _searchController = TextEditingController();
+  final _scrollController = ScrollController();
+  String _roleFilter = 'all';
+  String _statusFilter = 'all';
 
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_handleScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) => _fetch());
   }
 
   @override
   void dispose() {
     _searchController.dispose();
+    _scrollController.dispose();
     super.dispose();
   }
 
   Future<void> _fetch() {
     return context.read<AdminProvider>().fetchUsers(
       search: _searchController.text,
+      role: _roleFilter,
+      accountStatus: _statusFilter,
     );
+  }
+
+  void _handleScroll() {
+    if (!_scrollController.hasClients) {
+      return;
+    }
+
+    final position = _scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 320) {
+      context.read<AdminProvider>().loadMoreUsers();
+    }
   }
 
   @override
@@ -53,27 +71,66 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       body: RefreshIndicator(
         onRefresh: _fetch,
         child: ListView.separated(
+          controller: _scrollController,
           padding: EdgeInsets.fromLTRB(
             horizontalPadding,
             AppSizes.paddingMedium,
             horizontalPadding,
             AppSizes.paddingXL,
           ),
-          itemCount: provider.users.isEmpty ? 2 : provider.users.length + 1,
+          itemCount: provider.users.isEmpty ? 2 : provider.users.length + 2,
           separatorBuilder: (_, _) =>
               const SizedBox(height: AppSizes.paddingMedium),
           itemBuilder: (context, index) {
             if (index == 0) {
-              return TextField(
-                controller: _searchController,
-                onSubmitted: (_) => _fetch(),
-                decoration: InputDecoration(
-                  labelText: 'Search users',
-                  prefixIcon: const Icon(Icons.search_outlined),
-                  suffixIcon: IconButton(
-                    onPressed: _fetch,
-                    icon: const Icon(Icons.arrow_forward),
-                    tooltip: 'Search',
+              return _AdminUserFilters(
+                searchController: _searchController,
+                role: _roleFilter,
+                accountStatus: _statusFilter,
+                onRoleChanged: (value) {
+                  setState(() => _roleFilter = value);
+                  _fetch();
+                },
+                onStatusChanged: (value) {
+                  setState(() => _statusFilter = value);
+                  _fetch();
+                },
+                onSearch: _fetch,
+                onClear: () {
+                  _searchController.clear();
+                  setState(() {
+                    _roleFilter = 'all';
+                    _statusFilter = 'all';
+                  });
+                  _fetch();
+                },
+              );
+            }
+
+            if (provider.users.isNotEmpty &&
+                index == provider.users.length + 1) {
+              if (provider.isLoadingMoreUsers) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(
+                    vertical: AppSizes.paddingMedium,
+                  ),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+
+              if (provider.hasMoreUsers) {
+                return OutlinedButton.icon(
+                  onPressed: provider.loadMoreUsers,
+                  icon: const Icon(Icons.expand_more),
+                  label: const Text('Load more users'),
+                );
+              }
+
+              return Center(
+                child: Text(
+                  'End of user list',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
                   ),
                 ),
               );
@@ -105,6 +162,138 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
           },
         ),
       ),
+    );
+  }
+}
+
+class _AdminUserFilters extends StatelessWidget {
+  final TextEditingController searchController;
+  final String role;
+  final String accountStatus;
+  final ValueChanged<String> onRoleChanged;
+  final ValueChanged<String> onStatusChanged;
+  final VoidCallback onSearch;
+  final VoidCallback onClear;
+
+  const _AdminUserFilters({
+    required this.searchController,
+    required this.role,
+    required this.accountStatus,
+    required this.onRoleChanged,
+    required this.onStatusChanged,
+    required this.onSearch,
+    required this.onClear,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        children: [
+          TextField(
+            controller: searchController,
+            onSubmitted: (_) => onSearch(),
+            decoration: InputDecoration(
+              labelText: 'Search users',
+              prefixIcon: const Icon(Icons.search_outlined),
+              suffixIcon: IconButton(
+                onPressed: onSearch,
+                icon: const Icon(Icons.arrow_forward),
+                tooltip: 'Search',
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSizes.paddingMedium),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isNarrow = constraints.maxWidth < 420;
+              final roleDropdown = _FilterDropdown(
+                label: 'Role',
+                value: role,
+                items: const {
+                  'all': 'All roles',
+                  'user': 'Users',
+                  'moderator': 'Moderators',
+                  'admin': 'Admins',
+                },
+                onChanged: onRoleChanged,
+              );
+              final statusDropdown = _FilterDropdown(
+                label: 'Status',
+                value: accountStatus,
+                items: const {
+                  'all': 'All statuses',
+                  'active': 'Active',
+                  'deactivated': 'Deactivated',
+                  'banned': 'Banned',
+                },
+                onChanged: onStatusChanged,
+              );
+
+              if (isNarrow) {
+                return Column(
+                  children: [
+                    roleDropdown,
+                    const SizedBox(height: AppSizes.paddingSmall),
+                    statusDropdown,
+                  ],
+                );
+              }
+
+              return Row(
+                children: [
+                  Expanded(child: roleDropdown),
+                  const SizedBox(width: AppSizes.paddingSmall),
+                  Expanded(child: statusDropdown),
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: AppSizes.paddingSmall),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: onClear,
+              icon: const Icon(Icons.filter_alt_off_outlined),
+              label: const Text('Clear filters'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FilterDropdown extends StatelessWidget {
+  final String label;
+  final String value;
+  final Map<String, String> items;
+  final ValueChanged<String> onChanged;
+
+  const _FilterDropdown({
+    required this.label,
+    required this.value,
+    required this.items,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButtonFormField<String>(
+      initialValue: value,
+      decoration: InputDecoration(labelText: label),
+      items: items.entries
+          .map(
+            (entry) =>
+                DropdownMenuItem(value: entry.key, child: Text(entry.value)),
+          )
+          .toList(),
+      onChanged: (value) {
+        if (value != null) {
+          onChanged(value);
+        }
+      },
     );
   }
 }

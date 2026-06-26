@@ -22,14 +22,34 @@ class AdminPostsScreen extends StatefulWidget {
 }
 
 class _AdminPostsScreenState extends State<AdminPostsScreen> {
+  final _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_handleScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) => _fetch());
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetch() {
     return context.read<AdminProvider>().fetchPosts();
+  }
+
+  void _handleScroll() {
+    if (!_scrollController.hasClients) {
+      return;
+    }
+
+    final position = _scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 320) {
+      context.read<AdminProvider>().loadMorePosts();
+    }
   }
 
   @override
@@ -44,13 +64,14 @@ class _AdminPostsScreenState extends State<AdminPostsScreen> {
       body: RefreshIndicator(
         onRefresh: _fetch,
         child: ListView.separated(
+          controller: _scrollController,
           padding: EdgeInsets.fromLTRB(
             horizontalPadding,
             AppSizes.paddingMedium,
             horizontalPadding,
             AppSizes.paddingXL,
           ),
-          itemCount: provider.posts.isEmpty ? 1 : provider.posts.length,
+          itemCount: provider.posts.isEmpty ? 1 : provider.posts.length + 1,
           separatorBuilder: (_, _) =>
               const SizedBox(height: AppSizes.paddingMedium),
           itemBuilder: (context, index) {
@@ -73,6 +94,34 @@ class _AdminPostsScreenState extends State<AdminPostsScreen> {
                 icon: Icons.dynamic_feed_outlined,
                 title: 'No posts',
                 subtitle: 'Posts that need moderation will appear here.',
+              );
+            }
+
+            if (index == provider.posts.length) {
+              if (provider.isLoadingMorePosts) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(
+                    vertical: AppSizes.paddingMedium,
+                  ),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+
+              if (provider.hasMorePosts) {
+                return OutlinedButton.icon(
+                  onPressed: provider.loadMorePosts,
+                  icon: const Icon(Icons.expand_more),
+                  label: const Text('Load more posts'),
+                );
+              }
+
+              return Center(
+                child: Text(
+                  'End of post list',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
               );
             }
 

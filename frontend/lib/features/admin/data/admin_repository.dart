@@ -81,16 +81,18 @@ class AdminRepository {
     }
   }
 
-  Future<List<UserModel>> getUsers({
+  Future<PaginatedResponse<UserModel>> getUsersPage({
     int page = 1,
     String? search,
     String? role,
     String? accountStatus,
+    int perPage = 15,
   }) async {
     final result = await _apiClient.get(
       ApiEndpoints.adminUsers,
       queryParameters: {
         'page': page,
+        'per_page': perPage,
         if (search != null && search.trim().isNotEmpty) 'search': search.trim(),
         if (role != null && role != 'all') 'role': role,
         if (accountStatus != null && accountStatus != 'all')
@@ -103,8 +105,22 @@ class AdminRepository {
       itemBuilder: UserModel.fromJson,
       dataKey: 'users',
       fallbackPage: page,
-      fallbackPerPage: 15,
-    ).items;
+      fallbackPerPage: perPage,
+    );
+  }
+
+  Future<List<UserModel>> getUsers({
+    int page = 1,
+    String? search,
+    String? role,
+    String? accountStatus,
+  }) async {
+    return (await getUsersPage(
+      page: page,
+      search: search,
+      role: role,
+      accountStatus: accountStatus,
+    )).items;
   }
 
   Future<void> banUser(int userId, String reason) async {
@@ -148,10 +164,13 @@ class AdminRepository {
     return UserModel.fromJson(user);
   }
 
-  Future<List<PostModel>> getPosts({int page = 1}) async {
+  Future<PaginatedResponse<PostModel>> getPostsPage({
+    int page = 1,
+    int perPage = 15,
+  }) async {
     final result = await _apiClient.get(
       ApiEndpoints.adminPosts,
-      queryParameters: {'page': page},
+      queryParameters: {'page': page, 'per_page': perPage},
     );
     final response = _read(result.data?.data, result.error);
     return PaginatedResponse<PostModel>.fromApi(
@@ -159,8 +178,12 @@ class AdminRepository {
       itemBuilder: PostModel.fromJson,
       dataKey: 'posts',
       fallbackPage: page,
-      fallbackPerPage: 15,
-    ).items;
+      fallbackPerPage: perPage,
+    );
+  }
+
+  Future<List<PostModel>> getPosts({int page = 1}) async {
+    return (await getPostsPage(page: page)).items;
   }
 
   Future<void> deletePost(int postId) async {
@@ -170,10 +193,13 @@ class AdminRepository {
     }
   }
 
-  Future<List<CommentModel>> getComments({int page = 1}) async {
+  Future<PaginatedResponse<CommentModel>> getCommentsPage({
+    int page = 1,
+    int perPage = 15,
+  }) async {
     final result = await _apiClient.get(
       ApiEndpoints.adminComments,
-      queryParameters: {'page': page},
+      queryParameters: {'page': page, 'per_page': perPage},
     );
     final response = _read(result.data?.data, result.error);
     return PaginatedResponse<CommentModel>.fromApi(
@@ -181,8 +207,12 @@ class AdminRepository {
       itemBuilder: CommentModel.fromJson,
       dataKey: 'comments',
       fallbackPage: page,
-      fallbackPerPage: 15,
-    ).items;
+      fallbackPerPage: perPage,
+    );
+  }
+
+  Future<List<CommentModel>> getComments({int page = 1}) async {
+    return (await getCommentsPage(page: page)).items;
   }
 
   Future<void> deleteComment(int commentId) async {

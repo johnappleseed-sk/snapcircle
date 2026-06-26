@@ -22,14 +22,34 @@ class AdminCommentsScreen extends StatefulWidget {
 }
 
 class _AdminCommentsScreenState extends State<AdminCommentsScreen> {
+  final _scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_handleScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) => _fetch());
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   Future<void> _fetch() {
     return context.read<AdminProvider>().fetchComments();
+  }
+
+  void _handleScroll() {
+    if (!_scrollController.hasClients) {
+      return;
+    }
+
+    final position = _scrollController.position;
+    if (position.pixels >= position.maxScrollExtent - 320) {
+      context.read<AdminProvider>().loadMoreComments();
+    }
   }
 
   @override
@@ -44,13 +64,16 @@ class _AdminCommentsScreenState extends State<AdminCommentsScreen> {
       body: RefreshIndicator(
         onRefresh: _fetch,
         child: ListView.separated(
+          controller: _scrollController,
           padding: EdgeInsets.fromLTRB(
             horizontalPadding,
             AppSizes.paddingMedium,
             horizontalPadding,
             AppSizes.paddingXL,
           ),
-          itemCount: provider.comments.isEmpty ? 1 : provider.comments.length,
+          itemCount: provider.comments.isEmpty
+              ? 1
+              : provider.comments.length + 1,
           separatorBuilder: (_, _) =>
               const SizedBox(height: AppSizes.paddingMedium),
           itemBuilder: (context, index) {
@@ -73,6 +96,34 @@ class _AdminCommentsScreenState extends State<AdminCommentsScreen> {
                 icon: Icons.chat_bubble_outline,
                 title: 'No comments',
                 subtitle: 'Comments that need moderation will appear here.',
+              );
+            }
+
+            if (index == provider.comments.length) {
+              if (provider.isLoadingMoreComments) {
+                return const Padding(
+                  padding: EdgeInsets.symmetric(
+                    vertical: AppSizes.paddingMedium,
+                  ),
+                  child: Center(child: CircularProgressIndicator()),
+                );
+              }
+
+              if (provider.hasMoreComments) {
+                return OutlinedButton.icon(
+                  onPressed: provider.loadMoreComments,
+                  icon: const Icon(Icons.expand_more),
+                  label: const Text('Load more comments'),
+                );
+              }
+
+              return Center(
+                child: Text(
+                  'End of comment list',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: AppColors.textSecondary,
+                  ),
+                ),
               );
             }
 

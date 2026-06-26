@@ -18,6 +18,19 @@ class AdminProvider extends ChangeNotifier {
   List<PostModel> _posts = [];
   List<CommentModel> _comments = [];
   bool _isLoading = false;
+  bool _isLoadingMoreUsers = false;
+  bool _isLoadingMorePosts = false;
+  bool _isLoadingMoreComments = false;
+  int _usersPage = 1;
+  int _usersLastPage = 1;
+  int _postsPage = 1;
+  int _postsLastPage = 1;
+  int _commentsPage = 1;
+  int _commentsLastPage = 1;
+  final int _perPage = 15;
+  String? _userSearch;
+  String _userRoleFilter = 'all';
+  String _userStatusFilter = 'all';
   String? _errorMessage;
 
   AdminProvider({AdminRepository? repository})
@@ -31,6 +44,15 @@ class AdminProvider extends ChangeNotifier {
   List<PostModel> get posts => List.unmodifiable(_posts);
   List<CommentModel> get comments => List.unmodifiable(_comments);
   bool get isLoading => _isLoading;
+  bool get isLoadingMoreUsers => _isLoadingMoreUsers;
+  bool get isLoadingMorePosts => _isLoadingMorePosts;
+  bool get isLoadingMoreComments => _isLoadingMoreComments;
+  bool get hasMoreUsers => _usersPage < _usersLastPage;
+  bool get hasMorePosts => _postsPage < _postsLastPage;
+  bool get hasMoreComments => _commentsPage < _commentsLastPage;
+  String? get userSearch => _userSearch;
+  String get userRoleFilter => _userRoleFilter;
+  String get userStatusFilter => _userStatusFilter;
   String? get errorMessage => _errorMessage;
 
   Future<void> fetchDashboard() async {
@@ -59,8 +81,58 @@ class AdminProvider extends ChangeNotifier {
     });
   }
 
-  Future<void> fetchUsers({String? search}) async {
-    await _run(() async => _users = await _repository.getUsers(search: search));
+  Future<void> fetchUsers({
+    String? search,
+    String? role,
+    String? accountStatus,
+  }) async {
+    _userSearch = search?.trim().isEmpty ?? true ? null : search?.trim();
+    _userRoleFilter = role ?? _userRoleFilter;
+    _userStatusFilter = accountStatus ?? _userStatusFilter;
+    _usersPage = 1;
+
+    await _run(() async {
+      final response = await _repository.getUsersPage(
+        page: _usersPage,
+        search: _userSearch,
+        role: _userRoleFilter,
+        accountStatus: _userStatusFilter,
+        perPage: _perPage,
+      );
+      _users = response.items;
+      _usersPage = response.currentPage;
+      _usersLastPage = response.lastPage;
+    });
+  }
+
+  Future<void> loadMoreUsers() async {
+    if (_isLoading || _isLoadingMoreUsers || !hasMoreUsers) {
+      return;
+    }
+
+    _isLoadingMoreUsers = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await _repository.getUsersPage(
+        page: _usersPage + 1,
+        search: _userSearch,
+        role: _userRoleFilter,
+        accountStatus: _userStatusFilter,
+        perPage: _perPage,
+      );
+      _users = _mergeById(_users, response.items, (user) => user.id);
+      _usersPage = response.currentPage;
+      _usersLastPage = response.lastPage;
+    } on AdminException catch (error) {
+      _errorMessage = error.message;
+    } catch (_) {
+      _errorMessage = 'Unable to load more users.';
+    } finally {
+      _isLoadingMoreUsers = false;
+      notifyListeners();
+    }
   }
 
   Future<void> fetchUser(int userId) async {
@@ -70,7 +142,11 @@ class AdminProvider extends ChangeNotifier {
   Future<bool> banUser(int userId, String reason) async {
     return _runBool(() async {
       await _repository.banUser(userId, reason);
-      await fetchUsers();
+      await fetchUsers(
+        search: _userSearch,
+        role: _userRoleFilter,
+        accountStatus: _userStatusFilter,
+      );
       if (_selectedUser?.id == userId) {
         _selectedUser = await _repository.getUser(userId);
       }
@@ -80,7 +156,11 @@ class AdminProvider extends ChangeNotifier {
   Future<bool> unbanUser(int userId) async {
     return _runBool(() async {
       await _repository.unbanUser(userId);
-      await fetchUsers();
+      await fetchUsers(
+        search: _userSearch,
+        role: _userRoleFilter,
+        accountStatus: _userStatusFilter,
+      );
       if (_selectedUser?.id == userId) {
         _selectedUser = await _repository.getUser(userId);
       }
@@ -90,7 +170,11 @@ class AdminProvider extends ChangeNotifier {
   Future<bool> updateUserRole(int userId, String role) async {
     return _runBool(() async {
       await _repository.updateUserRole(userId, role);
-      await fetchUsers();
+      await fetchUsers(
+        search: _userSearch,
+        role: _userRoleFilter,
+        accountStatus: _userStatusFilter,
+      );
       if (_selectedUser?.id == userId) {
         _selectedUser = await _repository.getUser(userId);
       }
@@ -98,7 +182,43 @@ class AdminProvider extends ChangeNotifier {
   }
 
   Future<void> fetchPosts() async {
-    await _run(() async => _posts = await _repository.getPosts());
+    _postsPage = 1;
+    await _run(() async {
+      final response = await _repository.getPostsPage(
+        page: _postsPage,
+        perPage: _perPage,
+      );
+      _posts = response.items;
+      _postsPage = response.currentPage;
+      _postsLastPage = response.lastPage;
+    });
+  }
+
+  Future<void> loadMorePosts() async {
+    if (_isLoading || _isLoadingMorePosts || !hasMorePosts) {
+      return;
+    }
+
+    _isLoadingMorePosts = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await _repository.getPostsPage(
+        page: _postsPage + 1,
+        perPage: _perPage,
+      );
+      _posts = _mergeById(_posts, response.items, (post) => post.id);
+      _postsPage = response.currentPage;
+      _postsLastPage = response.lastPage;
+    } on AdminException catch (error) {
+      _errorMessage = error.message;
+    } catch (_) {
+      _errorMessage = 'Unable to load more posts.';
+    } finally {
+      _isLoadingMorePosts = false;
+      notifyListeners();
+    }
   }
 
   Future<bool> deletePost(int postId) async {
@@ -110,7 +230,47 @@ class AdminProvider extends ChangeNotifier {
   }
 
   Future<void> fetchComments() async {
-    await _run(() async => _comments = await _repository.getComments());
+    _commentsPage = 1;
+    await _run(() async {
+      final response = await _repository.getCommentsPage(
+        page: _commentsPage,
+        perPage: _perPage,
+      );
+      _comments = response.items;
+      _commentsPage = response.currentPage;
+      _commentsLastPage = response.lastPage;
+    });
+  }
+
+  Future<void> loadMoreComments() async {
+    if (_isLoading || _isLoadingMoreComments || !hasMoreComments) {
+      return;
+    }
+
+    _isLoadingMoreComments = true;
+    _errorMessage = null;
+    notifyListeners();
+
+    try {
+      final response = await _repository.getCommentsPage(
+        page: _commentsPage + 1,
+        perPage: _perPage,
+      );
+      _comments = _mergeById(
+        _comments,
+        response.items,
+        (comment) => comment.id,
+      );
+      _commentsPage = response.currentPage;
+      _commentsLastPage = response.lastPage;
+    } on AdminException catch (error) {
+      _errorMessage = error.message;
+    } catch (_) {
+      _errorMessage = 'Unable to load more comments.';
+    } finally {
+      _isLoadingMoreComments = false;
+      notifyListeners();
+    }
   }
 
   Future<bool> deleteComment(int commentId) async {
@@ -156,5 +316,14 @@ class AdminProvider extends ChangeNotifier {
       _isLoading = false;
       notifyListeners();
     }
+  }
+
+  List<T> _mergeById<T>(
+    List<T> current,
+    List<T> incoming,
+    int Function(T item) idOf,
+  ) {
+    final seen = current.map(idOf).toSet();
+    return [...current, ...incoming.where((item) => seen.add(idOf(item)))];
   }
 }
