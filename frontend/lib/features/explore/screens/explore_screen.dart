@@ -9,6 +9,7 @@ import '../../../core/widgets/app_masonry_grid.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
 import '../../../core/widgets/loading_view.dart';
+import '../../../core/widgets/section_header.dart';
 import '../../../core/widgets/skeleton_box.dart';
 import '../providers/explore_provider.dart';
 import '../widgets/explore_post_grid_item.dart';
@@ -98,6 +99,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
               _RecentSearchesSection(provider: provider),
             ],
             const SizedBox(height: AppSizes.paddingMedium),
+            if (provider.searchQuery.isEmpty) ...[
+              _DiscoverySummary(provider: provider),
+              const SizedBox(height: AppSizes.paddingMedium),
+            ],
             if (provider.isLoading && provider.explorePosts.isEmpty)
               const _ExploreSkeleton()
             else if (provider.errorMessage != null &&
@@ -119,9 +124,10 @@ class _ExploreScreenState extends State<ExploreScreen> {
                 _RecommendedUsersSection(provider: provider),
                 const SizedBox(height: AppSizes.paddingLarge),
                 _TrendingPostsSection(provider: provider),
-                const SizedBox(height: AppSizes.paddingLarge),
+                const SizedBox(height: AppSizes.paddingMedium),
               ],
               _ExplorePostsSection(provider: provider),
+              const SizedBox(height: 88),
             ],
           ],
         ),
@@ -220,6 +226,187 @@ class _DiscoveryTopics extends StatelessWidget {
   }
 }
 
+class _DiscoverySummary extends StatelessWidget {
+  final ExploreProvider provider;
+
+  const _DiscoverySummary({required this.provider});
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final activeTag = provider.selectedTag;
+    final hasActiveTag = activeTag != null;
+
+    return Container(
+      padding: const EdgeInsets.all(AppSizes.paddingMedium),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surface,
+        borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
+        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.74)),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(
+              alpha: theme.brightness == Brightness.dark ? 0.20 : 0.055,
+            ),
+            blurRadius: 18,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Column(
+        children: [
+          Row(
+            children: [
+              Container(
+                height: 42,
+                width: 42,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withValues(alpha: 0.10),
+                  borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+                ),
+                child: Icon(
+                  hasActiveTag
+                      ? Icons.tag_rounded
+                      : Icons.travel_explore_rounded,
+                  color: theme.colorScheme.primary,
+                ),
+              ),
+              const SizedBox(width: AppSizes.paddingSmall),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      hasActiveTag ? '#$activeTag' : 'Discovery is live',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.titleSmall?.copyWith(
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      hasActiveTag
+                          ? 'Browsing posts with this tag'
+                          : 'Fresh posts, topics, and people to follow',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.bodySmall?.copyWith(
+                        color: theme.colorScheme.onSurface.withValues(
+                          alpha: 0.62,
+                        ),
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              if (hasActiveTag)
+                IconButton.filledTonal(
+                  onPressed: provider.clearSearch,
+                  icon: const Icon(Icons.close_rounded),
+                  tooltip: 'Clear tag',
+                ),
+            ],
+          ),
+          const SizedBox(height: AppSizes.paddingMedium),
+          Row(
+            children: [
+              Expanded(
+                child: _DiscoveryMetric(
+                  icon: Icons.grid_view_rounded,
+                  label: 'Posts',
+                  value: _compactCount(provider.explorePosts.length),
+                ),
+              ),
+              const SizedBox(width: AppSizes.paddingSmall),
+              Expanded(
+                child: _DiscoveryMetric(
+                  icon: Icons.local_fire_department_outlined,
+                  label: 'Trending',
+                  value: _compactCount(provider.trendingPosts.length),
+                ),
+              ),
+              const SizedBox(width: AppSizes.paddingSmall),
+              Expanded(
+                child: _DiscoveryMetric(
+                  icon: Icons.person_add_alt_1_outlined,
+                  label: 'People',
+                  value: _compactCount(provider.recommendedUsers.length),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _compactCount(int value) {
+    if (value >= 1000) {
+      return '${(value / 1000).toStringAsFixed(value >= 10000 ? 0 : 1)}K';
+    }
+    return value.toString();
+  }
+}
+
+class _DiscoveryMetric extends StatelessWidget {
+  final IconData icon;
+  final String label;
+  final String value;
+
+  const _DiscoveryMetric({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    return Container(
+      constraints: const BoxConstraints(minHeight: 68),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 9),
+      decoration: BoxDecoration(
+        color: theme.colorScheme.surfaceContainerHighest.withValues(
+          alpha: theme.brightness == Brightness.dark ? 0.30 : 0.58,
+        ),
+        borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Icon(
+            icon,
+            size: 18,
+            color: theme.colorScheme.onSurface.withValues(alpha: 0.58),
+          ),
+          const Spacer(),
+          Text(
+            value,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.titleMedium?.copyWith(
+              fontWeight: FontWeight.w900,
+              height: 1,
+            ),
+          ),
+          const SizedBox(height: 3),
+          Text(
+            label,
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: theme.colorScheme.onSurface.withValues(alpha: 0.58),
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _RecentSearchesSection extends StatelessWidget {
   final ExploreProvider provider;
 
@@ -235,7 +422,9 @@ class _RecentSearchesSection extends StatelessWidget {
         Text(
           'Recent',
           style: Theme.of(context).textTheme.labelLarge?.copyWith(
-            color: AppColors.textSecondary,
+            color: Theme.of(
+              context,
+            ).colorScheme.onSurface.withValues(alpha: 0.64),
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -270,12 +459,7 @@ class _TrendingTagsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Trending tags',
-          style: theme.textTheme.titleMedium?.copyWith(
-            fontWeight: FontWeight.w900,
-          ),
-        ),
+        const SectionHeader(title: 'Trending tags'),
         const SizedBox(height: AppSizes.paddingSmall),
         SizedBox(
           height: 44,
@@ -301,9 +485,9 @@ class _TrendingTagsSection extends StatelessWidget {
                   fontWeight: FontWeight.w800,
                 ),
                 selectedColor: AppColors.primary,
-                backgroundColor: AppColors.surface,
+                backgroundColor: theme.colorScheme.surface,
                 side: BorderSide(
-                  color: isSelected ? AppColors.primary : AppColors.border,
+                  color: isSelected ? AppColors.primary : theme.dividerColor,
                 ),
                 onSelected: (_) => provider.selectTag(tag),
               );
@@ -332,12 +516,7 @@ class _RecommendedUsersSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Recommended people',
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
-        ),
+        const SectionHeader(title: 'Recommended people'),
         const SizedBox(height: AppSizes.paddingSmall),
         SizedBox(
           height: cardHeight,
@@ -380,12 +559,7 @@ class _TrendingPostsSection extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Trending now',
-          style: Theme.of(
-            context,
-          ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w900),
-        ),
+        const SectionHeader(title: 'Trending now'),
         const SizedBox(height: AppSizes.paddingSmall),
         SizedBox(
           height: tileHeight,
