@@ -23,12 +23,7 @@ class PostMediaModel {
   }
 
   Map<String, dynamic> toJson() {
-    return {
-      'id': id,
-      'url': url,
-      'type': type,
-      'sort_order': sortOrder,
-    };
+    return {'id': id, 'url': url, 'type': type, 'sort_order': sortOrder};
   }
 }
 
@@ -46,6 +41,7 @@ class PostModel {
   final bool canDelete;
   final bool canUpdate;
   final int reportsCount;
+  final int pendingReportsCount;
   final DateTime? createdAt;
   final UserModel user;
 
@@ -64,6 +60,7 @@ class PostModel {
     this.canDelete = false,
     this.canUpdate = false,
     this.reportsCount = 0,
+    this.pendingReportsCount = 0,
     this.createdAt,
   });
 
@@ -87,6 +84,7 @@ class PostModel {
       canDelete: _parseBool(json['can_delete']),
       canUpdate: _parseBool(json['can_update']),
       reportsCount: _parseInt(json['reports_count']),
+      pendingReportsCount: _parseInt(json['pending_reports_count']),
       createdAt: _parseDate(json['created_at']),
       user: userJson is Map<String, dynamic>
           ? UserModel.fromJson(userJson)
@@ -109,6 +107,7 @@ class PostModel {
       'can_delete': canDelete,
       'can_update': canUpdate,
       'reports_count': reportsCount,
+      'pending_reports_count': pendingReportsCount,
       'created_at': createdAt?.toIso8601String(),
       'user': user.toJson(),
     };
@@ -128,6 +127,7 @@ class PostModel {
     bool? canDelete,
     bool? canUpdate,
     int? reportsCount,
+    int? pendingReportsCount,
     DateTime? createdAt,
     UserModel? user,
   }) {
@@ -145,6 +145,7 @@ class PostModel {
       canDelete: canDelete ?? this.canDelete,
       canUpdate: canUpdate ?? this.canUpdate,
       reportsCount: reportsCount ?? this.reportsCount,
+      pendingReportsCount: pendingReportsCount ?? this.pendingReportsCount,
       createdAt: createdAt ?? this.createdAt,
       user: user ?? this.user,
     );
@@ -165,12 +166,16 @@ class PostModel {
           : [PostMediaModel(url: imageUrl, sortOrder: 0)];
     }
 
-    final media = rawMedia
-        .whereType<Map>()
-        .map((item) => PostMediaModel.fromJson(Map<String, dynamic>.from(item)))
-        .where((item) => item.url.isNotEmpty)
-        .toList()
-      ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
+    final media =
+        rawMedia
+            .whereType<Map>()
+            .map(
+              (item) =>
+                  PostMediaModel.fromJson(Map<String, dynamic>.from(item)),
+            )
+            .where((item) => item.url.isNotEmpty)
+            .toList()
+          ..sort((a, b) => a.sortOrder.compareTo(b.sortOrder));
 
     if (media.isNotEmpty) {
       return media;

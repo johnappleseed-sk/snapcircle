@@ -6,6 +6,7 @@ class CommentModel {
   final DateTime? createdAt;
   final UserModel user;
   final int reportsCount;
+  final int pendingReportsCount;
   final int? postId;
 
   const CommentModel({
@@ -14,6 +15,7 @@ class CommentModel {
     required this.user,
     this.createdAt,
     this.reportsCount = 0,
+    this.pendingReportsCount = 0,
     this.postId,
   });
 
@@ -26,6 +28,7 @@ class CommentModel {
           .toString(),
       createdAt: _parseDate(json['created_at']),
       reportsCount: _parseInt(json['reports_count']),
+      pendingReportsCount: _parseInt(json['pending_reports_count']),
       postId: _parseNullableInt(json['post_id'] ?? _postId(json['post'])),
       user: userJson is Map<String, dynamic>
           ? UserModel.fromJson(userJson)
@@ -39,6 +42,7 @@ class CommentModel {
       'comment': comment,
       'created_at': createdAt?.toIso8601String(),
       'reports_count': reportsCount,
+      'pending_reports_count': pendingReportsCount,
       'post_id': postId,
       'user': user.toJson(),
     };
@@ -50,6 +54,7 @@ class CommentModel {
     DateTime? createdAt,
     UserModel? user,
     int? reportsCount,
+    int? pendingReportsCount,
     int? postId,
   }) {
     return CommentModel(
@@ -58,6 +63,7 @@ class CommentModel {
       createdAt: createdAt ?? this.createdAt,
       user: user ?? this.user,
       reportsCount: reportsCount ?? this.reportsCount,
+      pendingReportsCount: pendingReportsCount ?? this.pendingReportsCount,
       postId: postId ?? this.postId,
     );
   }

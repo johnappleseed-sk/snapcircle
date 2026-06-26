@@ -166,11 +166,18 @@ class AdminRepository {
 
   Future<PaginatedResponse<PostModel>> getPostsPage({
     int page = 1,
+    String? search,
+    String? status,
     int perPage = 15,
   }) async {
     final result = await _apiClient.get(
       ApiEndpoints.adminPosts,
-      queryParameters: {'page': page, 'per_page': perPage},
+      queryParameters: {
+        'page': page,
+        'per_page': perPage,
+        if (search != null && search.trim().isNotEmpty) 'search': search.trim(),
+        if (status != null && status != 'all') 'status': status,
+      },
     );
     final response = _read(result.data?.data, result.error);
     return PaginatedResponse<PostModel>.fromApi(
@@ -195,11 +202,18 @@ class AdminRepository {
 
   Future<PaginatedResponse<CommentModel>> getCommentsPage({
     int page = 1,
+    String? search,
+    String? status,
     int perPage = 15,
   }) async {
     final result = await _apiClient.get(
       ApiEndpoints.adminComments,
-      queryParameters: {'page': page, 'per_page': perPage},
+      queryParameters: {
+        'page': page,
+        'per_page': perPage,
+        if (search != null && search.trim().isNotEmpty) 'search': search.trim(),
+        if (status != null && status != 'all') 'status': status,
+      },
     );
     final response = _read(result.data?.data, result.error);
     return PaginatedResponse<CommentModel>.fromApi(

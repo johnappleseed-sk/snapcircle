@@ -31,6 +31,10 @@ class AdminProvider extends ChangeNotifier {
   String? _userSearch;
   String _userRoleFilter = 'all';
   String _userStatusFilter = 'all';
+  String? _postSearch;
+  String _postStatusFilter = 'all';
+  String? _commentSearch;
+  String _commentStatusFilter = 'all';
   String? _errorMessage;
 
   AdminProvider({AdminRepository? repository})
@@ -53,6 +57,10 @@ class AdminProvider extends ChangeNotifier {
   String? get userSearch => _userSearch;
   String get userRoleFilter => _userRoleFilter;
   String get userStatusFilter => _userStatusFilter;
+  String? get postSearch => _postSearch;
+  String get postStatusFilter => _postStatusFilter;
+  String? get commentSearch => _commentSearch;
+  String get commentStatusFilter => _commentStatusFilter;
   String? get errorMessage => _errorMessage;
 
   Future<void> fetchDashboard() async {
@@ -181,11 +189,16 @@ class AdminProvider extends ChangeNotifier {
     });
   }
 
-  Future<void> fetchPosts() async {
+  Future<void> fetchPosts({String? search, String? status}) async {
+    _postSearch = search?.trim().isEmpty ?? true ? null : search?.trim();
+    _postStatusFilter = status ?? _postStatusFilter;
     _postsPage = 1;
+
     await _run(() async {
       final response = await _repository.getPostsPage(
         page: _postsPage,
+        search: _postSearch,
+        status: _postStatusFilter,
         perPage: _perPage,
       );
       _posts = response.items;
@@ -206,6 +219,8 @@ class AdminProvider extends ChangeNotifier {
     try {
       final response = await _repository.getPostsPage(
         page: _postsPage + 1,
+        search: _postSearch,
+        status: _postStatusFilter,
         perPage: _perPage,
       );
       _posts = _mergeById(_posts, response.items, (post) => post.id);
@@ -229,11 +244,16 @@ class AdminProvider extends ChangeNotifier {
     });
   }
 
-  Future<void> fetchComments() async {
+  Future<void> fetchComments({String? search, String? status}) async {
+    _commentSearch = search?.trim().isEmpty ?? true ? null : search?.trim();
+    _commentStatusFilter = status ?? _commentStatusFilter;
     _commentsPage = 1;
+
     await _run(() async {
       final response = await _repository.getCommentsPage(
         page: _commentsPage,
+        search: _commentSearch,
+        status: _commentStatusFilter,
         perPage: _perPage,
       );
       _comments = response.items;
@@ -254,6 +274,8 @@ class AdminProvider extends ChangeNotifier {
     try {
       final response = await _repository.getCommentsPage(
         page: _commentsPage + 1,
+        search: _commentSearch,
+        status: _commentStatusFilter,
         perPage: _perPage,
       );
       _comments = _mergeById(

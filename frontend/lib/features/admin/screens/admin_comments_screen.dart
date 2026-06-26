@@ -22,7 +22,9 @@ class AdminCommentsScreen extends StatefulWidget {
 }
 
 class _AdminCommentsScreenState extends State<AdminCommentsScreen> {
+  final _searchController = TextEditingController();
   final _scrollController = ScrollController();
+  String _statusFilter = 'all';
 
   @override
   void initState() {
@@ -33,12 +35,16 @@ class _AdminCommentsScreenState extends State<AdminCommentsScreen> {
 
   @override
   void dispose() {
+    _searchController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
 
   Future<void> _fetch() {
-    return context.read<AdminProvider>().fetchComments();
+    return context.read<AdminProvider>().fetchComments(
+      search: _searchController.text,
+      status: _statusFilter,
+    );
   }
 
   void _handleScroll() {
@@ -72,34 +78,30 @@ class _AdminCommentsScreenState extends State<AdminCommentsScreen> {
             AppSizes.paddingXL,
           ),
           itemCount: provider.comments.isEmpty
-              ? 1
-              : provider.comments.length + 1,
+              ? 2
+              : provider.comments.length + 2,
           separatorBuilder: (_, _) =>
               const SizedBox(height: AppSizes.paddingMedium),
           itemBuilder: (context, index) {
-            if (provider.isLoading && provider.comments.isEmpty) {
-              return const SizedBox(
-                height: 320,
-                child: LoadingView(message: 'Loading comments...'),
+            if (index == 0) {
+              return _AdminCommentFilters(
+                searchController: _searchController,
+                status: _statusFilter,
+                onStatusChanged: (value) {
+                  setState(() => _statusFilter = value);
+                  _fetch();
+                },
+                onSearch: _fetch,
+                onClear: () {
+                  _searchController.clear();
+                  setState(() => _statusFilter = 'all');
+                  _fetch();
+                },
               );
             }
 
-            if (provider.errorMessage != null && provider.comments.isEmpty) {
-              return ErrorView(
-                message: provider.errorMessage!,
-                onRetry: _fetch,
-              );
-            }
-
-            if (provider.comments.isEmpty) {
-              return const EmptyView(
-                icon: Icons.chat_bubble_outline,
-                title: 'No comments',
-                subtitle: 'Comments that need moderation will appear here.',
-              );
-            }
-
-            if (index == provider.comments.length) {
+            if (provider.comments.isNotEmpty &&
+                index == provider.comments.length + 1) {
               if (provider.isLoadingMoreComments) {
                 return const Padding(
                   padding: EdgeInsets.symmetric(
@@ -127,10 +129,126 @@ class _AdminCommentsScreenState extends State<AdminCommentsScreen> {
               );
             }
 
-            return _AdminCommentTile(comment: provider.comments[index]);
+            if (provider.isLoading && provider.comments.isEmpty) {
+              return const SizedBox(
+                height: 320,
+                child: LoadingView(message: 'Loading comments...'),
+              );
+            }
+
+            if (provider.errorMessage != null && provider.comments.isEmpty) {
+              return ErrorView(
+                message: provider.errorMessage!,
+                onRetry: _fetch,
+              );
+            }
+
+            if (provider.comments.isEmpty) {
+              return const EmptyView(
+                icon: Icons.chat_bubble_outline,
+                title: 'No comments found',
+                subtitle: 'Try another search term or report filter.',
+              );
+            }
+
+            return _AdminCommentTile(comment: provider.comments[index - 1]);
           },
         ),
       ),
+    );
+  }
+}
+
+class _AdminCommentFilters extends StatelessWidget {
+  final TextEditingController searchController;
+  final String status;
+  final ValueChanged<String> onStatusChanged;
+  final VoidCallback onSearch;
+  final VoidCallback onClear;
+
+  const _AdminCommentFilters({
+    required this.searchController,
+    required this.status,
+    required this.onStatusChanged,
+    required this.onSearch,
+    required this.onClear,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        children: [
+          TextField(
+            controller: searchController,
+            onSubmitted: (_) => onSearch(),
+            decoration: InputDecoration(
+              labelText: 'Search comments',
+              prefixIcon: const Icon(Icons.search_outlined),
+              suffixIcon: IconButton(
+                onPressed: onSearch,
+                icon: const Icon(Icons.arrow_forward),
+                tooltip: 'Search',
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSizes.paddingMedium),
+          _FilterDropdown(
+            label: 'Reports',
+            value: status,
+            items: const {
+              'all': 'All comments',
+              'reported': 'Reported',
+              'pending_report': 'Pending review',
+              'unreported': 'Unreported',
+            },
+            onChanged: onStatusChanged,
+          ),
+          const SizedBox(height: AppSizes.paddingSmall),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: onClear,
+              icon: const Icon(Icons.filter_alt_off_outlined),
+              label: const Text('Clear filters'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FilterDropdown extends StatelessWidget {
+  final String label;
+  final String value;
+  final Map<String, String> items;
+  final ValueChanged<String> onChanged;
+
+  const _FilterDropdown({
+    required this.label,
+    required this.value,
+    required this.items,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButtonFormField<String>(
+      initialValue: value,
+      decoration: InputDecoration(labelText: label),
+      items: items.entries
+          .map(
+            (entry) =>
+                DropdownMenuItem(value: entry.key, child: Text(entry.value)),
+          )
+          .toList(),
+      onChanged: (value) {
+        if (value != null) {
+          onChanged(value);
+        }
+      },
     );
   }
 }
@@ -199,7 +317,11 @@ class _AdminCommentTile extends StatelessWidget {
           const SizedBox(height: AppSizes.paddingMedium),
           Chip(
             avatar: const Icon(Icons.flag_outlined, size: 16),
-            label: Text('${comment.reportsCount} reports'),
+            label: Text(
+              comment.pendingReportsCount > 0
+                  ? '${comment.pendingReportsCount} pending reports'
+                  : '${comment.reportsCount} reports',
+            ),
             side: BorderSide(color: Theme.of(context).dividerColor),
             backgroundColor: AppColors.surfaceMuted,
             visualDensity: VisualDensity.compact,

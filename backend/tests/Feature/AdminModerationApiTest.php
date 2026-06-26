@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Post;
+use App\Models\Comment;
 use App\Models\Report;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -172,6 +173,70 @@ class AdminModerationApiTest extends TestCase
             ->assertJsonPath('success', true);
 
         $this->assertSoftDeleted('posts', ['id' => $post->id]);
+    }
+
+    public function test_admin_can_search_and_filter_posts_by_report_status(): void
+    {
+        $owner = User::factory()->create(['name' => 'Maya Lens']);
+        $reported = Post::query()->create([
+            'user_id' => $owner->id,
+            'content' => 'Unsafe camera giveaway',
+        ]);
+        $clean = Post::query()->create([
+            'user_id' => User::factory()->create()->id,
+            'content' => 'Normal weekend photo',
+        ]);
+        $this->reportFor(User::factory()->create(), $reported);
+
+        Sanctum::actingAs($this->admin());
+
+        $this->getJson('/api/admin/posts?search=camera&status=pending_report')
+            ->assertOk()
+            ->assertJsonPath('data.meta.total', 1)
+            ->assertJsonPath('data.posts.0.id', $reported->id)
+            ->assertJsonPath('data.posts.0.pending_reports_count', 1);
+
+        $this->getJson('/api/admin/posts?status=unreported')
+            ->assertOk()
+            ->assertJsonPath('data.meta.total', 1)
+            ->assertJsonPath('data.posts.0.id', $clean->id);
+    }
+
+    public function test_admin_can_search_and_filter_comments_by_report_status(): void
+    {
+        $post = Post::query()->create([
+            'user_id' => User::factory()->create()->id,
+            'content' => 'Launch post',
+        ]);
+        $reported = Comment::query()->create([
+            'post_id' => $post->id,
+            'user_id' => User::factory()->create(['name' => 'Casey Commenter'])->id,
+            'comment' => 'Suspicious link in comment',
+        ]);
+        $clean = Comment::query()->create([
+            'post_id' => $post->id,
+            'user_id' => User::factory()->create()->id,
+            'comment' => 'Looks good',
+        ]);
+        Report::query()->create([
+            'reporter_id' => User::factory()->create()->id,
+            'reportable_type' => Comment::class,
+            'reportable_id' => $reported->id,
+            'reason' => Report::REASON_SCAM,
+        ]);
+
+        Sanctum::actingAs($this->admin());
+
+        $this->getJson('/api/admin/comments?search=Suspicious&status=reported')
+            ->assertOk()
+            ->assertJsonPath('data.meta.total', 1)
+            ->assertJsonPath('data.comments.0.id', $reported->id)
+            ->assertJsonPath('data.comments.0.pending_reports_count', 1);
+
+        $this->getJson('/api/admin/comments?status=unreported')
+            ->assertOk()
+            ->assertJsonPath('data.meta.total', 1)
+            ->assertJsonPath('data.comments.0.id', $clean->id);
     }
 
     public function test_report_responses_do_not_expose_sensitive_fields(): void

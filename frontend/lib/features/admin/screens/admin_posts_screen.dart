@@ -22,7 +22,9 @@ class AdminPostsScreen extends StatefulWidget {
 }
 
 class _AdminPostsScreenState extends State<AdminPostsScreen> {
+  final _searchController = TextEditingController();
   final _scrollController = ScrollController();
+  String _statusFilter = 'all';
 
   @override
   void initState() {
@@ -33,12 +35,16 @@ class _AdminPostsScreenState extends State<AdminPostsScreen> {
 
   @override
   void dispose() {
+    _searchController.dispose();
     _scrollController.dispose();
     super.dispose();
   }
 
   Future<void> _fetch() {
-    return context.read<AdminProvider>().fetchPosts();
+    return context.read<AdminProvider>().fetchPosts(
+      search: _searchController.text,
+      status: _statusFilter,
+    );
   }
 
   void _handleScroll() {
@@ -71,33 +77,29 @@ class _AdminPostsScreenState extends State<AdminPostsScreen> {
             horizontalPadding,
             AppSizes.paddingXL,
           ),
-          itemCount: provider.posts.isEmpty ? 1 : provider.posts.length + 1,
+          itemCount: provider.posts.isEmpty ? 2 : provider.posts.length + 2,
           separatorBuilder: (_, _) =>
               const SizedBox(height: AppSizes.paddingMedium),
           itemBuilder: (context, index) {
-            if (provider.isLoading && provider.posts.isEmpty) {
-              return const SizedBox(
-                height: 320,
-                child: LoadingView(message: 'Loading posts...'),
+            if (index == 0) {
+              return _AdminPostFilters(
+                searchController: _searchController,
+                status: _statusFilter,
+                onStatusChanged: (value) {
+                  setState(() => _statusFilter = value);
+                  _fetch();
+                },
+                onSearch: _fetch,
+                onClear: () {
+                  _searchController.clear();
+                  setState(() => _statusFilter = 'all');
+                  _fetch();
+                },
               );
             }
 
-            if (provider.errorMessage != null && provider.posts.isEmpty) {
-              return ErrorView(
-                message: provider.errorMessage!,
-                onRetry: _fetch,
-              );
-            }
-
-            if (provider.posts.isEmpty) {
-              return const EmptyView(
-                icon: Icons.dynamic_feed_outlined,
-                title: 'No posts',
-                subtitle: 'Posts that need moderation will appear here.',
-              );
-            }
-
-            if (index == provider.posts.length) {
+            if (provider.posts.isNotEmpty &&
+                index == provider.posts.length + 1) {
               if (provider.isLoadingMorePosts) {
                 return const Padding(
                   padding: EdgeInsets.symmetric(
@@ -125,10 +127,126 @@ class _AdminPostsScreenState extends State<AdminPostsScreen> {
               );
             }
 
-            return _AdminPostTile(post: provider.posts[index]);
+            if (provider.isLoading && provider.posts.isEmpty) {
+              return const SizedBox(
+                height: 320,
+                child: LoadingView(message: 'Loading posts...'),
+              );
+            }
+
+            if (provider.errorMessage != null && provider.posts.isEmpty) {
+              return ErrorView(
+                message: provider.errorMessage!,
+                onRetry: _fetch,
+              );
+            }
+
+            if (provider.posts.isEmpty) {
+              return const EmptyView(
+                icon: Icons.dynamic_feed_outlined,
+                title: 'No posts found',
+                subtitle: 'Try another search term or report filter.',
+              );
+            }
+
+            return _AdminPostTile(post: provider.posts[index - 1]);
           },
         ),
       ),
+    );
+  }
+}
+
+class _AdminPostFilters extends StatelessWidget {
+  final TextEditingController searchController;
+  final String status;
+  final ValueChanged<String> onStatusChanged;
+  final VoidCallback onSearch;
+  final VoidCallback onClear;
+
+  const _AdminPostFilters({
+    required this.searchController,
+    required this.status,
+    required this.onStatusChanged,
+    required this.onSearch,
+    required this.onClear,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AppCard(
+      padding: const EdgeInsets.all(12),
+      child: Column(
+        children: [
+          TextField(
+            controller: searchController,
+            onSubmitted: (_) => onSearch(),
+            decoration: InputDecoration(
+              labelText: 'Search posts',
+              prefixIcon: const Icon(Icons.search_outlined),
+              suffixIcon: IconButton(
+                onPressed: onSearch,
+                icon: const Icon(Icons.arrow_forward),
+                tooltip: 'Search',
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSizes.paddingMedium),
+          _FilterDropdown(
+            label: 'Reports',
+            value: status,
+            items: const {
+              'all': 'All posts',
+              'reported': 'Reported',
+              'pending_report': 'Pending review',
+              'unreported': 'Unreported',
+            },
+            onChanged: onStatusChanged,
+          ),
+          const SizedBox(height: AppSizes.paddingSmall),
+          Align(
+            alignment: Alignment.centerRight,
+            child: TextButton.icon(
+              onPressed: onClear,
+              icon: const Icon(Icons.filter_alt_off_outlined),
+              label: const Text('Clear filters'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FilterDropdown extends StatelessWidget {
+  final String label;
+  final String value;
+  final Map<String, String> items;
+  final ValueChanged<String> onChanged;
+
+  const _FilterDropdown({
+    required this.label,
+    required this.value,
+    required this.items,
+    required this.onChanged,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return DropdownButtonFormField<String>(
+      initialValue: value,
+      decoration: InputDecoration(labelText: label),
+      items: items.entries
+          .map(
+            (entry) =>
+                DropdownMenuItem(value: entry.key, child: Text(entry.value)),
+          )
+          .toList(),
+      onChanged: (value) {
+        if (value != null) {
+          onChanged(value);
+        }
+      },
     );
   }
 }
@@ -205,7 +323,9 @@ class _AdminPostTile extends StatelessWidget {
               ),
               _MetricChip(
                 icon: Icons.flag_outlined,
-                label: '${post.reportsCount} reports',
+                label: post.pendingReportsCount > 0
+                    ? '${post.pendingReportsCount} pending reports'
+                    : '${post.reportsCount} reports',
               ),
               if (post.media.isNotEmpty)
                 _MetricChip(
