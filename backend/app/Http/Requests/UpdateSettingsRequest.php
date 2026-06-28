@@ -17,6 +17,12 @@ class UpdateSettingsRequest extends FormRequest
             'allow_messages' => ['nullable', 'boolean'],
             'show_email' => ['nullable', 'boolean'],
             'push_notifications_enabled' => ['nullable', 'boolean'],
+            'notify_likes' => ['nullable', 'boolean'],
+            'notify_comments' => ['nullable', 'boolean'],
+            'notify_follows' => ['nullable', 'boolean'],
+            'notify_follow_requests' => ['nullable', 'boolean'],
+            'notify_messages' => ['nullable', 'boolean'],
+            'notify_mentions' => ['nullable', 'boolean'],
             'email_notifications_enabled' => ['nullable', 'boolean'],
             'marketing_emails_enabled' => ['nullable', 'boolean'],
         ];

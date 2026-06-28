@@ -59,6 +59,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     subtitle: 'Status, logout, and account actions',
                     onTap: () => context.push('/settings/account'),
                   ),
+                  const SizedBox(height: AppSizes.paddingSmall),
+                  SettingsTile(
+                    icon: Icons.history_rounded,
+                    title: 'Your Activity',
+                    subtitle:
+                        'Posts, comments, likes, saved posts, and follows',
+                    onTap: () => context.push('/profile/activity'),
+                  ),
                   const SizedBox(height: AppSizes.paddingMedium),
                   _SectionLabel('Appearance'),
                   const SettingsTile(
@@ -72,7 +80,8 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   SettingsTile(
                     icon: Icons.lock_outline,
                     title: 'Privacy Settings',
-                    subtitle: 'Private account, messages, and profile visibility',
+                    subtitle:
+                        'Private account, messages, and profile visibility',
                     onTap: () => context.push('/settings/privacy'),
                   ),
                   const SizedBox(height: AppSizes.paddingSmall),

@@ -656,7 +656,7 @@ Files changed:
 Verification notes:
 
 - Backend routes already cover the expanded workflows, so no Laravel API additions were needed.
-- Saved collections, video posts, and typing indicators remain recommended future work.
+- Reposts, mention autocomplete, video posts, and typing indicators remain recommended future work.
 
 Final verification on 2026-06-18:
 
@@ -739,3 +739,22 @@ Android package verification:
 - Final `php artisan route:list`: passed and listed 114 routes.
 - Final `php artisan test`: blocked by missing PHP `mbstring` extension.
 - Final `flutter analyze`, `flutter test`, and Android debug APK build: blocked because `flutter` is not available on PATH.
+
+## Advanced Features and Functionality Expansion Pass
+
+Date: 2026-06-28
+
+Flutter improvements:
+
+- Added Saved Collections and Saved Collection Detail screens.
+- Added a reusable add-to-collection bottom sheet from post menus.
+- Added a tabbed Your Activity screen under Profile and Settings.
+- Expanded Notification Settings with likes, comments, follows, follow requests, messages, and mentions toggles.
+
+Backend/API improvements:
+
+- Added saved collection storage and routes while preserving simple saved posts.
+- Added `GET /me/activity` using existing posts, comments, likes, saved posts, and follows.
+- Added granular notification preference persistence and enforcement in notification creation.
+
+Known limitations: reposts, mention autocomplete, normalized hashtag tables, video posts, and typing indicators remain future phases.

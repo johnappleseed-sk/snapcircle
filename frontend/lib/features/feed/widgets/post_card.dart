@@ -15,6 +15,7 @@ import '../../../core/utils/date_formatter.dart';
 import '../../reports/widgets/report_dialog.dart';
 import '../models/post_model.dart';
 import '../providers/feed_provider.dart';
+import 'saved_collection_actions.dart';
 import 'hashtag_caption.dart';
 import 'post_media_carousel.dart';
 
@@ -295,6 +296,14 @@ class PostCard extends StatelessWidget {
                     }
                   },
                 ),
+                ListTile(
+                  leading: const Icon(Icons.collections_bookmark_outlined),
+                  title: const Text('Add to collection'),
+                  onTap: () {
+                    Navigator.of(sheetContext).pop();
+                    showAddToCollectionSheet(context, postId: post.id);
+                  },
+                ),
                 if (!post.isOwner && onBlockUser != null)
                   ListTile(
                     leading: const Icon(Icons.flag_outlined),
@@ -372,12 +381,12 @@ class PostWaterfallCard extends StatelessWidget {
             color: theme.colorScheme.surface,
             borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
             border: Border.all(
-              color: theme.dividerColor.withValues(alpha: 0.7),
+              color: theme.dividerColor.withValues(alpha: 0.45),
             ),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withValues(
-                  alpha: theme.brightness == Brightness.dark ? 0.22 : 0.07,
+                  alpha: theme.brightness == Brightness.dark ? 0.18 : 0.035,
                 ),
                 blurRadius: 18,
                 offset: const Offset(0, 8),
@@ -562,8 +571,8 @@ class _WaterfallTextPreview extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            AppColors.primary.withValues(alpha: 0.13),
-            AppColors.accent.withValues(alpha: 0.08),
+            AppColors.primary.withValues(alpha: 0.08),
+            AppColors.surfaceMuted,
           ],
         ),
       ),

@@ -90,11 +90,23 @@ class SettingsProvider extends ChangeNotifier {
 
   Future<bool> updateNotifications({
     bool? pushNotificationsEnabled,
+    bool? notifyLikes,
+    bool? notifyComments,
+    bool? notifyFollows,
+    bool? notifyFollowRequests,
+    bool? notifyMessages,
+    bool? notifyMentions,
     bool? emailNotificationsEnabled,
     bool? marketingEmailsEnabled,
   }) {
     final next = (_settings ?? const SettingsModel()).copyWith(
       pushNotificationsEnabled: pushNotificationsEnabled,
+      notifyLikes: notifyLikes,
+      notifyComments: notifyComments,
+      notifyFollows: notifyFollows,
+      notifyFollowRequests: notifyFollowRequests,
+      notifyMessages: notifyMessages,
+      notifyMentions: notifyMentions,
       emailNotificationsEnabled: emailNotificationsEnabled,
       marketingEmailsEnabled: marketingEmailsEnabled,
     );

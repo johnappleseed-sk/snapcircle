@@ -15,6 +15,8 @@ class ApiEndpoints {
   static const String posts = '/posts';
   static const String createPost = '/posts';
   static const String savedPosts = '/saved-posts';
+  static const String savedCollections = '/saved-collections';
+  static const String myActivity = '/me/activity';
   static const String settings = '/settings';
   static const String privacySettings = '/settings/privacy';
   static const String deactivateAccount = '/account/deactivate';
@@ -51,6 +53,12 @@ class ApiEndpoints {
   static String unlikePost(int postId) => '/posts/$postId/like';
   static String savePost(int postId) => '/posts/$postId/save';
   static String unsavePost(int postId) => '/posts/$postId/save';
+  static String savedCollection(int collectionId) =>
+      '/saved-collections/$collectionId';
+  static String savedCollectionPosts(int collectionId) =>
+      '/saved-collections/$collectionId/posts';
+  static String savedCollectionPost(int collectionId, int postId) =>
+      '/saved-collections/$collectionId/posts/$postId';
   static String postComments(int postId) => '/posts/$postId/comments';
   static String commentsStatus(int postId) => '/posts/$postId/comments/status';
   static String commentById(int commentId) => '/comments/$commentId';

@@ -29,6 +29,12 @@ class SettingsController extends Controller
             'allow_messages',
             'show_email',
             'push_notifications_enabled',
+            'notify_likes',
+            'notify_comments',
+            'notify_follows',
+            'notify_follow_requests',
+            'notify_messages',
+            'notify_mentions',
             'email_notifications_enabled',
             'marketing_emails_enabled',
         ]));

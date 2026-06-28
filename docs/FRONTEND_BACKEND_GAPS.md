@@ -206,10 +206,9 @@ Bugs/gaps resolved:
 
 Remaining gaps:
 
-- Saved collections remain future work because there are no backend collection models, routes, or migration yet.
 - Real-time typing indicators remain future work because the current chat stack does not include typing presence events.
 - Conversation deletion remains limited by the existing backend behavior.
-- Video posts and per-category notification preferences remain future feature phases.
+- Reposts, mention autocomplete, and video posts remain future feature phases.
 
 ## Admin Moderation Workflow Pass
 
@@ -225,3 +224,16 @@ Remaining gaps:
 
 - Admin post and comment moderation endpoints do not yet expose server-side search or status filters.
 - Conversation deletion remains limited by the existing backend behavior.
+
+## Advanced Features and Functionality Expansion Pass
+
+Date: 2026-06-28
+
+Bugs/gaps resolved:
+
+- Saved collections now have backend migrations, models, routes, resources, provider state, and Flutter screens.
+- User activity now has a real backend endpoint and Flutter tabbed activity screen.
+- Per-category notification preferences now have database fields, API resource fields, Flutter toggles, and backend notification-service enforcement.
+- Demo seed data now includes saved collections.
+
+Remaining limitations: reposts, mention autocomplete, normalized hashtag tables, video posts, and typing indicators remain future phases.

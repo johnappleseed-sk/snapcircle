@@ -40,7 +40,16 @@ class _SavedPostsScreenState extends State<SavedPostsScreen> {
     final currentUserId = context.watch<AuthProvider>().user?.id;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Saved Posts')),
+      appBar: AppBar(
+        title: const Text('Saved Posts'),
+        actions: [
+          IconButton(
+            onPressed: () => context.push('/saved-collections'),
+            icon: const Icon(Icons.collections_bookmark_outlined),
+            tooltip: 'Saved collections',
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: () => provider.fetchSavedPosts(refresh: true),
         child: _SavedPostsBody(

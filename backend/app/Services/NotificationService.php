@@ -23,6 +23,10 @@ class NotificationService
             return;
         }
 
+        if (! $this->allows($postOwner, 'notify_likes')) {
+            return;
+        }
+
         $notification = $this->safeCreate(function () use ($actor, $post): Notification {
             return Notification::query()->firstOrCreate([
                 'user_id' => $post->user_id,
@@ -58,6 +62,10 @@ class NotificationService
         $postOwner = $post->user;
 
         if (! $postOwner || $actor->id === $post->user_id || $actor->isBlockingOrBlockedBy($postOwner)) {
+            return;
+        }
+
+        if (! $this->allows($postOwner, 'notify_comments')) {
             return;
         }
 
@@ -98,6 +106,10 @@ class NotificationService
             return;
         }
 
+        if (! $this->allows($followedUser, 'notify_follows')) {
+            return;
+        }
+
         $notification = $this->safeCreate(function () use ($actor, $followedUser): Notification {
             return Notification::query()->firstOrCreate([
                 'user_id' => $followedUser->id,
@@ -128,6 +140,10 @@ class NotificationService
     public function createFollowRequestedNotification(User $actor, User $requestedUser): void
     {
         if ($actor->id === $requestedUser->id || $actor->isBlockingOrBlockedBy($requestedUser)) {
+            return;
+        }
+
+        if (! $this->allows($requestedUser, 'notify_follow_requests')) {
             return;
         }
 
@@ -164,6 +180,10 @@ class NotificationService
             return;
         }
 
+        if (! $this->allows($follower, 'notify_follow_requests')) {
+            return;
+        }
+
         $notification = $this->safeCreate(function () use ($owner, $follower): Notification {
             return Notification::query()->create([
                 'user_id' => $follower->id,
@@ -192,6 +212,10 @@ class NotificationService
     public function createMessageSentNotification(User $actor, User $recipient, Message $message): void
     {
         if ($actor->id === $recipient->id || $actor->isBlockingOrBlockedBy($recipient)) {
+            return;
+        }
+
+        if (! $this->allows($recipient, 'notify_messages')) {
             return;
         }
 
@@ -242,5 +266,12 @@ class NotificationService
             // Notification failures should not block the user action.
             return null;
         }
+    }
+
+    private function allows(User $user, string $key): bool
+    {
+        $settings = $user->setting()->firstOrCreate(['user_id' => $user->id]);
+
+        return (bool) $settings->push_notifications_enabled && (bool) $settings->{$key};
     }
 }

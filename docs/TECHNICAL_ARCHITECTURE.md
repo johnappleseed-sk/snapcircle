@@ -177,3 +177,19 @@ Eloquent Models
   v
 Database + Storage
 ```
+
+## Advanced Features and Functionality Expansion Pass
+
+Backend additions:
+
+- `saved_collections` and `saved_collection_posts` tables.
+- `SavedCollection` model and `SavedCollectionResource`.
+- `SavedCollectionController` for collection CRUD and collection post membership.
+- `ActivityController` for authenticated user activity aggregation.
+- Granular notification preference columns on `user_settings`.
+
+Flutter additions:
+
+- `SavedCollectionModel`, `SavedCollectionsProvider`, Saved Collections screens, and reusable collection actions.
+- `ActivityModel`, `ActivityRepository`, `ActivityProvider`, and Your Activity screen.
+- Expanded settings model/provider fields for category notification preferences.

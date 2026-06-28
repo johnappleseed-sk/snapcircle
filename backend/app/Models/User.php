@@ -73,6 +73,11 @@ class User extends Authenticatable
         return $this->hasMany(SavedPost::class);
     }
 
+    public function savedCollections(): HasMany
+    {
+        return $this->hasMany(SavedCollection::class);
+    }
+
     public function savedPostItems(): BelongsToMany
     {
         return $this->belongsToMany(Post::class, 'saved_posts')

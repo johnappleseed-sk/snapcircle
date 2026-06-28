@@ -345,6 +345,29 @@ Flutter coverage update:
 
 Known limitations:
 
-- Saved collections are not implemented because they require new backend storage and product decisions.
 - Typing indicators are not shown because real-time typing presence is not implemented.
 - No fake trending, fake push, or fake collection behavior was added.
+
+## Advanced Features and Functionality Expansion Pass
+
+Date: 2026-06-28
+
+Backend API coverage added:
+
+- `GET /saved-collections`
+- `POST /saved-collections`
+- `PUT /saved-collections/{collection}`
+- `DELETE /saved-collections/{collection}`
+- `GET /saved-collections/{collection}/posts`
+- `POST /saved-collections/{collection}/posts/{post}`
+- `DELETE /saved-collections/{collection}/posts/{post}`
+- `GET /me/activity`
+
+Flutter coverage added:
+
+- Saved Collections and Saved Collection Detail screens.
+- Add-to-collection bottom sheet from post menus.
+- Your Activity screen from Profile and Settings.
+- Granular notification settings toggles backed by the existing settings provider.
+
+Remaining limitations: reposts, mention autocomplete, normalized hashtag tables, video posts, and typing indicators remain future phases.

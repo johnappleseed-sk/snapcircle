@@ -56,6 +56,12 @@ class Post extends Model
             ->withTimestamps();
     }
 
+    public function savedCollections(): BelongsToMany
+    {
+        return $this->belongsToMany(SavedCollection::class, 'saved_collection_posts')
+            ->withTimestamps();
+    }
+
     public function reports(): MorphMany
     {
         return $this->morphMany(Report::class, 'reportable');

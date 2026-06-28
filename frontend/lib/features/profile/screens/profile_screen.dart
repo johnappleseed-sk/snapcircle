@@ -117,6 +117,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   _ProfileQuickActions(
                     onFollowRequests: () => context.push('/follow-requests'),
                     onSavedPosts: () => context.push('/saved-posts'),
+                    onActivity: () => context.push('/profile/activity'),
                     onLogout: _logout,
                   ),
                   if (profile.isPrivate) ...[
@@ -159,11 +160,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
 class _ProfileQuickActions extends StatelessWidget {
   final VoidCallback onFollowRequests;
   final VoidCallback onSavedPosts;
+  final VoidCallback onActivity;
   final VoidCallback onLogout;
 
   const _ProfileQuickActions({
     required this.onFollowRequests,
     required this.onSavedPosts,
+    required this.onActivity,
     required this.onLogout,
   });
 
@@ -175,7 +178,7 @@ class _ProfileQuickActions extends StatelessWidget {
         final gap = AppSizes.paddingSmall;
         final itemWidth = isCompact
             ? (constraints.maxWidth - gap) / 2
-            : (constraints.maxWidth - gap * 2) / 3;
+            : (constraints.maxWidth - gap * 3) / 4;
 
         return Wrap(
           spacing: gap,
@@ -192,6 +195,12 @@ class _ProfileQuickActions extends StatelessWidget {
               onPressed: onSavedPosts,
               icon: Icons.bookmark_outline,
               label: 'Saved',
+            ),
+            _ProfileQuickActionButton(
+              width: itemWidth,
+              onPressed: onActivity,
+              icon: Icons.history_rounded,
+              label: 'Activity',
             ),
             _ProfileQuickActionButton(
               width: itemWidth,

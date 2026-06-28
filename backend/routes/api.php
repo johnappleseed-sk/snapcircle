@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Admin\AdminContentController;
 use App\Http\Controllers\Api\Admin\AdminDashboardController;
 use App\Http\Controllers\Api\Admin\AdminReportController;
 use App\Http\Controllers\Api\Admin\AdminUserController;
+use App\Http\Controllers\Api\ActivityController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\BlockController;
 use App\Http\Controllers\Api\CommentController;
@@ -19,6 +20,7 @@ use App\Http\Controllers\Api\PostController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ReportController;
 use App\Http\Controllers\Api\SavedPostController;
+use App\Http\Controllers\Api\SavedCollectionController;
 use App\Http\Controllers\Api\SettingsController;
 use App\Http\Controllers\Api\StoryController;
 use Illuminate\Support\Facades\Route;
@@ -67,6 +69,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::get('/users/{user}/block-status', [BlockController::class, 'status']);
 
         Route::get('/profile', [ProfileController::class, 'profile']);
+        Route::get('/me/activity', [ActivityController::class, 'index']);
         Route::put('/profile', [ProfileController::class, 'update']);
         Route::get('/users', [ProfileController::class, 'users']);
         Route::get('/users/username/{username}', [ProfileController::class, 'showByUsername']);
@@ -115,6 +118,13 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::post('/posts/{post}/save', [SavedPostController::class, 'store']);
         Route::delete('/posts/{post}/save', [SavedPostController::class, 'destroy']);
         Route::get('/saved-posts', [SavedPostController::class, 'index']);
+        Route::get('/saved-collections', [SavedCollectionController::class, 'index']);
+        Route::post('/saved-collections', [SavedCollectionController::class, 'store']);
+        Route::put('/saved-collections/{collection}', [SavedCollectionController::class, 'update']);
+        Route::delete('/saved-collections/{collection}', [SavedCollectionController::class, 'destroy']);
+        Route::get('/saved-collections/{collection}/posts', [SavedCollectionController::class, 'posts']);
+        Route::post('/saved-collections/{collection}/posts/{post}', [SavedCollectionController::class, 'addPost']);
+        Route::delete('/saved-collections/{collection}/posts/{post}', [SavedCollectionController::class, 'removePost']);
 
         Route::get('/stories', [StoryController::class, 'index']);
         Route::post('/stories', [StoryController::class, 'store'])->middleware('throttle:10,1');

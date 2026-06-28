@@ -124,8 +124,19 @@ SnapCircle is a Flutter Android and Laravel REST API social media app built for 
 
 ## Known Limitations
 
-- Saved collections are future work.
 - Video posts are future work.
 - Real-time typing indicators are future work.
 - Push delivery needs Firebase project files and backend service account configuration outside git.
 - Release signing and Play Store release configuration are not included.
+
+## Advanced Features and Functionality Expansion Pass
+
+Date: 2026-06-28
+
+- Saved collections: create, rename, delete, list collections, add saved posts to collections, remove posts from collections, and browse collection posts.
+- User activity page: recent posts, comments, liked posts, saved posts, and followed users through `GET /api/me/activity`.
+- Notification preferences: category toggles for likes, comments, follows, follow requests, messages, and mentions, with backend notification creation respecting disabled categories.
+- Explore/search/hashtags: existing Explore search, trending posts, recommended users, content-derived trending tags, clickable post hashtags, and tag post browsing remain supported.
+- Demo seed data includes saved collections.
+
+Remaining limitations: reposts, mention autocomplete, normalized hashtag tables, video posts, and typing indicators remain future phases.

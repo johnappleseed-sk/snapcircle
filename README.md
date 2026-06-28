@@ -240,7 +240,7 @@ Firebase setup required:
 
 Security notes: do not commit `.env`, `google-services.json`, service account JSON, private keys, API keys, tokens, build outputs, or APK files. These paths are ignored by git.
 
-Known limitations: push preferences are currently controlled by the existing global push toggle; per-category push toggles are a future enhancement.
+Known limitations: push delivery still requires Firebase configuration outside git.
 
 ## Feature Expansion and UI Improvement Pass
 
@@ -250,7 +250,7 @@ SnapCircle now has a more complete Android-first social action surface:
 - Saved Posts supports the same post actions as the feed, including delete confirmation and unsave.
 - Post Detail keeps safety actions available after opening a post.
 - Existing real Laravel APIs power these actions; no fake client-only backend behavior was added.
-- Saved collections, video posts, per-category notification preferences, and real-time typing indicators remain future enhancements.
+- Reposts, mention autocomplete, video posts, and real-time typing indicators remain future enhancements.
 
 ## Documentation
 
@@ -314,8 +314,17 @@ This project is for academic assignment purposes. A real production deployment w
 - Debug APKs are for local demo/testing, not Play Store release.
 - Release signing is not configured.
 - Firebase push delivery requires real Firebase files and backend service account credentials outside git.
-- Saved collections, video posts, and real-time typing indicators are future improvements.
+- Reposts, mention autocomplete, video posts, and real-time typing indicators are future improvements.
 - Local Android demos require Flutter/Android tooling on PATH and a reachable Laravel backend.
+
+## Advanced Features and Functionality Expansion Pass
+
+SnapCircle now includes saved collections, user activity, and granular notification preferences.
+
+- Saved collections keep existing simple saved posts working while adding collection CRUD and collection post membership.
+- User activity shows recent posts, comments, likes, saved posts, and follows.
+- Notification preferences include likes, comments, follows, follow requests, messages, and mentions, with backend notification creation respecting enabled categories.
+- Demo seed data includes saved collections for richer Android demos.
 
 ## Author
 

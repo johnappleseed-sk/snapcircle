@@ -24,12 +24,15 @@ import '../features/explore/screens/explore_screen.dart';
 import '../features/feed/models/post_model.dart';
 import '../features/feed/screens/home_screen.dart';
 import '../features/feed/screens/post_detail_screen.dart';
+import '../features/feed/models/saved_collection_model.dart';
+import '../features/feed/screens/saved_collections_screen.dart';
 import '../features/feed/screens/saved_posts_screen.dart';
 import '../features/notifications/screens/notifications_screen.dart';
 import '../core/widgets/app_shell.dart';
 import '../features/post/screens/create_post_screen.dart';
 import '../features/post/screens/create_hub_screen.dart';
 import '../features/profile/screens/edit_profile_screen.dart';
+import '../features/profile/screens/activity_screen.dart';
 import '../features/profile/screens/follow_requests_screen.dart';
 import '../features/profile/screens/follow_list_screen.dart';
 import '../features/profile/screens/profile_screen.dart';
@@ -180,6 +183,31 @@ class AppRouter {
               _fadeSlidePage(state: state, child: const SavedPostsScreen()),
         ),
         GoRoute(
+          path: '/saved-collections',
+          pageBuilder: (context, state) => _fadeSlidePage(
+            state: state,
+            child: const SavedCollectionsScreen(),
+          ),
+        ),
+        GoRoute(
+          path: '/saved-collections/:collectionId',
+          pageBuilder: (context, state) {
+            final collectionId = int.tryParse(
+              state.pathParameters['collectionId'] ?? '',
+            );
+            final collection = state.extra is SavedCollectionModel
+                ? state.extra as SavedCollectionModel
+                : null;
+            return _fadeSlidePage(
+              state: state,
+              child: SavedCollectionDetailScreen(
+                collectionId: collectionId ?? 0,
+                title: collection?.name,
+              ),
+            );
+          },
+        ),
+        GoRoute(
           path: '/stories/create',
           builder: (context, state) => const CreateStoryScreen(),
         ),
@@ -314,6 +342,11 @@ class AppRouter {
           path: '/profile/edit',
           pageBuilder: (context, state) =>
               _fadeSlidePage(state: state, child: const EditProfileScreen()),
+        ),
+        GoRoute(
+          path: '/profile/activity',
+          pageBuilder: (context, state) =>
+              _fadeSlidePage(state: state, child: const ActivityScreen()),
         ),
         GoRoute(
           path: '/users/:userId',

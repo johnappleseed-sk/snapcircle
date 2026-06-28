@@ -343,7 +343,7 @@ Android-specific notes:
 - The shared post menu now includes View profile, Copy post text, Save/unsave, Report, Block, Edit, and Delete actions depending on ownership.
 - Saved Posts now uses the same post action model as the main feed and confirms destructive deletes.
 - Post Detail now keeps block/report/save/profile actions available after opening an individual post.
-- No fake saved collections or typing indicators are shown.
+- Saved collections now use real backend APIs; no fake typing indicators are shown.
 
 Manual Android checklist:
 
@@ -355,3 +355,13 @@ Manual Android checklist:
 6. Open Saved Posts, unsave a post, and confirm it leaves the list.
 7. Delete an owned saved post and confirm the delete dialog appears first.
 8. Open Post Detail for another user's post and confirm Block is available.
+
+## Advanced Features and Functionality Expansion Pass
+
+Android checklist additions:
+
+1. Open Saved Posts, tap the collections icon, and confirm collections load.
+2. Create a collection and add a saved post from a post menu.
+3. Open a collection detail page and remove a post from the collection.
+4. Open Your Activity from Profile or Settings and navigate back to a post/profile.
+5. Toggle notification categories and confirm the save success state.

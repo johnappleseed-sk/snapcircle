@@ -262,4 +262,13 @@ Android test notes:
 
 Known limitations:
 
-- Saved collections, typing indicators, and video uploads are future work.
+- Reposts, mention autocomplete, typing indicators, and video uploads are future work.
+
+## Advanced Features and Functionality Expansion Pass
+
+Demo additions:
+
+1. Open Saved Posts, tap the collections icon, and show saved collections.
+2. Create or rename a collection, add a post from a post menu, and open the collection detail page.
+3. Open Profile or Settings, then Your Activity, and switch between Posts, Comments, Likes, Saved, and Follows.
+4. Open Notification Settings and show category toggles for likes, comments, follows, follow requests, messages, and mentions.
