@@ -24,6 +24,7 @@ SnapCircle is a full-stack social media mobile application built as an academic 
 - Dio API client with secure token storage
 
 See the complete final feature inventory in [Feature List](docs/FEATURE_LIST.md).
+For the next UI and product direction, see the [Snap Circle UI and Feature Concept](docs/SNAP_CIRCLE_UI_CONCEPT.md).
 
 ## Tech Stack
 
