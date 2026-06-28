@@ -184,6 +184,10 @@ class FeedProvider extends ChangeNotifier {
     File? image,
     List<File> images = const [],
   }) async {
+    if (_isCreating) {
+      return false;
+    }
+
     _isCreating = true;
     _errorMessage = null;
     notifyListeners();
@@ -217,6 +221,10 @@ class FeedProvider extends ChangeNotifier {
     File? image,
     List<File> images = const [],
   }) async {
+    if (_isCreating) {
+      return null;
+    }
+
     _isCreating = true;
     _errorMessage = null;
     notifyListeners();

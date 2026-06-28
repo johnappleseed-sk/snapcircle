@@ -19,6 +19,7 @@ class ExploreProvider extends ChangeNotifier {
   List<UserModel> _recommendedUsers = [];
   List<UserModel> _exploreUsers = [];
   bool _isLoading = false;
+  bool _isLoadingPosts = false;
   bool _isLoadingMore = false;
   bool _isSearching = false;
   bool _hasMorePosts = true;
@@ -30,6 +31,7 @@ class ExploreProvider extends ChangeNotifier {
   String? _errorMessage;
   final Set<int> _followingUserIds = {};
   List<String> _recentSearches = [];
+  int _searchGeneration = 0;
 
   ExploreProvider({
     ExploreRepository? exploreRepository,
@@ -64,7 +66,7 @@ class ExploreProvider extends ChangeNotifier {
   }
 
   Future<void> fetchExploreData({bool refresh = false}) async {
-    if (_isLoading) {
+    if (_isLoading || _isSearching) {
       return;
     }
 
@@ -72,20 +74,47 @@ class ExploreProvider extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
 
+    final errors = <String>[];
+
+    await Future.wait([
+      _loadExploreSlice(
+        () => fetchRecommendedUsers(refresh: true, notify: false),
+        errors,
+      ),
+      _loadExploreSlice(
+        () => fetchTrendingPosts(refresh: true, notify: false),
+        errors,
+      ),
+      _loadExploreSlice(
+        () => fetchTrendingTags(refresh: true, notify: false),
+        errors,
+      ),
+      _loadExploreSlice(
+        () => fetchExplorePosts(refresh: true, notify: false),
+        errors,
+      ),
+    ]);
+
+    if (errors.isNotEmpty && _explorePosts.isEmpty) {
+      _errorMessage = errors.first;
+    } else if (errors.isNotEmpty) {
+      _errorMessage = 'Some explore content could not be refreshed.';
+    }
+
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  Future<void> _loadExploreSlice(
+    Future<void> Function() load,
+    List<String> errors,
+  ) async {
     try {
-      await Future.wait([
-        fetchRecommendedUsers(refresh: true, notify: false),
-        fetchTrendingPosts(refresh: true, notify: false),
-        fetchTrendingTags(refresh: true, notify: false),
-        fetchExplorePosts(refresh: true, notify: false),
-      ]);
+      await load();
     } on ExploreException catch (error) {
-      _errorMessage = error.message;
+      errors.add(error.message);
     } catch (_) {
-      _errorMessage = 'Unable to load explore content.';
-    } finally {
-      _isLoading = false;
-      notifyListeners();
+      errors.add('Unable to load explore content.');
     }
   }
 
@@ -93,35 +122,39 @@ class ExploreProvider extends ChangeNotifier {
     bool refresh = false,
     bool notify = true,
   }) async {
-    if (_isLoadingMore) return;
+    if (_isLoadingPosts || _isLoadingMore) return;
 
     if (refresh) {
       _currentPostPage = 1;
       _hasMorePosts = true;
     }
 
+    _isLoadingPosts = true;
     if (notify) {
       _errorMessage = null;
       notifyListeners();
     }
 
-    final posts = _selectedTag == null
-        ? await _exploreRepository.getExplorePosts(
-            page: _currentPostPage,
-            perPage: _perPage,
-            search: _searchQuery.isEmpty ? null : _searchQuery,
-            sort: _currentSort,
-          )
-        : await _exploreRepository.getPostsByTag(
-            tag: _selectedTag!,
-            page: _currentPostPage,
-            perPage: _perPage,
-            sort: _currentSort,
-          );
-    _explorePosts = posts;
-    _hasMorePosts = posts.length >= _perPage;
-
-    if (notify) notifyListeners();
+    try {
+      final posts = _selectedTag == null
+          ? await _exploreRepository.getExplorePosts(
+              page: _currentPostPage,
+              perPage: _perPage,
+              search: _searchQuery.isEmpty ? null : _searchQuery,
+              sort: _currentSort,
+            )
+          : await _exploreRepository.getPostsByTag(
+              tag: _selectedTag!,
+              page: _currentPostPage,
+              perPage: _perPage,
+              sort: _currentSort,
+            );
+      _explorePosts = posts;
+      _hasMorePosts = posts.length >= _perPage;
+    } finally {
+      _isLoadingPosts = false;
+      if (notify) notifyListeners();
+    }
   }
 
   Future<void> fetchTrendingPosts({
@@ -150,6 +183,11 @@ class ExploreProvider extends ChangeNotifier {
 
   Future<void> searchExplore(String query) async {
     final trimmed = query.trim();
+    if (trimmed == _searchQuery && !_isSearching) {
+      return;
+    }
+
+    final generation = ++_searchGeneration;
     _searchQuery = trimmed;
     _selectedTag = null;
 
@@ -165,6 +203,9 @@ class ExploreProvider extends ChangeNotifier {
 
     try {
       final results = await _exploreRepository.globalSearch(query: trimmed);
+      if (generation != _searchGeneration) {
+        return;
+      }
       _explorePosts = results['posts'] is List<PostModel>
           ? results['posts'] as List<PostModel>
           : [];
@@ -178,8 +219,10 @@ class ExploreProvider extends ChangeNotifier {
     } catch (_) {
       _errorMessage = 'Unable to search Explore.';
     } finally {
-      _isSearching = false;
-      notifyListeners();
+      if (generation == _searchGeneration) {
+        _isSearching = false;
+        notifyListeners();
+      }
     }
   }
 
@@ -202,9 +245,11 @@ class ExploreProvider extends ChangeNotifier {
       return;
     }
 
+    _searchGeneration += 1;
     _selectedTag = normalizedTag;
     _searchQuery = '';
     _exploreUsers = [];
+    _isSearching = false;
     await fetchExplorePosts(refresh: true);
   }
 
@@ -214,9 +259,15 @@ class ExploreProvider extends ChangeNotifier {
       return;
     }
 
+    if (_selectedTag == normalizedTag && _explorePosts.isNotEmpty) {
+      return;
+    }
+
+    _searchGeneration += 1;
     _selectedTag = normalizedTag;
     _searchQuery = '';
     _exploreUsers = [];
+    _isSearching = false;
     await fetchExploreData(refresh: true);
   }
 
@@ -262,9 +313,11 @@ class ExploreProvider extends ChangeNotifier {
 
   Future<void> clearSearch() async {
     if (_searchQuery.isEmpty && _selectedTag == null) return;
+    _searchGeneration += 1;
     _searchQuery = '';
     _selectedTag = null;
     _exploreUsers = [];
+    _isSearching = false;
     await fetchExplorePosts(refresh: true);
   }
 

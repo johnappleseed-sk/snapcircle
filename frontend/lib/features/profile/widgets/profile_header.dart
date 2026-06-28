@@ -381,7 +381,46 @@ class _CoverImage extends StatelessWidget {
                   ),
                 ),
               )
-            : CachedNetworkImage(imageUrl: url, fit: BoxFit.cover),
+            : LayoutBuilder(
+                builder: (context, constraints) {
+                  final devicePixelRatio = MediaQuery.devicePixelRatioOf(
+                    context,
+                  ).clamp(1.0, 2.25);
+                  final cacheWidth =
+                      ((constraints.maxWidth.isFinite
+                                  ? constraints.maxWidth
+                                  : MediaQuery.sizeOf(context).width) *
+                              devicePixelRatio)
+                          .round()
+                          .clamp(480, 1200);
+                  return CachedNetworkImage(
+                    imageUrl: url,
+                    fit: BoxFit.cover,
+                    memCacheWidth: cacheWidth,
+                    memCacheHeight: (170 * devicePixelRatio).round(),
+                    placeholder: (context, url) => DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerHighest,
+                      ),
+                    ),
+                    errorWidget: (context, url, error) => DecoratedBox(
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            AppColors.primary.withValues(alpha: 0.95),
+                            AppColors.secondary.withValues(alpha: 0.82),
+                            AppColors.accent.withValues(alpha: 0.70),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
       ),
     );
   }

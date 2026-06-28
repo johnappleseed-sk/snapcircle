@@ -28,6 +28,7 @@ class _CommentsScreenState extends State<CommentsScreen> {
   CommentsProvider? _commentsProvider;
   String? _localError;
   bool _canSubmitComment = false;
+  DateTime? _lastLoadMoreAttempt;
 
   @override
   void initState() {
@@ -68,13 +69,17 @@ class _CommentsScreenState extends State<CommentsScreen> {
   }
 
   Future<void> _submitComment() async {
+    final commentsProvider = context.read<CommentsProvider>();
+    if (commentsProvider.isSubmitting) {
+      return;
+    }
+
     final comment = _commentController.text.trim();
     if (comment.isEmpty) {
       setState(() => _localError = 'Write a comment before sending.');
       return;
     }
 
-    final commentsProvider = context.read<CommentsProvider>();
     final created = await commentsProvider.createComment(
       widget.postId,
       comment,
@@ -97,6 +102,25 @@ class _CommentsScreenState extends State<CommentsScreen> {
     });
   }
 
+  void _maybeLoadMore(ScrollMetrics metrics) {
+    if (!mounted || metrics.extentAfter > 520) {
+      return;
+    }
+
+    final now = DateTime.now();
+    final lastAttempt = _lastLoadMoreAttempt;
+    if (lastAttempt != null &&
+        now.difference(lastAttempt) < const Duration(milliseconds: 500)) {
+      return;
+    }
+
+    _lastLoadMoreAttempt = now;
+    final provider = context.read<CommentsProvider>();
+    if (provider.hasMore && !provider.isLoadingMore) {
+      provider.loadMoreComments(widget.postId);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final commentsProvider = context.watch<CommentsProvider>();
@@ -115,9 +139,19 @@ class _CommentsScreenState extends State<CommentsScreen> {
                   widget.postId,
                   refresh: true,
                 ),
-                child: _CommentsBody(
-                  postId: widget.postId,
-                  currentUserId: currentUserId,
+                child: NotificationListener<ScrollNotification>(
+                  onNotification: (notification) {
+                    if (notification is ScrollUpdateNotification ||
+                        notification is OverscrollNotification ||
+                        notification is ScrollEndNotification) {
+                      _maybeLoadMore(notification.metrics);
+                    }
+                    return false;
+                  },
+                  child: _CommentsBody(
+                    postId: widget.postId,
+                    currentUserId: currentUserId,
+                  ),
                 ),
               ),
             ),

@@ -42,11 +42,18 @@
 - Added reusable lightweight skeleton widgets for users, notifications, conversations, and stories.
 - Replaced generic initial loading spinners in several list screens with skeleton placeholders.
 - Kept existing cached network image usage and fixed aspect-ratio image layouts.
+- Added lightweight design-token compatibility files under `frontend/lib/core/theme/` for spacing, radius, color, and text style usage without disturbing existing constants.
+- Added `AppLazyMasonryGrid` for sliver-based feed rendering so the home feed builds masonry rows lazily instead of eagerly composing the full feed tree.
+- Added scroll-near-bottom pagination triggers for Explore and Comments while keeping visible load-more controls as fallback actions.
+- Hardened provider-level duplicate-submit guards for post creation/update and comment creation/update.
+- Hardened Explore search against duplicate same-query requests and stale out-of-order search responses.
+- Improved media, profile-cover, and edit-post image decode sizing/placeholders to reduce Android memory pressure and scrolling jank.
 
 ## Future Improvements
 
 - Use `Selector` for notification badges, loading buttons, and tab-local state where rebuilds become noticeable.
-- Add automatic infinite scroll for long lists if the UX needs it.
+- Extend automatic infinite scroll to notifications, conversations, saved posts, profile posts, and older chat messages after device testing confirms the preferred interaction.
 - Add thumbnail URLs once the backend stores media variants.
 - Pause polling using app lifecycle hooks for all near-real-time providers.
 - Add request cancellation for search if network traces show stale responses.
+- Consider replacing manual masonry balancing with a package-backed staggered sliver if feed items become highly variable in height.

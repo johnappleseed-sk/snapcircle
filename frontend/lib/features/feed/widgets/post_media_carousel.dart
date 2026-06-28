@@ -52,6 +52,8 @@ class _PostMediaCarouselState extends State<PostMediaCarousel> {
             final mediaCacheWidth = (logicalWidth * devicePixelRatio)
                 .round()
                 .clamp(480, 1080);
+            final mediaCacheHeight = (mediaCacheWidth / widget.aspectRatio)
+                .round();
 
             return ClipRRect(
               borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
@@ -66,20 +68,29 @@ class _PostMediaCarouselState extends State<PostMediaCarousel> {
                       imageUrl: media[index].url,
                       fit: BoxFit.cover,
                       memCacheWidth: mediaCacheWidth,
+                      memCacheHeight: mediaCacheHeight,
                       fadeInDuration: const Duration(milliseconds: 120),
                       placeholderFadeInDuration: Duration.zero,
                       useOldImageOnUrlChange: true,
-                      placeholder: (context, url) => Container(
-                        color: imageFill,
-                        alignment: Alignment.center,
-                        child: const CircularProgressIndicator(strokeWidth: 2),
-                      ),
+                      placeholder: (context, url) =>
+                          _MediaPlaceholder(color: imageFill),
                       errorWidget: (context, url, error) => Container(
                         color: imageFill,
                         alignment: Alignment.center,
-                        child: const Icon(
-                          Icons.broken_image_outlined,
-                          color: AppColors.mutedText,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(
+                              Icons.broken_image_outlined,
+                              color: AppColors.mutedText,
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              'Image unavailable',
+                              style: Theme.of(context).textTheme.bodySmall
+                                  ?.copyWith(color: AppColors.mutedText),
+                            ),
+                          ],
                         ),
                       ),
                     );
@@ -111,6 +122,27 @@ class _PostMediaCarouselState extends State<PostMediaCarousel> {
           ),
         ],
       ],
+    );
+  }
+}
+
+class _MediaPlaceholder extends StatelessWidget {
+  final Color color;
+
+  const _MediaPlaceholder({required this.color});
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(color: color),
+      child: Align(
+        alignment: Alignment.bottomCenter,
+        child: LinearProgressIndicator(
+          minHeight: 2,
+          color: Theme.of(context).colorScheme.primary.withValues(alpha: 0.36),
+          backgroundColor: Colors.transparent,
+        ),
+      ),
     );
   }
 }

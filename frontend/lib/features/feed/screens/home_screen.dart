@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
@@ -258,76 +257,96 @@ class _FeedBody extends StatelessWidget {
         ? AppSizes.paddingSmall
         : AppSizes.paddingMedium;
 
-    return ListView(
+    return CustomScrollView(
       key: const PageStorageKey('home-feed-list'),
-      scrollCacheExtent: const ScrollCacheExtent.pixels(1000),
+      cacheExtent: 1000,
       physics: const AlwaysScrollableScrollPhysics(),
-      padding: EdgeInsets.fromLTRB(
-        horizontalPadding,
-        AppSizes.paddingMedium,
-        horizontalPadding,
-        96,
-      ),
-      children: [
-        if (showNewPostsBanner) ...[
-          _NewPostsBanner(onRefresh: onRefreshNewPosts),
-          const SizedBox(height: AppSizes.paddingMedium),
-        ],
-        _HomeHero(
-          onSearchTap: () => context.go('/explore'),
-          onSavedTap: () => context.push('/saved-posts'),
-        ),
-        const SizedBox(height: AppSizes.paddingMedium),
-        SectionHeader(
-          title: 'Stories',
-          actionLabel: 'Create',
-          onAction: () => context.push('/stories/create'),
-        ),
-        const SizedBox(height: AppSizes.paddingSmall),
-        const StoriesRow(),
-        const SizedBox(height: AppSizes.paddingMedium),
-        _FeedControls(
-          selectedMode: feedProvider.currentMode,
-          onModeChanged: feedProvider.changeMode,
-        ),
-        const SizedBox(height: AppSizes.paddingMedium),
-        if (feedProvider.isLoading && feedProvider.posts.isEmpty)
-          const _WaterfallSkeleton()
-        else if (feedProvider.errorMessage != null &&
-            feedProvider.posts.isEmpty)
-          ErrorView(
-            message: feedProvider.errorMessage!,
-            onRetry: () => feedProvider.fetchPosts(refresh: true),
-          )
-        else if (feedProvider.posts.isEmpty)
-          EmptyView(
-            icon: _emptyIcon,
-            title: _emptyTitle,
-            subtitle: _emptySubtitle,
-            actionLabel: feedProvider.currentMode == 'mine'
-                ? 'Create post'
-                : null,
-            onAction: feedProvider.currentMode == 'mine'
-                ? () => context.push('/create-post')
-                : null,
-          )
-        else ...[
-          AppMasonryGrid(
-            itemCount: feedProvider.posts.length,
-            itemBuilder: (context, index) {
-              final post = feedProvider.posts[index];
-              return PostWaterfallCard(
-                post: post,
-                onTap: () => context.push('/posts/${post.id}', extra: post),
-                onCommentsTap: () {
-                  context.push('/posts/${post.id}/comments', extra: post);
-                },
-              );
-            },
+      slivers: [
+        SliverPadding(
+          padding: EdgeInsets.fromLTRB(
+            horizontalPadding,
+            AppSizes.paddingMedium,
+            horizontalPadding,
+            feedProvider.posts.isEmpty ? 96 : 0,
           ),
-          const SizedBox(height: AppSizes.paddingMedium),
-          _LoadMoreSection(feedProvider: feedProvider),
-        ],
+          sliver: SliverList(
+            delegate: SliverChildListDelegate.fixed([
+              if (showNewPostsBanner) ...[
+                _NewPostsBanner(onRefresh: onRefreshNewPosts),
+                const SizedBox(height: AppSizes.paddingMedium),
+              ],
+              _HomeHero(
+                onSearchTap: () => context.go('/explore'),
+                onSavedTap: () => context.push('/saved-posts'),
+              ),
+              const SizedBox(height: AppSizes.paddingMedium),
+              SectionHeader(
+                title: 'Stories',
+                actionLabel: 'Create',
+                onAction: () => context.push('/stories/create'),
+              ),
+              const SizedBox(height: AppSizes.paddingSmall),
+              const StoriesRow(),
+              const SizedBox(height: AppSizes.paddingMedium),
+              _FeedControls(
+                selectedMode: feedProvider.currentMode,
+                onModeChanged: feedProvider.changeMode,
+              ),
+              const SizedBox(height: AppSizes.paddingMedium),
+              if (feedProvider.isLoading && feedProvider.posts.isEmpty)
+                const _WaterfallSkeleton()
+              else if (feedProvider.errorMessage != null &&
+                  feedProvider.posts.isEmpty)
+                ErrorView(
+                  message: feedProvider.errorMessage!,
+                  onRetry: () => feedProvider.fetchPosts(refresh: true),
+                )
+              else if (feedProvider.posts.isEmpty)
+                EmptyView(
+                  icon: _emptyIcon,
+                  title: _emptyTitle,
+                  subtitle: _emptySubtitle,
+                  actionLabel: feedProvider.currentMode == 'mine'
+                      ? 'Create post'
+                      : null,
+                  onAction: feedProvider.currentMode == 'mine'
+                      ? () => context.push('/create-post')
+                      : null,
+                )
+              else
+                const SizedBox.shrink(),
+            ]),
+          ),
+        ),
+        if (feedProvider.posts.isNotEmpty)
+          SliverPadding(
+            padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
+            sliver: AppLazyMasonryGrid(
+              itemCount: feedProvider.posts.length,
+              itemBuilder: (context, index) {
+                final post = feedProvider.posts[index];
+                return PostWaterfallCard(
+                  post: post,
+                  onTap: () => context.push('/posts/${post.id}', extra: post),
+                  onCommentsTap: () {
+                    context.push('/posts/${post.id}/comments', extra: post);
+                  },
+                );
+              },
+            ),
+          ),
+        if (feedProvider.posts.isNotEmpty)
+          SliverPadding(
+            padding: EdgeInsets.fromLTRB(
+              horizontalPadding,
+              AppSizes.paddingSmall,
+              horizontalPadding,
+              96,
+            ),
+            sliver: SliverToBoxAdapter(
+              child: _LoadMoreSection(feedProvider: feedProvider),
+            ),
+          ),
       ],
     );
   }
@@ -374,11 +393,11 @@ class _HomeHero extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
-        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.7)),
+        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.45)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(
-              alpha: theme.brightness == Brightness.dark ? 0.20 : 0.06,
+              alpha: theme.brightness == Brightness.dark ? 0.18 : 0.035,
             ),
             blurRadius: 18,
             offset: const Offset(0, 8),

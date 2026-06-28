@@ -109,6 +109,10 @@ class CommentsProvider extends ChangeNotifier {
   }
 
   Future<bool> createComment(int postId, String comment) async {
+    if (_isSubmitting) {
+      return false;
+    }
+
     _isSubmitting = true;
     _errorMessage = null;
     notifyListeners();
@@ -134,6 +138,10 @@ class CommentsProvider extends ChangeNotifier {
   }
 
   Future<bool> updateComment(int commentId, String comment) async {
+    if (_isSubmitting) {
+      return false;
+    }
+
     _isSubmitting = true;
     _errorMessage = null;
     notifyListeners();

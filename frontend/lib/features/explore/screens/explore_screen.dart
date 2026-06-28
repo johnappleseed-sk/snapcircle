@@ -26,6 +26,8 @@ class ExploreScreen extends StatefulWidget {
 }
 
 class _ExploreScreenState extends State<ExploreScreen> {
+  DateTime? _lastLoadMoreAttempt;
+
   @override
   void initState() {
     super.initState();
@@ -58,6 +60,27 @@ class _ExploreScreenState extends State<ExploreScreen> {
     }
   }
 
+  void _maybeLoadMore(ScrollMetrics metrics) {
+    if (!mounted || metrics.extentAfter > 640) {
+      return;
+    }
+
+    final now = DateTime.now();
+    final lastAttempt = _lastLoadMoreAttempt;
+    if (lastAttempt != null &&
+        now.difference(lastAttempt) < const Duration(milliseconds: 500)) {
+      return;
+    }
+
+    _lastLoadMoreAttempt = now;
+    final provider = context.read<ExploreProvider>();
+    if (provider.hasMorePosts &&
+        !provider.isLoadingMore &&
+        provider.searchQuery.isEmpty) {
+      provider.loadMorePosts();
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<ExploreProvider>();
@@ -78,58 +101,68 @@ class _ExploreScreenState extends State<ExploreScreen> {
       ),
       body: RefreshIndicator(
         onRefresh: () => provider.fetchExploreData(refresh: true),
-        child: ListView(
-          padding: EdgeInsets.fromLTRB(
-            horizontalPadding,
-            AppSizes.paddingMedium,
-            horizontalPadding,
-            AppSizes.paddingXL,
-          ),
-          children: [
-            ExploreSearchBar(
-              query: provider.searchQuery,
-              onSearch: provider.searchExplore,
-              onClear: provider.clearSearch,
+        child: NotificationListener<ScrollNotification>(
+          onNotification: (notification) {
+            if (notification is ScrollUpdateNotification ||
+                notification is OverscrollNotification ||
+                notification is ScrollEndNotification) {
+              _maybeLoadMore(notification.metrics);
+            }
+            return false;
+          },
+          child: ListView(
+            padding: EdgeInsets.fromLTRB(
+              horizontalPadding,
+              AppSizes.paddingMedium,
+              horizontalPadding,
+              AppSizes.paddingXL,
             ),
-            const SizedBox(height: AppSizes.paddingSmall),
-            _DiscoveryTopics(provider: provider),
-            if (provider.searchQuery.isEmpty &&
-                provider.recentSearches.isNotEmpty) ...[
+            children: [
+              ExploreSearchBar(
+                query: provider.searchQuery,
+                onSearch: provider.searchExplore,
+                onClear: provider.clearSearch,
+              ),
               const SizedBox(height: AppSizes.paddingSmall),
-              _RecentSearchesSection(provider: provider),
-            ],
-            const SizedBox(height: AppSizes.paddingMedium),
-            if (provider.searchQuery.isEmpty) ...[
-              _DiscoverySummary(provider: provider),
+              _DiscoveryTopics(provider: provider),
+              if (provider.searchQuery.isEmpty &&
+                  provider.recentSearches.isNotEmpty) ...[
+                const SizedBox(height: AppSizes.paddingSmall),
+                _RecentSearchesSection(provider: provider),
+              ],
               const SizedBox(height: AppSizes.paddingMedium),
-            ],
-            if (provider.isLoading && provider.explorePosts.isEmpty)
-              const _ExploreSkeleton()
-            else if (provider.errorMessage != null &&
-                provider.explorePosts.isEmpty)
-              Padding(
-                padding: const EdgeInsets.only(top: 72),
-                child: ErrorView(
-                  message: provider.errorMessage!,
-                  onRetry: () => provider.fetchExploreData(refresh: true),
-                ),
-              )
-            else ...[
-              if (provider.searchQuery.isNotEmpty)
-                _SearchResults(provider: provider)
-              else ...[
-                _TrendingTagsSection(provider: provider),
-                if (provider.trendingTags.isNotEmpty)
-                  const SizedBox(height: AppSizes.paddingLarge),
-                _RecommendedUsersSection(provider: provider),
-                const SizedBox(height: AppSizes.paddingLarge),
-                _TrendingPostsSection(provider: provider),
+              if (provider.searchQuery.isEmpty) ...[
+                _DiscoverySummary(provider: provider),
                 const SizedBox(height: AppSizes.paddingMedium),
               ],
-              _ExplorePostsSection(provider: provider),
-              const SizedBox(height: 88),
+              if (provider.isLoading && provider.explorePosts.isEmpty)
+                const _ExploreSkeleton()
+              else if (provider.errorMessage != null &&
+                  provider.explorePosts.isEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(top: 72),
+                  child: ErrorView(
+                    message: provider.errorMessage!,
+                    onRetry: () => provider.fetchExploreData(refresh: true),
+                  ),
+                )
+              else ...[
+                if (provider.searchQuery.isNotEmpty)
+                  _SearchResults(provider: provider)
+                else ...[
+                  _TrendingTagsSection(provider: provider),
+                  if (provider.trendingTags.isNotEmpty)
+                    const SizedBox(height: AppSizes.paddingLarge),
+                  _RecommendedUsersSection(provider: provider),
+                  const SizedBox(height: AppSizes.paddingLarge),
+                  _TrendingPostsSection(provider: provider),
+                  const SizedBox(height: AppSizes.paddingMedium),
+                ],
+                _ExplorePostsSection(provider: provider),
+                const SizedBox(height: 88),
+              ],
             ],
-          ],
+          ),
         ),
       ),
     );
@@ -242,11 +275,11 @@ class _DiscoverySummary extends StatelessWidget {
       decoration: BoxDecoration(
         color: theme.colorScheme.surface,
         borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
-        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.74)),
+        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.45)),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(
-              alpha: theme.brightness == Brightness.dark ? 0.20 : 0.055,
+              alpha: theme.brightness == Brightness.dark ? 0.18 : 0.035,
             ),
             blurRadius: 18,
             offset: const Offset(0, 8),

@@ -305,10 +305,30 @@ class _ImagePickerArea extends StatelessWidget {
               aspectRatio: 4 / 3,
               child: PageView.builder(
                 itemCount: existingImages.length,
-                itemBuilder: (context, index) => CachedNetworkImage(
-                  imageUrl: existingImages[index],
-                  fit: BoxFit.cover,
-                ),
+                itemBuilder: (context, index) {
+                  final devicePixelRatio = MediaQuery.devicePixelRatioOf(
+                    context,
+                  ).clamp(1.0, 2.25);
+                  final cacheWidth =
+                      (MediaQuery.sizeOf(context).width * devicePixelRatio)
+                          .round()
+                          .clamp(480, 1080);
+                  return CachedNetworkImage(
+                    imageUrl: existingImages[index],
+                    fit: BoxFit.cover,
+                    memCacheWidth: cacheWidth,
+                    memCacheHeight: (cacheWidth / (4 / 3)).round(),
+                    placeholder: (context, url) => DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: Theme.of(
+                          context,
+                        ).colorScheme.surfaceContainerHighest,
+                      ),
+                    ),
+                    errorWidget: (context, url, error) =>
+                        const Center(child: Icon(Icons.broken_image_outlined)),
+                  );
+                },
               ),
             ),
           ),
