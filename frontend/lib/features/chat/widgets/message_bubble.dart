@@ -26,13 +26,13 @@ class MessageBubble extends StatelessWidget {
         ),
         child: DecoratedBox(
           decoration: BoxDecoration(
-            color: isMine ? theme.colorScheme.primary : otherBubble,
+            color: isMine ? AppColors.primaryDark : otherBubble,
             border: isMine ? null : Border.all(color: theme.dividerColor),
             borderRadius: BorderRadius.only(
-              topLeft: const Radius.circular(AppSizes.radiusSmall),
-              topRight: const Radius.circular(AppSizes.radiusSmall),
-              bottomLeft: Radius.circular(isMine ? AppSizes.radiusSmall : 3),
-              bottomRight: Radius.circular(isMine ? 3 : AppSizes.radiusSmall),
+              topLeft: const Radius.circular(AppSizes.radiusMedium),
+              topRight: const Radius.circular(AppSizes.radiusMedium),
+              bottomLeft: Radius.circular(isMine ? AppSizes.radiusMedium : 4),
+              bottomRight: Radius.circular(isMine ? 4 : AppSizes.radiusMedium),
             ),
             boxShadow: [
               BoxShadow(

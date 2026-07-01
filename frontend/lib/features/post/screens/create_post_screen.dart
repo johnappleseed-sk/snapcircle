@@ -9,12 +9,9 @@ import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
-import '../../../core/widgets/app_card.dart';
 import '../../../core/widgets/app_button.dart';
-import '../../../core/widgets/app_avatar.dart';
 import '../../../core/widgets/app_text_field.dart';
 import '../../../core/utils/snackbar_helper.dart';
-import '../../auth/providers/auth_provider.dart';
 import '../../feed/models/post_model.dart';
 import '../../feed/providers/feed_provider.dart';
 
@@ -138,7 +135,6 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
   @override
   Widget build(BuildContext context) {
     final feedProvider = context.watch<FeedProvider>();
-    final user = context.watch<AuthProvider>().user;
     final contentLength = _contentController.text.trim().length;
     final horizontalPadding = MediaQuery.sizeOf(context).width < 380
         ? AppSizes.paddingSmall
@@ -152,11 +148,18 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_isEditing ? 'Edit post' : 'Create post'),
+        centerTitle: true,
+        leading: IconButton(
+          onPressed: feedProvider.isCreating ? null : _pickImages,
+          icon: const Icon(Icons.camera_alt_outlined),
+          tooltip: 'Choose media',
+        ),
+        title: const Text('SnapCircle'),
         actions: [
-          TextButton(
+          IconButton(
             onPressed: canSubmit ? _submitPost : null,
-            child: Text(_isEditing ? 'Save' : 'Post'),
+            icon: Icon(_isEditing ? Icons.check_rounded : Icons.send_outlined),
+            tooltip: _isEditing ? 'Save changes' : 'Share post',
           ),
         ],
       ),
@@ -170,94 +173,68 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             AppSizes.paddingLarge + MediaQuery.viewInsetsOf(context).bottom,
           ),
           children: [
-            AppCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Row(
-                    children: [
-                      AppAvatar(
-                        name: user?.name ?? 'You',
-                        imageUrl: user?.avatarUrl ?? user?.avatar,
-                        size: AppAvatarSize.medium,
-                      ),
-                      const SizedBox(width: AppSizes.paddingSmall + 4),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              user?.name ?? 'Share to SnapCircle',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context).textTheme.titleSmall
-                                  ?.copyWith(fontWeight: FontWeight.w900),
-                            ),
-                            Text(
-                              _isEditing
-                                  ? 'Update your post'
-                                  : 'Post to your circle',
-                              style: Theme.of(context).textTheme.bodySmall
-                                  ?.copyWith(color: AppColors.textSecondary),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: AppSizes.paddingMedium),
-                  AppTextField(
-                    label: 'Caption',
-                    hint: 'Share something with your circle...',
-                    controller: _contentController,
-                    enabled: !feedProvider.isCreating,
-                    maxLines: 8,
-                    onChanged: (_) {
-                      if (_localError != null) {
-                        setState(() => _localError = null);
-                        return;
-                      }
-                      setState(() {});
-                    },
-                  ),
-                  const SizedBox(height: AppSizes.paddingSmall),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: Text(
-                      '$contentLength / $_maxPostLength',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: contentLength > _maxPostLength
-                            ? AppColors.error
-                            : AppColors.textSecondary,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                  const SizedBox(height: AppSizes.paddingMedium),
-                  if (_selectedImages.isEmpty)
-                    _ImagePickerArea(
-                      isDisabled: feedProvider.isCreating,
-                      onPick: _pickImages,
-                      existingImageUrls: widget.initialPost?.media
-                          .map((item) => item.url)
-                          .toList(),
-                    )
-                  else
-                    _SelectedImagePreviewGrid(
-                      images: _selectedImages,
-                      onAdd: _selectedImages.length >= _maxImages
-                          ? null
-                          : _pickImages,
-                      onRemove: feedProvider.isCreating
-                          ? null
-                          : (index) {
-                              setState(() {
-                                _selectedImages.removeAt(index);
-                              });
-                            },
-                    ),
-                ],
+            Text(
+              _isEditing ? 'Edit Post' : 'Create Post',
+              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                fontWeight: FontWeight.w900,
+                color: AppColors.textPrimary,
               ),
+            ),
+            const SizedBox(height: AppSizes.paddingMedium),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (_selectedImages.isEmpty)
+                  _ImagePickerArea(
+                    isDisabled: feedProvider.isCreating,
+                    onPick: _pickImages,
+                    existingImageUrls: widget.initialPost?.media
+                        .map((item) => item.url)
+                        .toList(),
+                  )
+                else
+                  _SelectedImagePreviewGrid(
+                    images: _selectedImages,
+                    onAdd: _selectedImages.length >= _maxImages
+                        ? null
+                        : _pickImages,
+                    onRemove: feedProvider.isCreating
+                        ? null
+                        : (index) {
+                            setState(() {
+                              _selectedImages.removeAt(index);
+                            });
+                          },
+                  ),
+                const SizedBox(height: AppSizes.paddingMedium),
+                AppTextField(
+                  label: 'Caption',
+                  hint: 'Write a caption...',
+                  controller: _contentController,
+                  enabled: !feedProvider.isCreating,
+                  maxLines: 5,
+                  onChanged: (_) {
+                    if (_localError != null) {
+                      setState(() => _localError = null);
+                      return;
+                    }
+                    setState(() {});
+                  },
+                ),
+                const SizedBox(height: AppSizes.paddingSmall),
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    '$contentLength / $_maxPostLength',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: contentLength > _maxPostLength
+                          ? AppColors.error
+                          : AppColors.textSecondary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
             ),
             if (_localError != null) ...[
               const SizedBox(height: AppSizes.paddingMedium),
@@ -265,7 +242,7 @@ class _CreatePostScreenState extends State<CreatePostScreen> {
             ],
             const SizedBox(height: AppSizes.paddingLarge),
             AppButton(
-              label: _isEditing ? 'Save changes' : 'Share post',
+              label: _isEditing ? 'Save changes' : 'Share Post',
               icon: _isEditing ? Icons.save_outlined : Icons.send_outlined,
               isLoading: feedProvider.isCreating,
               onPressed: canSubmit ? _submitPost : null,
@@ -290,7 +267,6 @@ class _ImagePickerArea extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isCompact = MediaQuery.sizeOf(context).width < 380;
     final existingImages =
         existingImageUrls?.where((url) => url.isNotEmpty).toList() ??
         const <String>[];
@@ -337,27 +313,40 @@ class _ImagePickerArea extends StatelessWidget {
         OutlinedButton(
           onPressed: isDisabled ? null : onPick,
           style: OutlinedButton.styleFrom(
-            side: BorderSide(color: Theme.of(context).dividerColor),
-            backgroundColor: Theme.of(context).colorScheme.surface,
+            side: BorderSide(color: AppColors.border, width: 1.4),
+            backgroundColor: AppColors.surfaceMuted,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
+            ),
           ),
           child: Padding(
-            padding: EdgeInsets.symmetric(
-              horizontal: AppSizes.paddingSmall,
-              vertical: isCompact
-                  ? AppSizes.paddingMedium
-                  : AppSizes.paddingLarge,
-            ),
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 88),
             child: Column(
               children: [
-                Icon(
-                  Icons.add_photo_alternate_outlined,
-                  size: isCompact ? 30 : 34,
+                Container(
+                  height: 64,
+                  width: 64,
+                  decoration: const BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(
+                    Icons.add_photo_alternate,
+                    size: 30,
+                    color: AppColors.primary,
+                  ),
                 ),
-                const SizedBox(height: AppSizes.paddingSmall),
-                Text(existingImages.isEmpty ? 'Add images' : 'Replace images'),
-                const SizedBox(height: 3),
+                const SizedBox(height: 14),
                 Text(
-                  'Choose up to 10 photos for a carousel post',
+                  existingImages.isEmpty ? 'Upload Media' : 'Replace Media',
+                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                    fontWeight: FontWeight.w900,
+                    color: AppColors.textSecondary,
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  'Tap to browse photos or videos',
                   textAlign: TextAlign.center,
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: AppColors.textSecondary,

@@ -29,24 +29,24 @@ class AppShell extends StatelessWidget {
           SafeArea(
             top: false,
             child: Padding(
-              padding: const EdgeInsets.fromLTRB(12, 6, 12, 10),
+              padding: const EdgeInsets.fromLTRB(18, 6, 18, 10),
               child: Container(
-                padding: const EdgeInsets.fromLTRB(8, 7, 8, 8),
+                padding: const EdgeInsets.fromLTRB(8, 7, 8, 7),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.surface.withValues(
                     alpha: isDark ? 0.92 : 0.96,
                   ),
                   border: Border.all(
-                    color: theme.dividerColor.withValues(alpha: 0.84),
+                    color: theme.dividerColor.withValues(alpha: 0.78),
                   ),
-                  borderRadius: BorderRadius.circular(28),
+                  borderRadius: BorderRadius.circular(26),
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withValues(
-                        alpha: isDark ? 0.34 : 0.11,
+                        alpha: isDark ? 0.30 : 0.08,
                       ),
-                      blurRadius: 24,
-                      offset: const Offset(0, 10),
+                      blurRadius: 22,
+                      offset: const Offset(0, 8),
                     ),
                   ],
                 ),
@@ -133,10 +133,10 @@ class _NavItem extends StatelessWidget {
           child: AnimatedContainer(
             duration: const Duration(milliseconds: 180),
             curve: Curves.easeOutCubic,
-            padding: const EdgeInsets.symmetric(vertical: 7, horizontal: 2),
+            padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 2),
             decoration: BoxDecoration(
               color: isSelected
-                  ? theme.colorScheme.primary.withValues(alpha: 0.10)
+                  ? theme.colorScheme.primary.withValues(alpha: 0.09)
                   : Colors.transparent,
               borderRadius: BorderRadius.circular(22),
             ),
@@ -160,7 +160,7 @@ class _NavItem extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: color,
-                    fontSize: 11,
+                    fontSize: 10,
                     fontWeight: isSelected ? FontWeight.w900 : FontWeight.w700,
                   ),
                 ),
@@ -202,14 +202,10 @@ class _CreateNavItem extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Container(
-                  height: 42,
-                  width: 42,
+                  height: 44,
+                  width: 44,
                   decoration: BoxDecoration(
-                    gradient: const LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [AppColors.primary, AppColors.secondary],
-                    ),
+                    color: AppColors.secondary,
                     border: Border.all(
                       color: Colors.white.withValues(alpha: 0.36),
                     ),

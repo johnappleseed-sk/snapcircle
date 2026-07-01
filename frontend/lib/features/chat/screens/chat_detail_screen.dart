@@ -109,6 +109,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
+        centerTitle: false,
         title: Row(
           children: [
             AppAvatar(
@@ -118,11 +119,27 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
             ),
             const SizedBox(width: 10),
             Expanded(
-              child: Text(
-                otherUser?.name ??
-                    (_isLoadingConversation ? 'Loading...' : 'Messages'),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    otherUser?.name ??
+                        (_isLoadingConversation ? 'Loading...' : 'Messages'),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: AppColors.textPrimary,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                  Text(
+                    'Online now',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                      color: AppColors.success,
+                      fontWeight: FontWeight.w900,
+                    ),
+                  ),
+                ],
               ),
             ),
           ],
@@ -138,7 +155,7 @@ class _ChatDetailScreenState extends State<ChatDetailScreen> {
                 );
               }
             },
-            icon: const Icon(Icons.refresh),
+            icon: const Icon(Icons.refresh_rounded),
             tooltip: 'Refresh messages',
           ),
         ],
@@ -304,6 +321,16 @@ class _MessageComposer extends StatelessWidget {
             Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
+                Container(
+                  height: 48,
+                  width: 48,
+                  decoration: const BoxDecoration(
+                    color: AppColors.surfaceMuted,
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.add, color: AppColors.primary),
+                ),
+                const SizedBox(width: 10),
                 Expanded(
                   child: TextField(
                     controller: controller,
@@ -312,7 +339,7 @@ class _MessageComposer extends StatelessWidget {
                     enabled: !isSending,
                     textInputAction: TextInputAction.newline,
                     decoration: const InputDecoration(
-                      hintText: 'Write a message...',
+                      hintText: 'Message...',
                       labelText: 'Message',
                       contentPadding: EdgeInsets.symmetric(
                         horizontal: AppSizes.paddingMedium,

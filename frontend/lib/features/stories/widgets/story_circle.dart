@@ -31,15 +31,15 @@ class StoryCircle extends StatelessWidget {
           );
 
     return SizedBox(
-      width: 76,
+      width: 68,
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
         child: Column(
           children: [
             Container(
-              height: 64,
-              width: 64,
+              height: 58,
+              width: 58,
               padding: const EdgeInsets.all(3),
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
@@ -114,14 +114,15 @@ class StoryCircle extends StatelessWidget {
                 ],
               ),
             ),
-            const SizedBox(height: 6),
+            const SizedBox(height: 5),
             Text(
               label,
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: AppColors.textSecondary,
+                color: AppColors.textPrimary,
+                fontSize: 10,
                 fontWeight: FontWeight.w800,
               ),
             ),

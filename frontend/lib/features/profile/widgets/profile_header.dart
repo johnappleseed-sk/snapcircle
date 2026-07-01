@@ -70,14 +70,17 @@ class ProfileHeader extends StatelessWidget {
                       ),
                       const Spacer(),
                       if (!isCompact)
-                        _ProfileActions(
-                          user: user,
-                          isOwnProfile: isOwnProfile,
-                          isFollowing: isFollowing,
-                          onEdit: onEdit,
-                          onFollow: onFollow,
-                          onUnfollow: onUnfollow,
-                          onMessage: onMessage,
+                        Transform.translate(
+                          offset: const Offset(0, 18),
+                          child: _ProfileActions(
+                            user: user,
+                            isOwnProfile: isOwnProfile,
+                            isFollowing: isFollowing,
+                            onEdit: onEdit,
+                            onFollow: onFollow,
+                            onUnfollow: onUnfollow,
+                            onMessage: onMessage,
+                          ),
                         ),
                     ],
                   ),

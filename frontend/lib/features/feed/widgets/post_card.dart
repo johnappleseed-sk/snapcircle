@@ -65,10 +65,10 @@ class PostCard extends StatelessWidget {
     return AppCard(
       onTap: onTap,
       padding: EdgeInsets.fromLTRB(
-        isCompact ? 12 : 14,
-        14,
-        isCompact ? 12 : 14,
+        isCompact ? 10 : 12,
         12,
+        isCompact ? 10 : 12,
+        10,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -79,9 +79,9 @@ class PostCard extends StatelessWidget {
               AppAvatar(
                 name: post.user.name,
                 imageUrl: post.user.avatarUrl ?? post.user.avatar,
-                size: AppAvatarSize.medium,
+                size: AppAvatarSize.small,
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 10),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -94,9 +94,10 @@ class PostCard extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.titleSmall?.copyWith(
                         fontWeight: FontWeight.w900,
+                        fontSize: 13,
                       ),
                     ),
-                    const SizedBox(height: 2),
+                    const SizedBox(height: 1),
                     Text(
                       subtitle,
                       maxLines: 1,
@@ -111,30 +112,31 @@ class PostCard extends StatelessWidget {
               if (canDelete || post.canUpdate || !post.isOwner)
                 IconButton(
                   onPressed: () => _showPostActions(context),
-                  icon: const Icon(Icons.more_horiz),
+                  icon: const Icon(Icons.more_horiz, size: 19),
                   tooltip: 'Post options',
+                  visualDensity: VisualDensity.compact,
                 ),
             ],
           ),
           if (hasContent) ...[
-            const SizedBox(height: AppSizes.paddingMedium),
+            const SizedBox(height: 12),
             HashtagCaption(
               text: post.content!,
               onTagTap: onTagTap ?? (tag) => _openTag(context, tag),
             ),
           ],
           if (hasMedia) ...[
-            const SizedBox(height: AppSizes.paddingMedium),
+            const SizedBox(height: 12),
             PostMediaCarousel(media: post.media),
           ],
-          const SizedBox(height: AppSizes.paddingMedium),
+          const SizedBox(height: 8),
           Row(
             children: [
               _PostAction(
                 icon: post.likedByMe
                     ? Icons.favorite
                     : Icons.favorite_border_outlined,
-                label: post.likesCount.toString(),
+                label: _compactCount(post.likesCount),
                 color: post.likedByMe ? AppColors.danger : null,
                 isLoading: isLikeUpdating,
                 compact: isCompact,
@@ -157,14 +159,14 @@ class PostCard extends StatelessWidget {
               ),
               _PostAction(
                 icon: Icons.chat_bubble_outline,
-                label: post.commentsCount.toString(),
+                label: _compactCount(post.commentsCount),
                 compact: isCompact,
                 semanticLabel: 'Open comments',
                 onTap: onCommentsTap,
               ),
               _PostAction(
                 icon: Icons.ios_share_outlined,
-                label: 'Share',
+                label: '',
                 compact: isCompact,
                 semanticLabel: 'Share post',
                 onTap:
@@ -176,7 +178,7 @@ class PostCard extends StatelessWidget {
                 icon: post.savedByMe
                     ? Icons.bookmark
                     : Icons.bookmark_border_outlined,
-                label: post.savesCount.toString(),
+                label: '',
                 color: post.savedByMe ? AppColors.primary : null,
                 isLoading: isSaveUpdating,
                 compact: isCompact,
@@ -208,6 +210,16 @@ class PostCard extends StatelessWidget {
 
   void _openTag(BuildContext context, String tag) {
     context.go('/explore/tags/${Uri.encodeComponent(tag)}');
+  }
+
+  String _compactCount(int value) {
+    if (value >= 1000000) {
+      return '${(value / 1000000).toStringAsFixed(1)}M';
+    }
+    if (value >= 1000) {
+      return '${(value / 1000).toStringAsFixed(value >= 10000 ? 0 : 1)}K';
+    }
+    return value.toString();
   }
 
   Future<void> _showPostActions(BuildContext context) async {
@@ -740,7 +752,7 @@ class _PostActionState extends State<_PostAction> {
 
   @override
   Widget build(BuildContext context) {
-    final foreground = widget.color ?? AppColors.mutedText;
+    final foreground = widget.color ?? AppColors.textPrimary;
     final hasAccent = widget.color != null;
     final visibleLabel = widget.compact && widget.label.length > 3
         ? ''
@@ -755,21 +767,21 @@ class _PostActionState extends State<_PostAction> {
           duration: const Duration(milliseconds: 110),
           curve: Curves.easeOutCubic,
           child: InkWell(
-            borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
+            borderRadius: BorderRadius.circular(999),
             onTap: widget.isLoading || widget.onTap == null ? null : _handleTap,
             child: AnimatedContainer(
               duration: const Duration(milliseconds: 160),
               curve: Curves.easeOutCubic,
-              constraints: const BoxConstraints(minHeight: 40, minWidth: 40),
+              constraints: const BoxConstraints(minHeight: 32, minWidth: 32),
               padding: EdgeInsets.symmetric(
-                horizontal: widget.compact ? 8 : 10,
-                vertical: 6,
+                horizontal: widget.compact ? 6 : 8,
+                vertical: 5,
               ),
               decoration: BoxDecoration(
                 color: hasAccent
                     ? foreground.withValues(alpha: 0.10)
                     : Colors.transparent,
-                borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
+                borderRadius: BorderRadius.circular(999),
               ),
               child: AnimatedSwitcher(
                 duration: const Duration(milliseconds: 160),
@@ -787,7 +799,7 @@ class _PostActionState extends State<_PostAction> {
                         key: ValueKey('${widget.icon}-$visibleLabel'),
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          Icon(widget.icon, size: 22, color: foreground),
+                          Icon(widget.icon, size: 20, color: foreground),
                           if (visibleLabel.isNotEmpty) ...[
                             const SizedBox(width: 5),
                             Text(

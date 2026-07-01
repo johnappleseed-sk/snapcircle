@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
+import '../../../core/constants/app_colors.dart';
 import '../../../core/constants/app_sizes.dart';
 import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/empty_view.dart';
@@ -36,7 +37,22 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
         : AppSizes.paddingMedium;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Messages')),
+      appBar: AppBar(
+        centerTitle: true,
+        leading: IconButton(
+          onPressed: () => context.push('/create-post'),
+          icon: const Icon(Icons.camera_alt_outlined),
+          tooltip: 'Create post',
+        ),
+        title: const Text('SnapCircle'),
+        actions: [
+          IconButton(
+            onPressed: () => provider.fetchConversations(refresh: true),
+            icon: const Icon(Icons.refresh_rounded),
+            tooltip: 'Refresh messages',
+          ),
+        ],
+      ),
       body: RefreshIndicator(
         onRefresh: () => provider.fetchConversations(refresh: true),
         child: ListView.separated(
@@ -47,8 +63,7 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
             AppSizes.paddingXL,
           ),
           itemCount: _itemCount(provider),
-          separatorBuilder: (context, index) =>
-              const SizedBox(height: AppSizes.paddingMedium),
+          separatorBuilder: (context, index) => const SizedBox(height: 12),
           itemBuilder: (context, index) {
             if (provider.isLoading && provider.conversations.isEmpty) {
               return const Column(
@@ -75,6 +90,31 @@ class _ConversationsScreenState extends State<ConversationsScreen> {
                 icon: Icons.chat_bubble_outline,
                 title: 'No conversations yet',
                 subtitle: 'Start chatting from a user profile.',
+              );
+            }
+
+            if (index == 0) {
+              final conversation = provider.conversations[index];
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Messages',
+                    style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                      fontWeight: FontWeight.w900,
+                      color: AppColors.textPrimary,
+                    ),
+                  ),
+                  const SizedBox(height: AppSizes.paddingMedium),
+                  ConversationTile(
+                    conversation: conversation,
+                    currentUserId: currentUserId,
+                    onTap: () => context.push(
+                      '/messages/${conversation.id}',
+                      extra: conversation,
+                    ),
+                  ),
+                ],
               );
             }
 

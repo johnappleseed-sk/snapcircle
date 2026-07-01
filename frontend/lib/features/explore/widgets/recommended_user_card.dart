@@ -32,17 +32,17 @@ class RecommendedUserCard extends StatelessWidget {
         : user.location ?? (user.showEmail ? user.email : 'SnapCircle user');
 
     return SizedBox(
-      width: width,
+      width: width.clamp(152, 178),
       child: AppCard(
         onTap: onTap,
-        padding: const EdgeInsets.all(AppSizes.paddingMedium),
+        padding: const EdgeInsets.all(14),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
             AppAvatar(
               name: user.name,
               imageUrl: user.avatarUrl ?? user.avatar,
-              size: AppAvatarSize.large,
+              size: AppAvatarSize.medium,
             ),
             const SizedBox(height: AppSizes.paddingSmall),
             Row(

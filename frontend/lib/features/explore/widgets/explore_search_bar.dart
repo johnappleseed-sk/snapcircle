@@ -55,8 +55,8 @@ class _ExploreSearchBarState extends State<ExploreSearchBar> {
   @override
   Widget build(BuildContext context) {
     return AppTextField(
-      label: 'Search SnapCircle',
-      hint: 'Find posts, people, or ideas',
+      label: 'Search',
+      hint: 'Search posts, people, or ideas',
       controller: _controller,
       onChanged: _onChanged,
       prefixIcon: const Icon(Icons.search_outlined),

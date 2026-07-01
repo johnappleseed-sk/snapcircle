@@ -66,8 +66,9 @@ class AppButton extends StatelessWidget {
       AppButtonVariant.secondary => ElevatedButton(
         onPressed: effectiveOnPressed,
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.secondary,
-          foregroundColor: Colors.white,
+          backgroundColor: AppColors.surfaceMuted,
+          foregroundColor: AppColors.primary,
+          elevation: 0,
         ),
         child: child,
       ),
@@ -89,6 +90,6 @@ class AppButton extends StatelessWidget {
       return button;
     }
 
-    return SizedBox(width: double.infinity, height: 54, child: button);
+    return SizedBox(width: double.infinity, height: 48, child: button);
   }
 }

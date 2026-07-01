@@ -12,7 +12,7 @@ class PostMediaCarousel extends StatefulWidget {
   const PostMediaCarousel({
     super.key,
     required this.media,
-    this.aspectRatio = 4 / 3,
+    this.aspectRatio = 1,
   });
 
   @override

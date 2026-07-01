@@ -5,10 +5,10 @@ class AppSizes {
   static const double paddingLarge = 24;
   static const double paddingXL = 32;
 
-  static const double radiusSmall = 12;
-  static const double radiusMedium = 16;
-  static const double radiusLarge = 22;
-  static const double radiusXL = 30;
+  static const double radiusSmall = 10;
+  static const double radiusMedium = 14;
+  static const double radiusLarge = 18;
+  static const double radiusXL = 26;
 
   static const double iconSmall = 18;
   static const double iconMedium = 24;

@@ -29,19 +29,19 @@ class ExplorePostGridItem extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
+      borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
       child: Container(
         decoration: BoxDecoration(
           color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
+          borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
           border: Border.all(color: theme.dividerColor.withValues(alpha: 0.7)),
           boxShadow: [
             BoxShadow(
               color: Colors.black.withValues(
-                alpha: theme.brightness == Brightness.dark ? 0.20 : 0.06,
+                alpha: theme.brightness == Brightness.dark ? 0.18 : 0.035,
               ),
-              blurRadius: 16,
-              offset: const Offset(0, 7),
+              blurRadius: 14,
+              offset: const Offset(0, 6),
             ),
           ],
         ),

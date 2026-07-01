@@ -4,35 +4,35 @@ import 'app_colors.dart';
 
 class AppTextStyles {
   static const TextStyle headingLarge = TextStyle(
-    fontSize: 32,
+    fontSize: 30,
     fontWeight: FontWeight.w900,
     color: AppColors.textPrimary,
     height: 1.1,
   );
 
   static const TextStyle headingMedium = TextStyle(
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: FontWeight.w800,
     color: AppColors.textPrimary,
     height: 1.2,
   );
 
   static const TextStyle headingSmall = TextStyle(
-    fontSize: 18,
+    fontSize: 17,
     fontWeight: FontWeight.w800,
     color: AppColors.textPrimary,
     height: 1.25,
   );
 
   static const TextStyle bodyLarge = TextStyle(
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: FontWeight.w500,
     color: AppColors.textPrimary,
     height: 1.45,
   );
 
   static const TextStyle bodyMedium = TextStyle(
-    fontSize: 14,
+    fontSize: 13,
     fontWeight: FontWeight.w500,
     color: AppColors.textPrimary,
     height: 1.4,
@@ -53,8 +53,8 @@ class AppTextStyles {
   );
 
   static const TextStyle button = TextStyle(
-    fontSize: 14,
-    fontWeight: FontWeight.w800,
+    fontSize: 13,
+    fontWeight: FontWeight.w900,
   );
 
   static const TextStyle link = TextStyle(

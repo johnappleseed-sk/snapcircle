@@ -39,8 +39,13 @@ class AppTheme {
         surfaceTintColor: Colors.transparent,
         shadowColor: Colors.transparent,
         centerTitle: false,
-        titleTextStyle: AppTextStyles.headingMedium,
-        shape: Border(bottom: BorderSide(color: AppColors.border)),
+        titleTextStyle: TextStyle(
+          color: AppColors.primary,
+          fontSize: 18,
+          fontWeight: FontWeight.w900,
+        ),
+        iconTheme: IconThemeData(color: AppColors.textPrimary, size: 20),
+        actionsIconTheme: IconThemeData(color: AppColors.textPrimary, size: 20),
       ),
       cardTheme: CardThemeData(
         color: AppColors.card,
@@ -107,9 +112,11 @@ class AppTheme {
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.primary,
           foregroundColor: Colors.white,
-          minimumSize: const Size.fromHeight(52),
+          elevation: 0,
+          shadowColor: Colors.transparent,
+          minimumSize: const Size.fromHeight(48),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
+            borderRadius: BorderRadius.circular(999),
           ),
           textStyle: AppTextStyles.button,
         ),
@@ -117,10 +124,10 @@ class AppTheme {
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
           foregroundColor: AppColors.primary,
-          minimumSize: const Size.fromHeight(48),
+          minimumSize: const Size.fromHeight(46),
           side: const BorderSide(color: AppColors.border),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
+            borderRadius: BorderRadius.circular(999),
           ),
           textStyle: AppTextStyles.button,
         ),
@@ -137,27 +144,27 @@ class AppTheme {
         labelStyle: const TextStyle(color: AppColors.textSecondary),
         hintStyle: const TextStyle(color: AppColors.textMuted),
         contentPadding: const EdgeInsets.symmetric(
-          horizontal: AppSizes.paddingMedium,
-          vertical: 14,
+          horizontal: 14,
+          vertical: 13,
         ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
+          borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
           borderSide: BorderSide.none,
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
+          borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
           borderSide: BorderSide.none,
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
+          borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
           borderSide: const BorderSide(color: AppColors.primary, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
+          borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
           borderSide: const BorderSide(color: AppColors.error),
         ),
         focusedErrorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
+          borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
           borderSide: const BorderSide(color: AppColors.error, width: 1.5),
         ),
       ),

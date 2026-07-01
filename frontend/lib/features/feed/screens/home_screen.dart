@@ -9,7 +9,6 @@ import '../../../core/widgets/app_button.dart';
 import '../../../core/widgets/app_masonry_grid.dart';
 import '../../../core/widgets/empty_view.dart';
 import '../../../core/widgets/error_view.dart';
-import '../../../core/widgets/section_header.dart';
 import '../../notifications/providers/notifications_provider.dart';
 import '../../stories/providers/stories_provider.dart';
 import '../../stories/widgets/stories_row.dart';
@@ -68,62 +67,22 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     final feedProvider = context.watch<FeedProvider>();
-    final notificationsProvider = context.watch<NotificationsProvider>();
     final realtimeProvider = context.watch<RealtimeProvider>();
-    final unreadCount =
-        realtimeProvider.unreadNotificationsCount >
-            notificationsProvider.unreadCount
-        ? realtimeProvider.unreadNotificationsCount
-        : notificationsProvider.unreadCount;
 
     return Scaffold(
       appBar: AppBar(
-        titleSpacing: AppSizes.paddingMedium,
-        title: Builder(
-          builder: (context) {
-            final showSubtitle = MediaQuery.sizeOf(context).width >= 380;
-            return Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text('SnapCircle'),
-                if (showSubtitle)
-                  Text(
-                    'Share moments. Build your circle.',
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-              ],
-            );
-          },
+        centerTitle: true,
+        leading: IconButton(
+          onPressed: () => context.push('/create-post'),
+          icon: const Icon(Icons.camera_alt_outlined),
+          tooltip: 'Create post',
         ),
+        title: const Text('SnapCircle'),
         actions: [
           IconButton(
             onPressed: () => context.push('/messages'),
-            icon: const Icon(Icons.chat_bubble_outline),
+            icon: const Icon(Icons.send_outlined),
             tooltip: 'Messages',
-          ),
-          _NotificationIconButton(
-            unreadCount: unreadCount,
-            onPressed: () async {
-              await context.push('/notifications');
-              if (context.mounted) {
-                final provider = context.read<NotificationsProvider>();
-                await provider.fetchUnreadCount();
-                if (context.mounted) {
-                  context
-                      .read<RealtimeProvider>()
-                      .updateUnreadNotificationsCount(provider.unreadCount);
-                }
-              }
-            },
-          ),
-          _HomeOverflowMenu(
-            onSavedPosts: () => context.push('/saved-posts'),
-            onRefresh: () =>
-                _refreshHome(context, feedProvider, realtimeProvider),
           ),
         ],
       ),
@@ -170,75 +129,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 }
 
-class _NotificationIconButton extends StatelessWidget {
-  final int unreadCount;
-  final VoidCallback onPressed;
-
-  const _NotificationIconButton({
-    required this.unreadCount,
-    required this.onPressed,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return IconButton(
-      onPressed: onPressed,
-      tooltip: 'Notifications',
-      icon: Badge(
-        isLabelVisible: unreadCount > 0,
-        label: Text(unreadCount > 99 ? '99+' : unreadCount.toString()),
-        child: const Icon(Icons.notifications_none_outlined),
-      ),
-    );
-  }
-}
-
-class _HomeOverflowMenu extends StatelessWidget {
-  final VoidCallback onSavedPosts;
-  final Future<void> Function() onRefresh;
-
-  const _HomeOverflowMenu({
-    required this.onSavedPosts,
-    required this.onRefresh,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return PopupMenuButton<_HomeMenuAction>(
-      tooltip: 'More feed actions',
-      icon: const Icon(Icons.more_horiz),
-      onSelected: (action) {
-        switch (action) {
-          case _HomeMenuAction.saved:
-            onSavedPosts();
-          case _HomeMenuAction.refresh:
-            onRefresh();
-        }
-      },
-      itemBuilder: (context) => const [
-        PopupMenuItem(
-          value: _HomeMenuAction.saved,
-          child: ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: Icon(Icons.bookmark_border_outlined),
-            title: Text('Saved posts'),
-          ),
-        ),
-        PopupMenuItem(
-          value: _HomeMenuAction.refresh,
-          child: ListTile(
-            contentPadding: EdgeInsets.zero,
-            leading: Icon(Icons.refresh),
-            title: Text('Refresh feed'),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-enum _HomeMenuAction { saved, refresh }
-
 class _FeedBody extends StatelessWidget {
   final FeedProvider feedProvider;
   final bool showNewPostsBanner;
@@ -253,9 +143,7 @@ class _FeedBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.sizeOf(context).width;
-    final horizontalPadding = screenWidth < 380
-        ? AppSizes.paddingSmall
-        : AppSizes.paddingMedium;
+    final horizontalPadding = screenWidth < 380 ? AppSizes.paddingSmall : 12.0;
 
     return CustomScrollView(
       key: const PageStorageKey('home-feed-list'),
@@ -275,24 +163,8 @@ class _FeedBody extends StatelessWidget {
                 _NewPostsBanner(onRefresh: onRefreshNewPosts),
                 const SizedBox(height: AppSizes.paddingMedium),
               ],
-              _HomeHero(
-                onSearchTap: () => context.go('/explore'),
-                onSavedTap: () => context.push('/saved-posts'),
-              ),
-              const SizedBox(height: AppSizes.paddingMedium),
-              SectionHeader(
-                title: 'Stories',
-                actionLabel: 'Create',
-                onAction: () => context.push('/stories/create'),
-              ),
-              const SizedBox(height: AppSizes.paddingSmall),
               const StoriesRow(),
-              const SizedBox(height: AppSizes.paddingMedium),
-              _FeedControls(
-                selectedMode: feedProvider.currentMode,
-                onModeChanged: feedProvider.changeMode,
-              ),
-              const SizedBox(height: AppSizes.paddingMedium),
+              const SizedBox(height: 14),
               if (feedProvider.isLoading && feedProvider.posts.isEmpty)
                 const _WaterfallSkeleton()
               else if (feedProvider.errorMessage != null &&
@@ -321,11 +193,12 @@ class _FeedBody extends StatelessWidget {
         if (feedProvider.posts.isNotEmpty)
           SliverPadding(
             padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-            sliver: AppLazyMasonryGrid(
+            sliver: SliverList.separated(
               itemCount: feedProvider.posts.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final post = feedProvider.posts[index];
-                return PostWaterfallCard(
+                return PostCard(
                   post: post,
                   onTap: () => context.push('/posts/${post.id}', extra: post),
                   onCommentsTap: () {
@@ -376,82 +249,6 @@ class _FeedBody extends StatelessWidget {
       'mine' => 'Share your first SnapCircle moment.',
       _ => 'Explore people to follow or share your first SnapCircle moment.',
     };
-  }
-}
-
-class _HomeHero extends StatelessWidget {
-  final VoidCallback onSearchTap;
-  final VoidCallback onSavedTap;
-
-  const _HomeHero({required this.onSearchTap, required this.onSavedTap});
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return Container(
-      padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(AppSizes.radiusLarge),
-        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.45)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(
-              alpha: theme.brightness == Brightness.dark ? 0.18 : 0.035,
-            ),
-            blurRadius: 18,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: InkWell(
-              onTap: onSearchTap,
-              borderRadius: BorderRadius.circular(999),
-              child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 14,
-                  vertical: 12,
-                ),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.surfaceContainerHighest.withValues(
-                    alpha: 0.62,
-                  ),
-                  borderRadius: BorderRadius.circular(999),
-                ),
-                child: Row(
-                  children: [
-                    const Icon(Icons.search_rounded, size: 20),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Search notes, creators, topics',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodyMedium?.copyWith(
-                          color: theme.colorScheme.onSurface.withValues(
-                            alpha: 0.58,
-                          ),
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 10),
-          IconButton.filledTonal(
-            onPressed: onSavedTap,
-            icon: const Icon(Icons.bookmark_border_rounded),
-            tooltip: 'Saved posts',
-          ),
-        ],
-      ),
-    );
   }
 }
 
@@ -507,50 +304,6 @@ class _NewPostsBanner extends StatelessWidget {
           ],
         ),
       ),
-    );
-  }
-}
-
-class _FeedControls extends StatelessWidget {
-  final String selectedMode;
-  final ValueChanged<String> onModeChanged;
-
-  const _FeedControls({
-    required this.selectedMode,
-    required this.onModeChanged,
-  });
-
-  static const _modes = [
-    ('all', 'For You', Icons.auto_awesome_outlined),
-    ('following', 'Following', Icons.people_outline),
-    ('popular', 'Popular', Icons.trending_up),
-    ('mine', 'Mine', Icons.person_outline),
-  ];
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const SectionHeader(title: 'Feed'),
-        const SizedBox(height: AppSizes.paddingSmall),
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: SegmentedButton<String>(
-            showSelectedIcon: false,
-            segments: [
-              for (final mode in _modes)
-                ButtonSegment(
-                  value: mode.$1,
-                  icon: Icon(mode.$3, size: 18),
-                  label: Text(mode.$2),
-                ),
-            ],
-            selected: {selectedMode},
-            onSelectionChanged: (values) => onModeChanged(values.first),
-          ),
-        ),
-      ],
     );
   }
 }

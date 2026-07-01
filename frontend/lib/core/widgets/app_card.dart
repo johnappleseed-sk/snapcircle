@@ -26,13 +26,13 @@ class AppCard extends StatelessWidget {
       padding: padding ?? const EdgeInsets.all(AppSizes.paddingMedium),
       decoration: BoxDecoration(
         color: color ?? theme.cardTheme.color ?? AppColors.card,
-        borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
-        border: Border.all(color: theme.dividerColor),
+        borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
+        border: Border.all(color: theme.dividerColor.withValues(alpha: 0.78)),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: isDark ? 0.12 : 0.014),
-            blurRadius: isDark ? 4 : 8,
-            offset: Offset(0, isDark ? 1 : 2),
+            color: Colors.black.withValues(alpha: isDark ? 0.14 : 0.026),
+            blurRadius: isDark ? 8 : 18,
+            offset: Offset(0, isDark ? 2 : 8),
           ),
         ],
       ),
@@ -43,7 +43,7 @@ class AppCard extends StatelessWidget {
         ? card
         : InkWell(
             onTap: onTap,
-            borderRadius: BorderRadius.circular(AppSizes.radiusSmall),
+            borderRadius: BorderRadius.circular(AppSizes.radiusMedium),
             child: card,
           );
   }

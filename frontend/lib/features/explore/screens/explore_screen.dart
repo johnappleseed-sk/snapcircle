@@ -90,12 +90,18 @@ class _ExploreScreenState extends State<ExploreScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Discover'),
+        centerTitle: true,
+        leading: IconButton(
+          onPressed: () => context.push('/create-post'),
+          icon: const Icon(Icons.camera_alt_outlined),
+          tooltip: 'Create post',
+        ),
+        title: const Text('SnapCircle'),
         actions: [
           IconButton(
-            onPressed: () => provider.fetchExploreData(refresh: true),
-            icon: const Icon(Icons.refresh_rounded),
-            tooltip: 'Refresh discovery',
+            onPressed: () => context.push('/messages'),
+            icon: const Icon(Icons.send_outlined),
+            tooltip: 'Messages',
           ),
         ],
       ),
@@ -118,6 +124,14 @@ class _ExploreScreenState extends State<ExploreScreen> {
               AppSizes.paddingXL,
             ),
             children: [
+              Text(
+                'Discover',
+                style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.textPrimary,
+                ),
+              ),
+              const SizedBox(height: AppSizes.paddingMedium),
               ExploreSearchBar(
                 query: provider.searchQuery,
                 onSearch: provider.searchExplore,
@@ -414,7 +428,7 @@ class _DiscoveryMetric extends StatelessWidget {
             size: 18,
             color: theme.colorScheme.onSurface.withValues(alpha: 0.58),
           ),
-          const Spacer(),
+          const SizedBox(height: 10),
           Text(
             value,
             maxLines: 1,

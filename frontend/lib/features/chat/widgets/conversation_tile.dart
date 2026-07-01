@@ -27,7 +27,7 @@ class ConversationTile extends StatelessWidget {
 
     return AppCard(
       onTap: onTap,
-      padding: const EdgeInsets.all(AppSizes.paddingMedium),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       child: Row(
         children: [
           AppAvatar(
@@ -48,7 +48,10 @@ class ConversationTile extends StatelessWidget {
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                         style: Theme.of(context).textTheme.titleMedium
-                            ?.copyWith(fontWeight: FontWeight.w800),
+                            ?.copyWith(
+                              fontWeight: FontWeight.w900,
+                              fontSize: 15,
+                            ),
                       ),
                     ),
                     Text(
@@ -58,6 +61,7 @@ class ConversationTile extends StatelessWidget {
                       ),
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
                         color: AppColors.mutedText,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                   ],

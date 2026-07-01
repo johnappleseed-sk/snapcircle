@@ -3,7 +3,6 @@ import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../core/constants/app_colors.dart';
-import '../../../core/constants/app_sizes.dart';
 import '../providers/stories_provider.dart';
 import 'story_skeleton_circle.dart';
 import 'story_circle.dart';
@@ -20,12 +19,11 @@ class StoriesRow extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SizedBox(
-          height: 98,
+          height: 86,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             itemCount: 1 + (provider.isLoading ? 4 : provider.stories.length),
-            separatorBuilder: (_, _) =>
-                const SizedBox(width: AppSizes.paddingSmall),
+            separatorBuilder: (_, _) => const SizedBox(width: 10),
             itemBuilder: (context, index) {
               if (index == 0) {
                 return StoryCircle(
